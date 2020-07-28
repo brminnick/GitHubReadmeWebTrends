@@ -1,0 +1,3 @@
+[submodule "GitHubReadmeRetriever"]
+	path = GitHubReadmeRetriever
+	url = https://github.com/brminnick/GitHubReadmeRetriever
