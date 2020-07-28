@@ -11,7 +11,7 @@ namespace VerifyGitHubReadmeLinks
 {
     public static class Orchestrator
     {
-        [FunctionName("VerifyGitHubReadmeLinks")]
+        [FunctionName(nameof(Orchestrator))]
         public static async Task<List<string>> RunOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
             var outputs = new List<string>();
@@ -23,27 +23,6 @@ namespace VerifyGitHubReadmeLinks
 
             // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
             return outputs;
-        }
-
-        [FunctionName("VerifyGitHubReadmeLinks_Hello")]
-        public static string SayHello([ActivityTrigger] string name, ILogger log)
-        {
-            log.LogInformation($"Saying hello to {name}.");
-            return $"Hello {name}!";
-        }
-
-        [FunctionName("VerifyGitHubReadmeLinks_HttpStart")]
-        public static async Task<HttpResponseMessage> HttpStart(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
-            [DurableClient] IDurableOrchestrationClient starter,
-            ILogger log)
-        {
-            // Function input comes from the request content.
-            string instanceId = await starter.StartNewAsync("VerifyGitHubReadmeLinks", null);
-
-            log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
-
-            return starter.CreateCheckStatusResponse(req, instanceId);
         }
     }
 }
