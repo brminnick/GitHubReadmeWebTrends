@@ -39,8 +39,10 @@ namespace VerifyGitHubReadmeLinks
             {
                 var advocate = _yamlService.ParseAdvocateFromYaml(file);
 
-                if (advocate is null)
+                if (advocate is null || string.IsNullOrWhiteSpace(advocate.FullName))
                     log.LogInformation($"Invalid GitHub Url\n{file}\n");
+                else if (string.IsNullOrWhiteSpace(advocate.UserName))
+                    log.LogInformation($"Invalid GitHub UserName for {advocate.FullName}");
                 else
                     yield return advocate;
             }

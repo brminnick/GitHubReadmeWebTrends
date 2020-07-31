@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
@@ -21,7 +22,7 @@ namespace VerifyGitHubReadmeLinks
               .ConfigureHttpClient(client =>
               {
                   client.BaseAddress = new Uri(GitHubConstants.GitHubGraphQLApi);
-                  client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", _token);
+                  client.DefaultRequestHeaders.Authorization = getBearerToken();
               })
               .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
               .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
@@ -30,16 +31,18 @@ namespace VerifyGitHubReadmeLinks
               .ConfigureHttpClient(client =>
               {
                   client.BaseAddress = new Uri(GitHubConstants.GitHubRestApiUrl);
-                  client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", _token);
+                  client.DefaultRequestHeaders.Authorization = getBearerToken();
               })
               .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
               .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
 
-            builder.Services.AddSingleton<GitHubApiService>();
             builder.Services.AddSingleton<YamlService>();
+            builder.Services.AddSingleton<GitHubApiService>();
+            builder.Services.AddSingleton<GitHubGraphQLApiService>();
 
             static TimeSpan sleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
 
+            static AuthenticationHeaderValue getBearerToken()=> new AuthenticationHeaderValue("bearer", _token);
             static DecompressionMethods getDecompressionMethods() => DecompressionMethods.Deflate | DecompressionMethods.GZip;
         }
     }

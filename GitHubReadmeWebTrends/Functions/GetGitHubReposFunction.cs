@@ -10,6 +10,7 @@ namespace VerifyGitHubReadmeLinks
 
         public GetGitHubReposFunction(GitHubGraphQLApiService gitHubGraphQLApiService) => _gitHubGraphQLApiService = gitHubGraphQLApiService;
 
+        [FunctionName(nameof(GetGitHubReposFunction))]
         public async Task Run([QueueTrigger(QueueConstants.AdvocatesQueue)] GitHubUserModel gitHubUser, ILogger log,
                                 [Queue(QueueConstants.RepositoriesQueue)] ICollector<Repository> gitHubUserOutput)
         {

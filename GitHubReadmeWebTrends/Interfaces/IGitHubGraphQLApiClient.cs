@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using GraphQL;
 using Refit;
 
 namespace VerifyGitHubReadmeLinks
@@ -13,8 +12,8 @@ namespace VerifyGitHubReadmeLinks
 
     class RepositoryConnectionQueryContent : GraphQLRequest
     {
-        public RepositoryConnectionQueryContent(string repositoryOwner, string endCursorString, int numberOfRepositoriesPerRequest = 100)
-            : base("query {  user(login:" + repositoryOwner + ")  { repositories(first:" + numberOfRepositoriesPerRequest + endCursorString + ") { nodes { name }, pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
+        public RepositoryConnectionQueryContent(in string repositoryOwner, in string endCursorString, in int numberOfRepositoriesPerRequest = 100)
+            : base("query { user(login:\"" + repositoryOwner + "\")  { repositories(first:" + numberOfRepositoriesPerRequest + endCursorString + ") { nodes { name }, pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
         {
 
         }

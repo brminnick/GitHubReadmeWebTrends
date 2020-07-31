@@ -4,7 +4,7 @@ using Refit;
 
 namespace VerifyGitHubReadmeLinks
 {
-    [Headers("User-Agent: " + nameof(GitHubApiService), "Accept-Encoding: gzip", "Accept: application/json")]
+    [Headers("User-Agent: " + nameof(VerifyGitHubReadmeLinks), "Accept-Encoding: gzip", "Accept: application/json")]
     interface IGitHubApiClient
     {
         [Get("/repos/MicrosoftDocs/cloud-developer-advocates/contents/advocates")]
