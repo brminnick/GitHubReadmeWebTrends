@@ -21,11 +21,11 @@ namespace VerifyGitHubReadmeLinks
 
         [FunctionName(nameof(GetAdvocatesFunction))]
         public async Task Run([TimerTrigger(_runOncePerMonth, RunOnStartup = true)] TimerInfo myTimer, ILogger log,
-            [Queue(QueueConstants.GetAdvocatesQueue)] ICollector<GitHubUserModel> advocateModels)
+                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<GitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
 
-            await foreach (var gitHubUser in GetAzureAdvocates().ConfigureAwait(false))
+            await foreach (var gitHubUser in GetAzureAdvocates(log).ConfigureAwait(false))
             {
                 advocateModels.Add(gitHubUser);
             }
@@ -33,12 +33,15 @@ namespace VerifyGitHubReadmeLinks
             log.LogInformation($"Completed");
         }
 
-        async IAsyncEnumerable<GitHubUserModel> GetAzureAdvocates()
+        async IAsyncEnumerable<GitHubUserModel> GetAzureAdvocates(ILogger log)
         {
             await foreach (var file in GetYamlFiles().ConfigureAwait(false))
             {
                 var advocate = _yamlService.ParseAdvocateFromYaml(file);
-                if (advocate != null)
+
+                if (advocate is null)
+                    log.LogInformation($"Invalid GitHub Url\n{file}\n");
+                else
                     yield return advocate;
             }
         }
@@ -46,7 +49,6 @@ namespace VerifyGitHubReadmeLinks
         async IAsyncEnumerable<string> GetYamlFiles()
         {
             var azureAdvocateRepositoryFiles = await _gitHubApiService.GetAllAdvocateFiles().ConfigureAwait(false);
-            PrintRepositoryUrls(azureAdvocateRepositoryFiles);
 
             var downloadFileTaskList = azureAdvocateRepositoryFiles.Where(x => x.DownloadUrl != null).Select(x => _httpClient.GetStringAsync(x.DownloadUrl)).ToList();
 

@@ -1,10 +1,10 @@
 {
     "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "Token": "d4c606b01d93c6c5b74f9dffca001b947fff33a1",
-    "ReadmeRetrieverClientSecret": "38aa93632fcfa43ec57337baee9857e7cdfb5bd8",
-    "ReadmeRetrieverClientId": "5aa00dcc4eb5184d16e4"
-  }
+    "Values": {
+      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+      "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+      "Token": "d4c606b01d93c6c5b74f9dffca001b947fff33a1",
+      "ReadmeRetrieverClientSecret": "38aa93632fcfa43ec57337baee9857e7cdfb5bd8",
+      "ReadmeRetrieverClientId": "5aa00dcc4eb5184d16e4"
+    }
 }
