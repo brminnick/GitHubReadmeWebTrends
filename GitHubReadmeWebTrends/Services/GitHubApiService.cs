@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -16,7 +17,7 @@ namespace VerifyGitHubReadmeLinks
 
         readonly HttpClient _httpClient;
 
-        public GitHubApiService(HttpClient httpClient) => _httpClient = httpClient;
+        public GitHubApiService(IHttpClientFactory httpClientFactory) => _httpClient = httpClientFactory.CreateClient(nameof(GitHubApiService));
 
 
         public async Task<List<RepositoryFile>> GetAllAdvocateFiles()
@@ -38,16 +39,20 @@ namespace VerifyGitHubReadmeLinks
 
         async IAsyncEnumerable<string> GetYamlFiles()
         {
-            var azureAdvocateFiles = await GetAllAdvocateFiles().ConfigureAwait(false);
+            var azureAdvocateRepositoryFiles = await GetAllAdvocateFiles().ConfigureAwait(false);
+            PrintRepositoryUrls(azureAdvocateRepositoryFiles);
 
-            var downloadFileTaskList = azureAdvocateFiles.Select(x => _httpClient.GetStringAsync(x.DownloadUrl));
+            var downloadFileTaskList = azureAdvocateRepositoryFiles.Where(x => x.DownloadUrl != null).Select(x => _httpClient.GetStringAsync(x.DownloadUrl)).ToList();
 
             while (downloadFileTaskList.Any())
             {
                 var downloadFileTask = await Task.WhenAny(downloadFileTaskList).ConfigureAwait(false);
+                downloadFileTaskList.Remove(downloadFileTask);
+
                 var file = await downloadFileTask.ConfigureAwait(false);
 
-                yield return file;
+                if (file != null)
+                    yield return file;
             }
         }
 
@@ -71,6 +76,17 @@ namespace VerifyGitHubReadmeLinks
                 var indexOfGitHubUserName = indexOfGitHubDomain + gitHubDomain.Length;
 
                 return gitHubUrl.Substring(indexOfGitHubUserName).Trim('/');
+            }
+        }
+
+        [Conditional("DEBUG")]
+        void PrintRepositoryUrls(in IEnumerable<RepositoryFile> repositoryFiles)
+        {
+            foreach (var repository in repositoryFiles)
+            {
+                Debug.WriteLine($"File Name: {repository.FileName}");
+                Debug.WriteLine($"Download Url: {repository.DownloadUrl?.ToString() ?? "null"}");
+                Debug.WriteLine("");
             }
         }
     }

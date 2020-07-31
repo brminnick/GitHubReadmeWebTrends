@@ -13,7 +13,7 @@ namespace VerifyGitHubReadmeLinks
         public GetAdvocatesFunction(GitHubApiService gitHubApiService) => _gitHubApiService = gitHubApiService;
 
         [FunctionName(nameof(GetAdvocatesFunction))]
-        public async Task Run([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
+        public async Task Run([TimerTrigger(_runOncePerMonth, RunOnStartup = true)] TimerInfo myTimer, ILogger log,
             [Queue(QueueConstants.GetAdvocatesQueue)] ICollector<GitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");

@@ -3,12 +3,8 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <AzureFunctionsVersion>v3</AzureFunctionsVersion>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <LangVersion>latest</LangVersion>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
@@ -18,9 +14,7 @@
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="3.1.6" />
         <PackageReference Include="YamlDotNet" Version="8.1.2" />
         <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.2" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="**/*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.6" />
     </ItemGroup>
     <ItemGroup>
         <None Update="host.json">

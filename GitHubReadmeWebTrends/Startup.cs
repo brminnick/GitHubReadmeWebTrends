@@ -14,8 +14,11 @@ namespace VerifyGitHubReadmeLinks
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            builder.Services.AddLogging();
+
             builder.Services.AddHttpClient<GitHubApiService>()
                 .ConfigureHttpClient(client => client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token))
+                .ConfigureHttpClient(client => client.DefaultRequestHeaders.UserAgent.ParseAdd(nameof(VerifyGitHubReadmeLinks)))
                 .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip })
                 .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(1, sleepDurationProvider));
 
