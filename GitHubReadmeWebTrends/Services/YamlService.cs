@@ -19,7 +19,7 @@ namespace VerifyGitHubReadmeLinks
 
             var fullName = cloudAdvocate.Name;
 
-            var gitHubUrl = cloudAdvocate.Connect.First(x => x.Title.Contains("GitHub", StringComparison.OrdinalIgnoreCase)).Url;
+            var gitHubUrl = cloudAdvocate.Connect.FirstOrDefault(x => x.Title.Contains("GitHub", StringComparison.OrdinalIgnoreCase))?.Url;
             if (gitHubUrl is null)
                 return null;
 
