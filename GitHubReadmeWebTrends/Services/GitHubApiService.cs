@@ -33,7 +33,9 @@ namespace VerifyGitHubReadmeLinks
         {
             await foreach (var file in GetYamlFiles().ConfigureAwait(false))
             {
-                yield return ParseAdvocateFromYaml(file);
+                var advocate = ParseAdvocateFromYaml(file);
+                if (advocate != null)
+                    yield return advocate;
             }
         }
 
@@ -56,7 +58,7 @@ namespace VerifyGitHubReadmeLinks
             }
         }
 
-        GitHubUserModel ParseAdvocateFromYaml(in string file)
+        GitHubUserModel? ParseAdvocateFromYaml(in string file)
         {
             const string gitHubDomain = "github.com/";
 
@@ -66,6 +68,9 @@ namespace VerifyGitHubReadmeLinks
             var fullName = cloudAdvocate.Name;
 
             var gitHubUrl = cloudAdvocate.Connect.First(x => x.Title.Contains("GitHub", StringComparison.OrdinalIgnoreCase)).Url;
+            if (gitHubUrl is null)
+                return null;
+
             var gitHubUserName = parseGitHubUserNameFromUrl(gitHubUrl.ToString());
 
             return new GitHubUserModel(fullName, gitHubUserName);
