@@ -1,79 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace VerifyGitHubReadmeLinks
 {
     class CloudAdvocateYamlModel
     {
-        [JsonProperty("uid")]
+        [YamlMember(Alias = "uid")]
         public string Uid { get; set; } = string.Empty;
 
-        [JsonProperty("name")]
+        [YamlMember(Alias = "name")]
         public string Name { get; set; } = string.Empty;
 
-        [JsonProperty("alias")]
-        public string Alias { get; set; } = string.Empty;
+        [YamlMember(Alias = "metadata")]
+        public Metadata Metadata { get; set; } = new Metadata();
 
-        [JsonProperty("metadata")]
-        public Metadata? Metadata { get; set; }
-
-        [JsonProperty("remarks")]
+        [YamlMember(Alias = "remarks")]
         public string Remarks { get; set; } = string.Empty;
 
-        [JsonProperty("tagline")]
+        [YamlMember(Alias = "tagline")]
         public string Tagline { get; set; } = string.Empty;
 
-        [JsonProperty("image")]
-        public Image? Image { get; set; }
+        [YamlMember(Alias = "image")]
+        public Image Image { get; set; } = new Image();
 
-        [JsonProperty("connect")]
+        [YamlMember(Alias = "connect")]
         public List<Connect> Connect { get; set; } = Enumerable.Empty<Connect>().ToList();
 
-        [JsonProperty("location")]
-        public Location? Location { get; set; }
+        [YamlMember(Alias = "location")]
+        public Location Location { get; set; } = new Location();
     }
 
     class Connect
     {
-        [JsonProperty("title")]
+        [YamlMember(Alias = "title")]
         public string Title { get; set; } = string.Empty;
 
-        [JsonProperty("url")]
+        [YamlMember(Alias = "url")]
         public Uri? Url { get; set; }
     }
 
     class Image
     {
-        [JsonProperty("alt")]
+        [YamlMember(Alias = "alt")]
         public string Alt { get; set; } = string.Empty;
 
-        [JsonProperty("src")]
+        [YamlMember(Alias = "src")]
         public string Src { get; set; } = string.Empty;
     }
 
     class Location
     {
-        [JsonProperty("display")]
+        [YamlMember(Alias = "display")]
         public string Display { get; set; } = string.Empty;
 
-        [JsonProperty("lat")]
+        [YamlMember(Alias = "lat")]
         public double Lat { get; set; }
 
-        [JsonProperty("long")]
+        [YamlMember(Alias = "long")]
         public double Long { get; set; }
     }
 
     class Metadata
     {
-        [JsonProperty("title")]
+        [YamlMember(Alias = "title")]
         public string Title { get; set; } = string.Empty;
 
-        [JsonProperty("description")]
+        [YamlMember(Alias = "description")]
         public string Description { get; set; } = string.Empty;
 
-        [JsonProperty("ms.author")]
+        [YamlMember(Alias = "ms.author")]
         public string Alias { get; set; } = string.Empty;
     }
 }

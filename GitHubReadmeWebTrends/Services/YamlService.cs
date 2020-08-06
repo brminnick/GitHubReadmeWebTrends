@@ -3,13 +3,12 @@ using System.IO;
 using System.Linq;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace VerifyGitHubReadmeLinks
 {
     class YamlService
     {
-        readonly static IDeserializer _yamlDeserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+        readonly static IDeserializer _yamlDeserializer = new DeserializerBuilder().Build();
 
         public CloudAdvocateGitHubUserModel? ParseAdvocateFromYaml(in string file)
         {
@@ -17,19 +16,21 @@ namespace VerifyGitHubReadmeLinks
 
             try
             {
-
                 var stringReaderFile = new StringReader(file);
+                var json = new SerializerBuilder().JsonCompatible().Build().Serialize(file);
+
                 var cloudAdvocate = _yamlDeserializer.Deserialize<CloudAdvocateYamlModel>(stringReaderFile);
 
                 var fullName = cloudAdvocate.Name;
 
                 var gitHubUrl = cloudAdvocate.Connect.FirstOrDefault(x => x.Title.Contains("GitHub", StringComparison.OrdinalIgnoreCase))?.Url;
-                if (gitHubUrl is null)
+
+                if (gitHubUrl is null || string.IsNullOrWhiteSpace(cloudAdvocate.Metadata.Alias))
                     return null;
 
                 var gitHubUserName = parseGitHubUserNameFromUrl(gitHubUrl.ToString());
 
-                return new CloudAdvocateGitHubUserModel(fullName, gitHubUserName, cloudAdvocate.Alias);
+                return new CloudAdvocateGitHubUserModel(fullName, gitHubUserName, cloudAdvocate.Metadata.Alias);
             }
             catch (YamlException)
             {
