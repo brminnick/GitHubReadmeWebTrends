@@ -5,12 +5,12 @@ using Microsoft.Extensions.Logging;
 
 namespace VerifyGitHubReadmeLinks
 {
-    public class OpenPullRequestFunction
+    class OpenPullRequestFunction
     {
         [FunctionName(nameof(OpenPullRequestFunction))]
         public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
         {
-
+            throw new NotImplementedException();
         }
     }
 }

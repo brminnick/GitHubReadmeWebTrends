@@ -19,7 +19,7 @@ namespace VerifyGitHubReadmeLinks
             new Regex("(.*\\.)?visualstudio\\.com$", RegexOptions.IgnoreCase)
         };
 
-        [FunctionName(nameof(GetReadmeFunction))]
+        [FunctionName(nameof(VerifyWebTrendsFunction))]
         public static void Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository repository, CloudAdvocateGitHubUserModel gitHubUserModel) data, ILogger log,
                                         [Queue(QueueConstants.UpdateReadmeFunction)] ICollector<Repository> openPullRequestCollector)
         {
