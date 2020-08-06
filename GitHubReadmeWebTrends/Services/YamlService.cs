@@ -11,7 +11,7 @@ namespace VerifyGitHubReadmeLinks
     {
         readonly static IDeserializer _yamlDeserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
 
-        public GitHubUserModel? ParseAdvocateFromYaml(in string file)
+        public CloudAdvocateGitHubUserModel? ParseAdvocateFromYaml(in string file)
         {
             const string gitHubDomain = "github.com/";
 
@@ -29,7 +29,7 @@ namespace VerifyGitHubReadmeLinks
 
                 var gitHubUserName = parseGitHubUserNameFromUrl(gitHubUrl.ToString());
 
-                return new GitHubUserModel(fullName, gitHubUserName);
+                return new CloudAdvocateGitHubUserModel(fullName, gitHubUserName, cloudAdvocate.Alias);
             }
             catch (YamlException)
             {

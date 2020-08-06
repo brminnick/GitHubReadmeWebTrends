@@ -21,7 +21,7 @@ namespace VerifyGitHubReadmeLinks
 
         [FunctionName(nameof(GetAdvocatesFunction))]
         public async Task Run([TimerTrigger(_runOncePerMonth, RunOnStartup = true)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<GitHubUserModel> advocateModels)
+                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
 
@@ -33,7 +33,7 @@ namespace VerifyGitHubReadmeLinks
             log.LogInformation($"Completed");
         }
 
-        async IAsyncEnumerable<GitHubUserModel> GetAzureAdvocates(ILogger log)
+        async IAsyncEnumerable<CloudAdvocateGitHubUserModel> GetAzureAdvocates(ILogger log)
         {
             await foreach (var file in GetYamlFiles().ConfigureAwait(false))
             {

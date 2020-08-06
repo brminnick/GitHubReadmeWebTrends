@@ -11,8 +11,8 @@ namespace VerifyGitHubReadmeLinks
         public GetGitHubReposFunction(GitHubGraphQLApiService gitHubGraphQLApiService) => _gitHubGraphQLApiService = gitHubGraphQLApiService;
 
         [FunctionName(nameof(GetGitHubReposFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.AdvocatesQueue)] GitHubUserModel gitHubUser, ILogger log,
-                                [Queue(QueueConstants.RepositoriesQueue)] ICollector<Repository> gitHubUserOutput)
+        public async Task Run([QueueTrigger(QueueConstants.AdvocatesQueue)] CloudAdvocateGitHubUserModel gitHubUser, ILogger log,
+                                [Queue(QueueConstants.RepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> gitHubUserOutput)
         {
             log.LogInformation($"{nameof(GetGitHubReposFunction)} Started");
 
@@ -20,7 +20,7 @@ namespace VerifyGitHubReadmeLinks
             {
                 foreach (var repository in repositoryList)
                 {
-                    gitHubUserOutput.Add(new Repository(gitHubUser.UserName, repository));
+                    gitHubUserOutput.Add((new Repository(gitHubUser.UserName, repository), gitHubUser));
                 }
             }
 

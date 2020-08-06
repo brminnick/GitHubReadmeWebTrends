@@ -1,10 +1,12 @@
 ﻿namespace VerifyGitHubReadmeLinks
 {
-    class GitHubUserModel
+    class CloudAdvocateGitHubUserModel
     {
-        public GitHubUserModel(string fullName, string userName) => (FullName, UserName) = (fullName, userName);
+        public CloudAdvocateGitHubUserModel(in string fullName, in string userName, in string microsoftAlias) =>
+            (FullName, UserName, MicrosoftAlias) = (fullName, userName, microsoftAlias);
 
         public string FullName { get; }
         public string UserName { get; }
+        public string MicrosoftAlias { get; }
     }
 }

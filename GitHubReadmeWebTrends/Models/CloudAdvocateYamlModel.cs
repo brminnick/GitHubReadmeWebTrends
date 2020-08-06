@@ -13,6 +13,9 @@ namespace VerifyGitHubReadmeLinks
         [JsonProperty("name")]
         public string Name { get; set; } = string.Empty;
 
+        [JsonProperty("alias")]
+        public string Alias { get; set; } = string.Empty;
+
         [JsonProperty("metadata")]
         public Metadata? Metadata { get; set; }
 

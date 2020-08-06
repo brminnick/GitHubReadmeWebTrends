@@ -12,5 +12,8 @@ namespace VerifyGitHubReadmeLinks
 
         [Get("/repos/{owner}/{repo}/readme")]
         public Task<RepositoryFile> GetReadme([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);
+
+        [Post("/repos/{owner}/{repo}/pulls")]
+        public Task<RepositoryFile> OpenPullRequest([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);
     }
 }

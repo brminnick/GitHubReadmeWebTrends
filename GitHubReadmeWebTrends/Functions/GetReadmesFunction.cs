@@ -18,16 +18,18 @@ namespace VerifyGitHubReadmeLinks
 
         [FunctionName(nameof(GetReadmeFunction))]
         [return: Queue(QueueConstants.VerifyWebTrendsQueue)]
-        public async Task<Repository> Run([QueueTrigger(QueueConstants.RepositoriesQueue)] Repository repository, ILogger log)
+        public async Task<(Repository, CloudAdvocateGitHubUserModel)> Run([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log)
         {
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
+
+            var (repository, gitHubUser) = data;
 
             var readmeFile = await _gitHubApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
             var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
 
-            return new Repository(repository.Owner, repository.Name, readmeText);
+            return (new Repository(repository.Owner, repository.Name, readmeText), gitHubUser);
         }
     }
 }
