@@ -44,7 +44,7 @@ namespace VerifyGitHubReadmeLinks
         {
             foreach (var domain in _microsoftDomainsList)
             {
-                if (link.Contains(domain))
+                if (link.Contains(domain) && !link.Contains('@'))
                 {
                     var uriBuilder = new UriBuilder(link);
 

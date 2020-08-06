@@ -7,7 +7,7 @@ namespace VerifyGitHubReadmeLinks
     {
         public RepositoryConnectionResponse(User_RepositoryConnectionResponse user)
         {
-            RepositoryList = user.Repositories.RepositoryList.Where(x => !x.IsFork).Select(x => x.Name).ToList();
+            RepositoryList = user.Repositories.RepositoryList.Where(x => x.IsFork is false).Select(x => x.Name).ToList();
             PageInfo = user.Repositories.PageInfo;
         }
 
