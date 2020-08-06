@@ -12,53 +12,45 @@ namespace VerifyGitHubReadmeLinks
     //Inspired by https://github.com/spboyer/ca-readme-tracking-links-action/
     static class VerifyWebTrendsFunction
     {
-        static readonly IReadOnlyList<Regex> _defaultDomainsRegexList = new[]
+        static readonly IReadOnlyList<string> _microsoftDomainsList = new[]
         {
-            new Regex("(.*\\.)?microsoft\\.com$", RegexOptions.IgnoreCase),
-            new Regex("(.*\\.)?msdn\\.com$", RegexOptions.IgnoreCase),
-            new Regex("(.*\\.)?visualstudio\\.com$", RegexOptions.IgnoreCase)
+            "microsoft.com",
+            "msdn.com",
+            "visualstudio.com"
         };
 
+        static readonly Regex _regex = new Regex(@"(((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)");
+
         [FunctionName(nameof(VerifyWebTrendsFunction))]
-        public static void Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository repository, CloudAdvocateGitHubUserModel gitHubUserModel) data, ILogger log,
-                                        [Queue(QueueConstants.UpdateReadmeFunction)] ICollector<Repository> openPullRequestCollector)
+        public static void Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
+                                        [Queue(QueueConstants.OpenPullRequestQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> openPullRequestCollector)
         {
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Started");
 
             var (repository, gitHubUser) = data;
 
-            var pattern = @"(((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)";
-            var regex = new Regex(pattern);
+            var updatedReadme = _regex.Replace(repository.ReadmeText, x => AppendTrackingInfo(x.Groups[0].Value, repository.Name.Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias));
 
-            var updatedReadme = regex.Replace(repository.ReadmeText, x => AppendTrackingInfo(x.Groups[0].Value, repository.Name, "GitHub", gitHubUser.MicrosoftAlias));
-
-            if (!string.IsNullOrWhiteSpace(updatedReadme))
+            if (!updatedReadme.Equals(repository.ReadmeText))
             {
                 log.LogInformation($"Updated Readme for {repository.Owner} {repository.Name}");
-                openPullRequestCollector.Add(new Repository(repository.Owner, repository.Name, updatedReadme));
+                openPullRequestCollector.Add((new Repository(repository.Owner, repository.Name, updatedReadme), gitHubUser));
             }
 
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Completed");
         }
 
-        static UriBuilder RemoveLocale(this UriBuilder builder)
-        {
-            var localeMatcher = new Regex("^/\\w{2}-\\w{2}");
-            builder.Path = localeMatcher.Replace(builder.Path, string.Empty);
-
-            return builder;
-        }
-
         static string AppendTrackingInfo(in string link, in string eventName, in string channel, in string alias)
         {
-            foreach (var regex in _defaultDomainsRegexList)
+            foreach (var domain in _microsoftDomainsList)
             {
-                if (regex.IsMatch(link))
+                if (link.Contains(domain))
                 {
                     var uriBuilder = new UriBuilder(link);
 
-                    uriBuilder = uriBuilder.AddTrackingCode(eventName, channel, alias);
-                    uriBuilder = uriBuilder.RemoveLocale();
+                    AddTrackingCode(uriBuilder, eventName, channel, alias);
+                    RemoveLocale(uriBuilder);
+                    uriBuilder.Scheme = "https";
 
                     return uriBuilder.Uri.ToString();
                 }
@@ -67,7 +59,13 @@ namespace VerifyGitHubReadmeLinks
             return link;
         }
 
-        static UriBuilder AddTrackingCode(this UriBuilder builder, string eventName, string channel, string alias)
+        static void RemoveLocale(in UriBuilder builder)
+        {
+            var localeMatcher = new Regex("^/\\w{2}-\\w{2}");
+            builder.Path = localeMatcher.Replace(builder.Path, string.Empty);
+        }
+
+        static void AddTrackingCode(in UriBuilder builder, in string eventName, in string channel, in string alias)
         {
             const string trackingName = "WT.mc_id";
             string trackingCode = $"{eventName}-{channel}-{alias}";
@@ -78,8 +76,6 @@ namespace VerifyGitHubReadmeLinks
 
             var queryBuilder = new QueryBuilder(queryStringDictionary.SelectMany(x => x.Value, (c, v) => new KeyValuePair<string, string>(c.Key, v)).ToList());
             builder.Query = queryBuilder.ToQueryString().ToString();
-
-            return builder;
         }
     }
 }

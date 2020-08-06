@@ -7,10 +7,11 @@ namespace VerifyGitHubReadmeLinks
     {
         public RepositoryConnectionResponse(User_RepositoryConnectionResponse user)
         {
-            RepositoryList = user.Repositories.RepositoryList.Select(x => x.Name).ToList();
+            RepositoryList = user.Repositories.RepositoryList.Where(x => !x.IsFork).Select(x => x.Name).ToList();
             PageInfo = user.Repositories.PageInfo;
         }
 
+        public bool IsFork { get; }
         public List<string> RepositoryList { get; }
         public PageInfo PageInfo { get; }
     }
@@ -33,8 +34,10 @@ namespace VerifyGitHubReadmeLinks
 
     public class Repository_RepositoryConnectionResponse
     {
-        public Repository_RepositoryConnectionResponse(string name) => Name = name;
+        public Repository_RepositoryConnectionResponse(string name, bool isFork) =>
+            (Name, IsFork) = (name, isFork);
 
         public string Name { get; }
+        public bool IsFork { get; }
     }
 }

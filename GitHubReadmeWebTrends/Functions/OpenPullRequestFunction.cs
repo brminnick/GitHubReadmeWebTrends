@@ -8,7 +8,7 @@ namespace VerifyGitHubReadmeLinks
     class OpenPullRequestFunction
     {
         [FunctionName(nameof(OpenPullRequestFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
+        public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] (Repository,CloudAdvocateGitHubUserModel) data, ILogger log)
         {
             throw new NotImplementedException();
         }

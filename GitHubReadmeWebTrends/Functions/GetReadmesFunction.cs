@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
@@ -24,12 +25,20 @@ namespace VerifyGitHubReadmeLinks
 
             var (repository, gitHubUser) = data;
 
-            var readmeFile = await _gitHubApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
-            var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
+            try
+            {
+                var readmeFile = await _gitHubApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
+                var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
 
-            log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
+                log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
 
-            return (new Repository(repository.Owner, repository.Name, readmeText), gitHubUser);
+                return (new Repository(repository.Owner, repository.Name, readmeText), gitHubUser);
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, e.Message);
+                throw;
+            }
         }
     }
 }
