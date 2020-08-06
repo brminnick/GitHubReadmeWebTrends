@@ -72,5 +72,8 @@ namespace VerifyGitHubReadmeLinks
 
         [JsonProperty("description")]
         public string Description { get; set; } = string.Empty;
+
+        [JsonProperty("ms.author")]
+        public string Alias { get; set; } = string.Empty;
     }
 }
