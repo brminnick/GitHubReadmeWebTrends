@@ -50,7 +50,9 @@ namespace VerifyGitHubReadmeLinks
 
                     AddTrackingCode(uriBuilder, eventName, channel, alias);
                     RemoveLocale(uriBuilder);
-                    uriBuilder.Scheme = "https";
+
+                    if (uriBuilder.Scheme is "http")
+                        uriBuilder.Scheme = "https";
 
                     return uriBuilder.Uri.ToString();
                 }
