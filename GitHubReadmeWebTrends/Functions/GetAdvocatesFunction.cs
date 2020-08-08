@@ -27,6 +27,12 @@ namespace VerifyGitHubReadmeLinks
 
             await foreach (var gitHubUser in GetAzureAdvocates(log).ConfigureAwait(false))
             {
+#if DEBUG
+                if (gitHubUser.MicrosoftAlias != "bramin")
+                    continue;
+
+                log.LogInformation("Brandon Minnick Found");
+#endif
                 advocateModels.Add(gitHubUser);
             }
 
@@ -37,12 +43,12 @@ namespace VerifyGitHubReadmeLinks
         {
             await foreach (var file in GetYamlFiles().ConfigureAwait(false))
             {
-                var advocate = _yamlService.ParseAdvocateFromYaml(file);
+                var advocate = _yamlService.ParseAdvocateFromYaml(file, log);
 
                 if (advocate is null || string.IsNullOrWhiteSpace(advocate.FullName))
-                    log.LogInformation($"Invalid GitHub Url\n{file}\n");
+                    log.LogError($"Invalid GitHub Url\n{file}\n");
                 else if (string.IsNullOrWhiteSpace(advocate.UserName))
-                    log.LogInformation($"Invalid GitHub UserName for {advocate.FullName}");
+                    log.LogError($"Invalid GitHub UserName for {advocate.FullName}");
                 else
                     yield return advocate;
             }

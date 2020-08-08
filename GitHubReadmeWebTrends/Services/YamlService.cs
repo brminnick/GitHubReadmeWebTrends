@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Azure.WebJobs.Logging;
+using Microsoft.Extensions.Logging;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -10,7 +12,7 @@ namespace VerifyGitHubReadmeLinks
     {
         readonly static IDeserializer _yamlDeserializer = new DeserializerBuilder().Build();
 
-        public CloudAdvocateGitHubUserModel? ParseAdvocateFromYaml(in string file)
+        public CloudAdvocateGitHubUserModel? ParseAdvocateFromYaml(in string file, in ILogger logger)
         {
             const string gitHubDomain = "github.com/";
 
@@ -32,8 +34,9 @@ namespace VerifyGitHubReadmeLinks
 
                 return new CloudAdvocateGitHubUserModel(fullName, gitHubUserName, cloudAdvocate.Metadata.Alias);
             }
-            catch (YamlException)
+            catch (YamlException e)
             {
+                logger.LogError(e, $"Invalid YAML File Found\n{file}");
                 return null;
             }
 

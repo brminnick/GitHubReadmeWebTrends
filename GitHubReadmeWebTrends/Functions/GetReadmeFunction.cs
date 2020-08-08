@@ -32,7 +32,7 @@ namespace VerifyGitHubReadmeLinks
 
                 log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
 
-                return (new Repository(repository.Owner, repository.Name, readmeText), gitHubUser);
+                return (new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, readmeText), gitHubUser);
             }
             catch (Exception e)
             {

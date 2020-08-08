@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace VerifyGitHubReadmeLinks
 {
@@ -10,23 +12,41 @@ namespace VerifyGitHubReadmeLinks
 
         public GitHubGraphQLApiService(IGitHubGraphQLApiClient gitHubGraphQLApiClient) => _gitHubGraphQLApiClient = gitHubGraphQLApiClient;
 
-        public async IAsyncEnumerable<IEnumerable<string>> GetRepositories(string repositoryOwner, int numberOfRepositoriesPerRequest = 100)
+        public Task<CreateBranchResponse> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid)
+        {
+            var temp = new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid);
+            var serializedTemp = JsonConvert.SerializeObject(temp);
+
+            return ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranch(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
+        }
+
+        public async IAsyncEnumerable<IEnumerable<Repository>> GetRepositories(string repositoryOwner, int numberOfRepositoriesPerRequest = 100)
         {
             RepositoryConnectionResponse? repositoryConnection = null;
 
             do
             {
                 repositoryConnection = await GetRepositoryConnectionResponse(repositoryOwner, repositoryConnection?.PageInfo?.EndCursor, numberOfRepositoriesPerRequest).ConfigureAwait(false);
-                yield return repositoryConnection?.RepositoryList ?? Enumerable.Empty<string>();
+                yield return repositoryConnection?.RepositoryList ?? Enumerable.Empty<Repository>();
             }
             while (repositoryConnection?.PageInfo?.HasNextPage is true);
         }
 
-        async Task<RepositoryConnectionResponse> GetRepositoryConnectionResponse(string repositoryOwner, string? endCursor, int numberOfRepositoriesPerRequest = 100)
+        static async Task<T> ExecuteGraphQLRequest<T>(Task<GraphQLResponse<T>> graphQLRequestTask, int numRetries = 2)
         {
-            var response = await _gitHubGraphQLApiClient.RepositoryConnectionQuery(new RepositoryConnectionQueryContent(repositoryOwner, getEndCursorString(endCursor), numberOfRepositoriesPerRequest)).ConfigureAwait(false);
+            var response = await graphQLRequestTask.ConfigureAwait(false);
+
+            if (response.Errors != null && response.Errors.Count() > 1)
+                throw new AggregateException(response.Errors.Select(x => new Exception(x.ToString())));
+            else if (response.Errors != null && response.Errors.Any())
+                throw new Exception(response.Errors.First().ToString());
 
             return response.Data;
+        }
+
+        Task<RepositoryConnectionResponse> GetRepositoryConnectionResponse(string repositoryOwner, string? endCursor, int numberOfRepositoriesPerRequest = 100)
+        {
+            return ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryConnectionQuery(new RepositoryConnectionQueryContent(repositoryOwner, getEndCursorString(endCursor), numberOfRepositoriesPerRequest)));
 
             static string getEndCursorString(string? endCursor) => string.IsNullOrWhiteSpace(endCursor) ? string.Empty : "after: \"" + endCursor + "\"";
         }

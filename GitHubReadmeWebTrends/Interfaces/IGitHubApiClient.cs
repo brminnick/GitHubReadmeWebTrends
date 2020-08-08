@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Refit;
 
@@ -15,5 +16,8 @@ namespace VerifyGitHubReadmeLinks
 
         [Post("/repos/{owner}/{repo}/pulls")]
         public Task<RepositoryFile> OpenPullRequest([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);
+
+        [Get("/repos/{owner}/{repo}/git/{prefix1}/{prefix2}/{branchName}")]
+        public Task<GitHubReferenceModel> GetDefaultBranchRefrence([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName, string prefix1, string prefix2, string branchName);
     }
 }

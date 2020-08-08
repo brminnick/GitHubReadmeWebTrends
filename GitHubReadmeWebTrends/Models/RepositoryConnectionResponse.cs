@@ -7,20 +7,26 @@ namespace VerifyGitHubReadmeLinks
     {
         public RepositoryConnectionResponse(User_RepositoryConnectionResponse user)
         {
-            RepositoryList = user.Repositories.RepositoryList.Where(x => x.IsFork is false).Select(x => x.Name).ToList();
+            foreach (var repository in user.Repositories.RepositoryList)
+            {
+                if (!repository.IsFork && !RepositoryList.Any(x => x.Name == repository.Name && x.Owner == user.Login))
+                    RepositoryList.Add(new Repository(repository.Id, user.Login, repository.Name, repository.DefaultBranch));
+            }
+
             PageInfo = user.Repositories.PageInfo;
         }
 
-        public bool IsFork { get; }
-        public List<string> RepositoryList { get; }
+        public List<Repository> RepositoryList { get; } = Enumerable.Empty<Repository>().ToList();
         public PageInfo PageInfo { get; }
     }
 
     class User_RepositoryConnectionResponse
     {
-        public User_RepositoryConnectionResponse(Repositories_RepositoryConnectionResponse repositories) => Repositories = repositories;
+        public User_RepositoryConnectionResponse(string login, Repositories_RepositoryConnectionResponse repositories) =>
+            (Login, Repositories) = (login, repositories);
 
         public Repositories_RepositoryConnectionResponse Repositories { get; }
+        public string Login { get; }
     }
 
     class Repositories_RepositoryConnectionResponse
@@ -32,12 +38,14 @@ namespace VerifyGitHubReadmeLinks
         public PageInfo PageInfo { get; }
     }
 
-    public class Repository_RepositoryConnectionResponse
+    class Repository_RepositoryConnectionResponse
     {
-        public Repository_RepositoryConnectionResponse(string name, bool isFork) =>
-            (Name, IsFork) = (name, isFork);
+        public Repository_RepositoryConnectionResponse(string id, string name, bool isFork, DefaultBranchModel defaultBranchRef) =>
+            (Id, Name, IsFork, DefaultBranch) = (id, name, isFork, defaultBranchRef);
 
+        public string Id { get; }
         public string Name { get; }
         public bool IsFork { get; }
+        public DefaultBranchModel DefaultBranch { get; }
     }
 }

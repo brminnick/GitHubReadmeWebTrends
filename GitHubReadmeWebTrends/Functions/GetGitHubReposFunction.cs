@@ -12,7 +12,7 @@ namespace VerifyGitHubReadmeLinks
 
         [FunctionName(nameof(GetGitHubReposFunction))]
         public async Task Run([QueueTrigger(QueueConstants.AdvocatesQueue)] CloudAdvocateGitHubUserModel gitHubUser, ILogger log,
-                                [Queue(QueueConstants.RepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> gitHubUserOutput)
+                                [Queue(QueueConstants.RepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> outputData)
         {
             log.LogInformation($"{nameof(GetGitHubReposFunction)} Started");
 
@@ -20,7 +20,7 @@ namespace VerifyGitHubReadmeLinks
             {
                 foreach (var repository in repositoryList)
                 {
-                    gitHubUserOutput.Add((new Repository(gitHubUser.UserName, repository), gitHubUser));
+                    outputData.Add((repository, gitHubUser));
                 }
             }
 

@@ -23,7 +23,7 @@ namespace VerifyGitHubReadmeLinks
 
         [FunctionName(nameof(VerifyWebTrendsFunction))]
         public static void Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
-                                        [Queue(QueueConstants.OpenPullRequestQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> openPullRequestCollector)
+                                        [Queue(QueueConstants.OpenPullRequestQueue)] ICollector<Repository> openPullRequestCollector)
         {
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Started");
 
@@ -34,7 +34,7 @@ namespace VerifyGitHubReadmeLinks
             if (!updatedReadme.Equals(repository.ReadmeText))
             {
                 log.LogInformation($"Updated Readme for {repository.Owner} {repository.Name}");
-                openPullRequestCollector.Add((new Repository(repository.Owner, repository.Name, updatedReadme), gitHubUser));
+                openPullRequestCollector.Add(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, updatedReadme));
             }
 
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Completed");
