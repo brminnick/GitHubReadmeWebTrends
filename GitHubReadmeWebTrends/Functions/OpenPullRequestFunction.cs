@@ -23,9 +23,9 @@ namespace VerifyGitHubReadmeLinks
                 var defaultBranchReference = await _gitHubApiService.GetDefaultBranchRefrence(repository.Owner, repository.Name, prefixes[0], prefixes[1], repository.DefaultBranchName).ConfigureAwait(false);
 
                 var createBranchGiud = Guid.NewGuid();
-                var createBranchResult = await _gitHubGraphQLApiService.CreateBranch(repository.Id, repository.DefaultBranchPrefix + "WebTrends", repository.DefaultBranchOid, createBranchGiud).ConfigureAwait(false);
+                var createBranchResult = await _gitHubGraphQLApiService.CreateBranch(repository.Id, repository.DefaultBranchPrefix + "AddWebTrends", repository.DefaultBranchOid, createBranchGiud).ConfigureAwait(false);
 
-                if (createBranchResult.ClientMutationId != createBranchGiud.ToString())
+                if (createBranchResult.Result.ClientMutationId != createBranchGiud.ToString())
                     throw new Exception("Failed to Create New Branch");
             }
             catch (Exception e)

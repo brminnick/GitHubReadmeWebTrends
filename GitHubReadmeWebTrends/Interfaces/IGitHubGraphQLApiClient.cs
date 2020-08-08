@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Refit;
@@ -17,7 +16,7 @@ namespace VerifyGitHubReadmeLinks
         Task<GraphQLResponse<CreateBranchResponse>> CreateBranch([Body] CreateBranchMutationContent request);
     }
 
-    public class CreateBranchMutationContent : GraphQLRequest
+    class CreateBranchMutationContent : GraphQLRequest
     {
         const string createRef = "createRef";
 
@@ -34,14 +33,9 @@ namespace VerifyGitHubReadmeLinks
             public CreateBranchRequestModel(string repositoryId, string name, string oid, string clientMutationId)
             {
                 Oid = oid;
+                BranchName = name;
                 RepositoryId = repositoryId;
-                BranchName = name.Replace("/", "\\/");
                 ClientMutationId = clientMutationId;
-
-                var temp = JsonConvert.SerializeObject(BranchName);
-                var temp2 = JsonConvert.SerializeObject(name);
-
-                var temp3 = UrlEncoder.Default.EncodeUtf8(BranchName.tosp).ToString();
             }
 
             [JsonProperty("repositoryId")]

@@ -12,13 +12,8 @@ namespace VerifyGitHubReadmeLinks
 
         public GitHubGraphQLApiService(IGitHubGraphQLApiClient gitHubGraphQLApiClient) => _gitHubGraphQLApiClient = gitHubGraphQLApiClient;
 
-        public Task<CreateBranchResponse> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid)
-        {
-            var temp = new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid);
-            var serializedTemp = JsonConvert.SerializeObject(temp);
-
-            return ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranch(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
-        }
+        public Task<CreateBranchResponse> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranch(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
 
         public async IAsyncEnumerable<IEnumerable<Repository>> GetRepositories(string repositoryOwner, int numberOfRepositoriesPerRequest = 100)
         {
@@ -32,7 +27,7 @@ namespace VerifyGitHubReadmeLinks
             while (repositoryConnection?.PageInfo?.HasNextPage is true);
         }
 
-        static async Task<T> ExecuteGraphQLRequest<T>(Task<GraphQLResponse<T>> graphQLRequestTask, int numRetries = 2)
+        static async Task<T> ExecuteGraphQLRequest<T>(Task<GraphQLResponse<T>> graphQLRequestTask)
         {
             var response = await graphQLRequestTask.ConfigureAwait(false);
 
