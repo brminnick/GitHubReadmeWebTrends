@@ -16,22 +16,22 @@ namespace VerifyGitHubReadmeLinks
         [FunctionName(nameof(OpenPullRequestFunction))]
         public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
         {
-            try
-            {
-                var prefixes = repository.DefaultBranchPrefix.Split("/");
+            await ForkRepo(repository).ConfigureAwait(false);
+            await CreateNewBranch(repository, "AddWebTrends").ConfigureAwait(false);
+        }
 
-                var defaultBranchReference = await _gitHubApiService.GetDefaultBranchRefrence(repository.Owner, repository.Name, prefixes[0], prefixes[1], repository.DefaultBranchName).ConfigureAwait(false);
+        async Task ForkRepo(Repository repository)
+        {
+            throw new NotImplementedException();
+        }
 
-                var createBranchGiud = Guid.NewGuid();
-                var createBranchResult = await _gitHubGraphQLApiService.CreateBranch(repository.Id, repository.DefaultBranchPrefix + "AddWebTrends", repository.DefaultBranchOid, createBranchGiud).ConfigureAwait(false);
+        async Task CreateNewBranch(Repository repository, string branchName)
+        {
+            var createBranchGiud = Guid.NewGuid();
+            var createBranchResult = await _gitHubGraphQLApiService.CreateBranch(repository.Id, repository.DefaultBranchPrefix + branchName, repository.DefaultBranchOid, createBranchGiud).ConfigureAwait(false);
 
-                if (createBranchResult.Result.ClientMutationId != createBranchGiud.ToString())
-                    throw new Exception("Failed to Create New Branch");
-            }
-            catch (Exception e)
-            {
-
-            }
+            if (createBranchResult.Result.ClientMutationId != createBranchGiud.ToString())
+                throw new Exception("Failed to Create New Branch: \"AddWebTrends\"");
         }
     }
 }
