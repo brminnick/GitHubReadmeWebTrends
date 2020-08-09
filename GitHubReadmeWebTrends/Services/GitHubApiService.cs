@@ -14,6 +14,6 @@ namespace VerifyGitHubReadmeLinks
         public Task<RepositoryFile> OpenPullRequest(string gitHubUserName, string repositoryName) => _gitHubApiClient.OpenPullRequest(gitHubUserName, repositoryName);
         public Task<CreateForkResponseModel> CreateFork(string gitHubUserName, string repositoryName) => _gitHubApiClient.CreateFork(gitHubUserName, repositoryName);
         public Task<RepositoryFile> GetFile(string repositoryOwner, string repositoryName, string filePath, string branchName) => _gitHubApiClient.GetFile(repositoryOwner, repositoryName, filePath, branchName);
-        public Task<RepositoryFile> UpdateFile(string repositoryOwner, string repositoryName, string filePath, string branchName, UpdateFileContentModel updateFileContentMode) => _gitHubApiClient.UpdateFile(repositoryOwner, repositoryName, filePath, branchName, updateFileContentMode);
+        public Task<UpdateFileResponseModel> UpdateFile(string repositoryOwner, string repositoryName, string filePath, UpdateFileContentModel updateFileContentMode) => _gitHubApiClient.UpdateFile(repositoryOwner, repositoryName, filePath, updateFileContentMode);
     }
 }

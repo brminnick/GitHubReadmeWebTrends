@@ -4,8 +4,11 @@ namespace VerifyGitHubReadmeLinks
 {
     class UpdateFileContentModel
     {
-        public UpdateFileContentModel(string message, Committer committer, string content, string sha) =>
-            (CommitMessage, Committer, ContentAsBase64String, Sha) = (message, committer, content, sha);
+        public UpdateFileContentModel(string message, Committer committer, string content, string sha, string branch) =>
+            (CommitMessage, Committer, ContentAsBase64String, Sha, Branch) = (message, committer, content, sha, branch);
+
+        [JsonProperty("branch")]
+        public string Branch { get; }
 
         [JsonProperty("message")]
         public string CommitMessage { get; }
