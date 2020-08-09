@@ -2,9 +2,9 @@
 
 namespace VerifyGitHubReadmeLinks
 {
-    class CreateBranchResponse
+    class CreateBranchResponseModel
     {
-        public CreateBranchResponse(CreateBranchResult createRef) => Result = createRef;
+        public CreateBranchResponseModel(CreateBranchResult createRef) => Result = createRef;
 
         [JsonProperty("createRef")]
         public CreateBranchResult Result { get; }

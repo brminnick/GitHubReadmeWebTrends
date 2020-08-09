@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace VerifyGitHubReadmeLinks
 {
-    class RepositoryConnectionResponse
+    class RepositoriesConnectionResponse
     {
-        public RepositoryConnectionResponse(User_RepositoryConnectionResponse user)
+        public RepositoriesConnectionResponse(User_RepositoriesConnectionResponse user)
         {
             foreach (var repository in user.Repositories.RepositoryList)
             {
@@ -20,27 +20,28 @@ namespace VerifyGitHubReadmeLinks
         public PageInfo PageInfo { get; }
     }
 
-    class User_RepositoryConnectionResponse
+    class User_RepositoriesConnectionResponse
     {
-        public User_RepositoryConnectionResponse(string login, Repositories_RepositoryConnectionResponse repositories) =>
+        public User_RepositoriesConnectionResponse(string login, Repositories_RepositoriesConnectionResponse repositories) =>
             (Login, Repositories) = (login, repositories);
 
-        public Repositories_RepositoryConnectionResponse Repositories { get; }
+        public Repositories_RepositoriesConnectionResponse Repositories { get; }
         public string Login { get; }
     }
 
-    class Repositories_RepositoryConnectionResponse
+    class Repositories_RepositoriesConnectionResponse
     {
-        public Repositories_RepositoryConnectionResponse(IEnumerable<Repository_RepositoryConnectionResponse> nodes, PageInfo pageInfo) => (RepositoryList, PageInfo) = (nodes.ToList(), pageInfo);
+        public Repositories_RepositoriesConnectionResponse(IEnumerable<Repository_RepositoriesConnectionResponse> nodes, PageInfo pageInfo) =>
+            (RepositoryList, PageInfo) = (nodes.ToList(), pageInfo);
 
-        public List<Repository_RepositoryConnectionResponse> RepositoryList { get; }
+        public List<Repository_RepositoriesConnectionResponse> RepositoryList { get; }
 
         public PageInfo PageInfo { get; }
     }
 
-    class Repository_RepositoryConnectionResponse
+    class Repository_RepositoriesConnectionResponse
     {
-        public Repository_RepositoryConnectionResponse(string id, string name, bool isFork, DefaultBranchModel defaultBranchRef) =>
+        public Repository_RepositoriesConnectionResponse(string id, string name, bool isFork, DefaultBranchModel defaultBranchRef) =>
             (Id, Name, IsFork, DefaultBranch) = (id, name, isFork, defaultBranchRef);
 
         public string Id { get; }

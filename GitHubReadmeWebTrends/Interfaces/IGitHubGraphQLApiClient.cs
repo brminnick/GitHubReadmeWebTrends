@@ -10,10 +10,13 @@ namespace VerifyGitHubReadmeLinks
     interface IGitHubGraphQLApiClient
     {
         [Post("")]
+        Task<GraphQLResponse<RepositoriesConnectionResponse>> RepositoriesConnectionQuery([Body] RepositoriesConnectionQueryContent request);
+
+        [Post("")]
         Task<GraphQLResponse<RepositoryConnectionResponse>> RepositoryConnectionQuery([Body] RepositoryConnectionQueryContent request);
 
         [Post("")]
-        Task<GraphQLResponse<CreateBranchResponse>> CreateBranch([Body] CreateBranchMutationContent request);
+        Task<GraphQLResponse<CreateBranchResponseModel>> CreateBranch([Body] CreateBranchMutationContent request);
     }
 
     class CreateBranchMutationContent : GraphQLRequest
@@ -52,10 +55,19 @@ namespace VerifyGitHubReadmeLinks
         }
     }
 
+    class RepositoriesConnectionQueryContent : GraphQLRequest
+    {
+        public RepositoriesConnectionQueryContent(in string repositoryOwner, in string endCursorString, in int numberOfRepositoriesPerRequest = 100)
+            : base("query { user(login:\"" + repositoryOwner + "\")  { login, repositories(first:" + numberOfRepositoriesPerRequest + endCursorString + ") { nodes { id, name, isFork, defaultBranchRef { id, name, prefix, target { oid } } }, pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
+        {
+
+        }
+    }
+
     class RepositoryConnectionQueryContent : GraphQLRequest
     {
-        public RepositoryConnectionQueryContent(in string repositoryOwner, in string endCursorString, in int numberOfRepositoriesPerRequest = 100)
-            : base("query { user(login:\"" + repositoryOwner + "\")  { login, repositories(first:" + numberOfRepositoriesPerRequest + endCursorString + ") { nodes { id, name, isFork, defaultBranchRef { id, name, prefix, target { oid } } }, pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
+        public RepositoryConnectionQueryContent(in string repositoryOwner, in string repositoryName)
+            : base("query { user(login:\"" + repositoryOwner + "\") { login, repository(name:\"" + repositoryName + "\") id, name, defaultBranchRef { id, name, prefix, target { oid } } } } }")
         {
 
         }

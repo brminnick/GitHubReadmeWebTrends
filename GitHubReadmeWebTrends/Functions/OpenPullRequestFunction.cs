@@ -16,13 +16,17 @@ namespace VerifyGitHubReadmeLinks
         [FunctionName(nameof(OpenPullRequestFunction))]
         public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
         {
-            await ForkRepo(repository).ConfigureAwait(false);
-            await CreateNewBranch(repository, "AddWebTrends").ConfigureAwait(false);
+            var forkedRepository = await ForkRepository(repository).ConfigureAwait(false);
+            await CreateNewBranch(forkedRepository, "AddWebTrends").ConfigureAwait(false);
         }
 
-        async Task ForkRepo(Repository repository)
+        async Task<Repository> ForkRepository(Repository repository)
         {
-            throw new NotImplementedException();
+            var createForkResponse = await _gitHubApiService.CreateFork(repository.Owner, repository.Name).ConfigureAwait(false);
+
+            var forkedRepositoryResponse = await _gitHubGraphQLApiService.GetRepository(createForkResponse.OwnerLogin, createForkResponse.Name).ConfigureAwait(false);
+
+            return forkedRepositoryResponse.Repository;
         }
 
         async Task CreateNewBranch(Repository repository, string branchName)
