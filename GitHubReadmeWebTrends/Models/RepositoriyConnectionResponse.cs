@@ -4,8 +4,7 @@ namespace VerifyGitHubReadmeLinks
 {
     class RepositoryConnectionResponse
     {
-        public RepositoryConnectionResponse(User_RepositoryConnectionResponse user) =>
-            Repository = new Repository(user.Repository.Id, user.Repository.Owner, user.Repository.Name, user.Repository.DefaultBranchOid, user.Repository.DefaultBranchPrefix, user.Repository.ReadmeText, string.Empty);
+        public RepositoryConnectionResponse(User_RepositoryConnectionResponse user) => Repository = user.Repository;
 
         [JsonProperty("repository")]
         public Repository Repository { get; }

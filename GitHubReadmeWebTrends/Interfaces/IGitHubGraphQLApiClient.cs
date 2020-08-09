@@ -16,7 +16,10 @@ namespace VerifyGitHubReadmeLinks
         Task<GraphQLResponse<RepositoryConnectionResponse>> RepositoryConnectionQuery([Body] RepositoryConnectionQueryContent request);
 
         [Post("")]
-        Task<GraphQLResponse<CreateBranchResponseModel>> CreateBranch([Body] CreateBranchMutationContent request);
+        Task<GraphQLResponse<CreateBranchResponseModel>> CreateBranchQuery([Body] CreateBranchMutationContent request);
+
+        [Post("")]
+        Task<GraphQLResponse<GitHubViewerResponse>> ViewerLoginQuery([Body] ViewerLoginQueryContent request);
     }
 
     class CreateBranchMutationContent : GraphQLRequest
@@ -67,7 +70,15 @@ namespace VerifyGitHubReadmeLinks
     class RepositoryConnectionQueryContent : GraphQLRequest
     {
         public RepositoryConnectionQueryContent(in string repositoryOwner, in string repositoryName)
-            : base("query { user(login:\"" + repositoryOwner + "\") { login, repository(name:\"" + repositoryName + "\") id, name, defaultBranchRef { id, name, prefix, target { oid } } } } }")
+            : base("query { user(login:\"" + repositoryOwner + "\") { login, repository(name:\"" + repositoryName + "\"){ id, name, defaultBranchRef { id, name, prefix, target { oid } } } } }")
+        {
+
+        }
+    }
+
+    class ViewerLoginQueryContent : GraphQLRequest
+    {
+        public ViewerLoginQueryContent() : base("query { viewer { name, login, email } }")
         {
 
         }

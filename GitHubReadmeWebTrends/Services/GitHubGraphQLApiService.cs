@@ -12,10 +12,12 @@ namespace VerifyGitHubReadmeLinks
         public GitHubGraphQLApiService(IGitHubGraphQLApiClient gitHubGraphQLApiClient) => _gitHubGraphQLApiClient = gitHubGraphQLApiClient;
 
         public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
-            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranch(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranchQuery(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
 
         public Task<RepositoryConnectionResponse> GetRepository(string repositoryOwner, string repositoryName) =>
-            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryConnectionQuery(new RepositoryConnectionQueryContent(repositoryOwner, repositoryName));
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryConnectionQuery(new RepositoryConnectionQueryContent(repositoryOwner, repositoryName)));
+
+        public Task<GitHubViewerResponse> GetViewerInformation() => ExecuteGraphQLRequest(_gitHubGraphQLApiClient.ViewerLoginQuery(new ViewerLoginQueryContent()));
 
         public async IAsyncEnumerable<IEnumerable<Repository>> GetRepositories(string repositoryOwner, int numberOfRepositoriesPerRequest = 100)
         {
@@ -34,9 +36,9 @@ namespace VerifyGitHubReadmeLinks
             var response = await graphQLRequestTask.ConfigureAwait(false);
 
             if (response.Errors != null && response.Errors.Count() > 1)
-                throw new AggregateException(response.Errors.Select(x => new Exception(x.ToString())));
+                throw new AggregateException(response.Errors.Select(x => new Exception(x.Message)));
             else if (response.Errors != null && response.Errors.Any())
-                throw new Exception(response.Errors.First().ToString());
+                throw new Exception(response.Errors.First().Message.ToString());
 
             return response.Data;
         }

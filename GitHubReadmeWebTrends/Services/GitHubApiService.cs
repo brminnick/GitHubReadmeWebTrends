@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace VerifyGitHubReadmeLinks
@@ -14,5 +13,7 @@ namespace VerifyGitHubReadmeLinks
         public Task<RepositoryFile> GetReadme(string repositoryOwner, string repositoryName) => _gitHubApiClient.GetReadme(repositoryOwner, repositoryName);
         public Task<RepositoryFile> OpenPullRequest(string gitHubUserName, string repositoryName) => _gitHubApiClient.OpenPullRequest(gitHubUserName, repositoryName);
         public Task<CreateForkResponseModel> CreateFork(string gitHubUserName, string repositoryName) => _gitHubApiClient.CreateFork(gitHubUserName, repositoryName);
+        public Task<RepositoryFile> GetFile(string repositoryOwner, string repositoryName, string filePath, string branchName) => _gitHubApiClient.GetFile(repositoryOwner, repositoryName, filePath, branchName);
+        public Task<RepositoryFile> UpdateFile(string repositoryOwner, string repositoryName, string filePath, string branchName, UpdateFileContentModel updateFileContentMode) => _gitHubApiClient.UpdateFile(repositoryOwner, repositoryName, filePath, branchName, updateFileContentMode);
     }
 }
