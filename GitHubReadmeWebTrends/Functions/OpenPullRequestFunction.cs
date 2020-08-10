@@ -21,15 +21,22 @@ namespace VerifyGitHubReadmeLinks
         [FunctionName(nameof(OpenPullRequestFunction))]
         public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
         {
-            var branchName = $"AddWebTrends {DateTimeOffset.UtcNow:yyyy-MM}";
+            var branchName = $"AddWebTrends-{DateTimeOffset.UtcNow:yyyy-MM}";
 
             var forkedRepository = await ForkRepository(repository).ConfigureAwait(false);
 
+
             await CreateNewBranch(forkedRepository, branchName).ConfigureAwait(false);
+
+            log.LogInformation($"Create New Branch for {forkedRepository.Owner} {forkedRepository.Name}");
 
             await CommitUpdatedReadme(forkedRepository, branchName).ConfigureAwait(false);
 
-            await OpenPullRequest(forkedRepository, branchName);
+            log.LogInformation($"Commited Readme Updates for {forkedRepository.Owner} {forkedRepository.Name}");
+
+            await OpenPullRequest(forkedRepository, repository, branchName).ConfigureAwait(false);
+
+            log.LogInformation($"Open Pull Request for {forkedRepository.Owner} {forkedRepository.Name}");
         }
 
         async Task CommitUpdatedReadme(Repository forkedRepository, string branchName)
@@ -50,14 +57,18 @@ namespace VerifyGitHubReadmeLinks
                                                                 forkedReameFile_AddWebTrendsBranch.Sha,
                                                                 branchName);
 
-            var temp = JsonConvert.SerializeObject(updateFileContent);
-
             var updateFileResponse = await _gitHubApiService.UpdateFile(forkedRepository.Owner, forkedRepository.Name, forkedReameFile_AddWebTrendsBranch.Path, updateFileContent).ConfigureAwait(false);
         }
 
-        async Task OpenPullRequest(Repository forkedRepository, string branchName)
+        async Task OpenPullRequest(Repository forkedRepository, Repository originalRepository, string branchName)
         {
-            throw new NotImplementedException();
+            const string pullRequestBody = "TBD";
+
+            var createPullRequestGuid = Guid.NewGuid();
+
+            var createPullRequestResult = await _gitHubGraphQLApiService.CreatePullRequest(forkedRepository.Id, originalRepository.DefaultBranchName, branchName, "Add Web Trends", pullRequestBody, createPullRequestGuid).ConfigureAwait(false);
+            if (createPullRequestResult.Result.ClientMutationId != createPullRequestGuid.ToString())
+                throw new Exception($"Failed to Create New Pull Request for \"{forkedRepository.Name}\"");
         }
 
         async Task<Repository> ForkRepository(Repository repository)
@@ -85,7 +96,7 @@ namespace VerifyGitHubReadmeLinks
                 var createBranchResult = await _gitHubGraphQLApiService.CreateBranch(repository.Id, repository.DefaultBranchPrefix + branchName, repository.DefaultBranchOid, createBranchGiud).ConfigureAwait(false);
 
                 if (createBranchResult.Result.ClientMutationId != createBranchGiud.ToString())
-                    throw new Exception($"Failed to Create New Branch: \"{branchName}\"");
+                    throw new Exception($"Failed to Create New Branch for \"{repository.Name}\"");
             }
             catch (Exception e) when (e.Message.Contains(alreadyExistsExceptionMessage))
             {
