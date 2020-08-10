@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Refit;
 
 namespace VerifyGitHubReadmeLinks
 {
@@ -35,9 +36,16 @@ namespace VerifyGitHubReadmeLinks
 
             log.LogInformation($"Commited Readme Updates for {forkedRepository.Owner} {forkedRepository.Name}");
 
-            await OpenPullRequest(forkedRepository, repository, branchName).ConfigureAwait(false);
+            try
+            {
+                await OpenPullRequest(forkedRepository, repository, branchName).ConfigureAwait(false);
 
-            log.LogInformation($"Open Pull Request for {forkedRepository.Owner} {forkedRepository.Name}");
+                log.LogInformation($"Opened Pull Request from {forkedRepository.Owner} {forkedRepository.Name} to {repository.Owner} {repository.Name}");
+            }
+            catch(ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.Conflict)
+            {
+                //If a Pull Request with the same name is already open, GitHubGraphQLApiService.CreatePullRequest will return a 409 Conflict
+            }
         }
 
         async Task CommitUpdatedReadme(Repository forkedRepository, string branchName)
@@ -76,7 +84,7 @@ namespace VerifyGitHubReadmeLinks
 
             var createPullRequestGuid = Guid.NewGuid();
 
-            var createPullRequestResult = await _gitHubGraphQLApiService.CreatePullRequest(forkedRepository.Id, originalRepository.DefaultBranchName, branchName, "Add Web Trends", pullRequestBody, createPullRequestGuid).ConfigureAwait(false);
+            var createPullRequestResult = await _gitHubGraphQLApiService.CreatePullRequest(forkedRepository.Id, originalRepository.DefaultBranchName, branchName, branchName, pullRequestBody, createPullRequestGuid).ConfigureAwait(false);
             if (createPullRequestResult.Result.ClientMutationId != createPullRequestGuid.ToString())
                 throw new Exception($"Failed to Create New Pull Request for \"{forkedRepository.Name}\"");
         }

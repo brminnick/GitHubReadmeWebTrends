@@ -18,8 +18,8 @@ namespace VerifyGitHubReadmeLinks
         }
 
         [FunctionName(nameof(GetReadmeFunction))]
-        [return: Queue(QueueConstants.VerifyWebTrendsQueue)]
-        public async Task<(Repository, CloudAdvocateGitHubUserModel)> Run([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log)
+        public async Task Run([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
+                                [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> outputData)
         {
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
@@ -30,15 +30,16 @@ namespace VerifyGitHubReadmeLinks
                 var readmeFile = await _gitHubApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
                 var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
 
-                log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
+                outputData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, readmeText), gitHubUser));
 
-                return (new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, readmeText), gitHubUser);
+                log.LogInformation($"Found Readme for {repository.Owner} {repository.Name}");
             }
-            catch (Exception e)
+            catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
             {
-                log.LogError(e, e.Message);
-                throw;
+                //If a Readme doesn't exist, GitHubApiService.GetReadme will return a 404 Not Found response
             }
+
+            log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
         }
     }
 }
