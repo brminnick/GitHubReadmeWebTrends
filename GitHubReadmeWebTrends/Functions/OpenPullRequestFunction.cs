@@ -25,6 +25,7 @@ namespace VerifyGitHubReadmeLinks
 
             var forkedRepository = await ForkRepository(repository).ConfigureAwait(false);
 
+            log.LogInformation($"Forked Repository for {repository.Owner} {repository.Name}");
 
             await CreateNewBranch(forkedRepository, branchName).ConfigureAwait(false);
 
