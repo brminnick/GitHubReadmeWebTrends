@@ -21,7 +21,8 @@ namespace VerifyGitHubReadmeLinks
             "visualstudio.com"
         };
 
-        static readonly Regex _regex = new Regex(@"(((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)");
+        static readonly Regex _urlRegex = new Regex(@"(((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)");
+        static readonly Regex _localeRegex = new Regex("^/\\w{2}-\\w{2}");
 
         [FunctionName(nameof(VerifyWebTrendsFunction))]
         public static void Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
@@ -31,7 +32,7 @@ namespace VerifyGitHubReadmeLinks
 
             var (repository, gitHubUser) = data;
 
-            var updatedReadme = _regex.Replace(repository.ReadmeText, x => AppendTrackingInfo(x.Groups[0].Value, repository.Name.Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias));
+            var updatedReadme = _urlRegex.Replace(repository.ReadmeText, x => AppendTrackingInfo(x.Groups[0].Value, repository.Name.Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias));
 
             if (!updatedReadme.Equals(repository.ReadmeText))
             {
@@ -46,12 +47,15 @@ namespace VerifyGitHubReadmeLinks
         {
             foreach (var domain in _microsoftDomainsList)
             {
+                //Include Microsoft Domains
+                //Exclude Email Addresses, e.g. bramin@microsoft.com
+                //Exclue existing WebTrends queries
                 if (link.Contains(domain) && !link.Contains('@') && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase))
                 {
                     var uriBuilder = new UriBuilder(link);
 
-                    AddTrackingCode(uriBuilder, eventName, channel, alias);
-                    RemoveLocale(uriBuilder);
+                    uriBuilder.AddTrackingCode(eventName, channel, alias);
+                    uriBuilder.RemoveLocale();
 
                     if (uriBuilder.Scheme is "http")
                         uriBuilder.Scheme = "https";
@@ -63,13 +67,9 @@ namespace VerifyGitHubReadmeLinks
             return link;
         }
 
-        static void RemoveLocale(in UriBuilder builder)
-        {
-            var localeMatcher = new Regex("^/\\w{2}-\\w{2}");
-            builder.Path = localeMatcher.Replace(builder.Path, string.Empty);
-        }
+        static void RemoveLocale(this UriBuilder builder) => builder.Path = _localeRegex.Replace(builder.Path, string.Empty);
 
-        static void AddTrackingCode(in UriBuilder builder, in string eventName, in string channel, in string alias)
+        static void AddTrackingCode(this UriBuilder builder, in string eventName, in string channel, in string alias)
         {
             var webTrendsQueryValue = $"{eventName}-{channel}-{alias}";
 
