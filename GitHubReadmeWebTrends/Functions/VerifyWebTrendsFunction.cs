@@ -12,6 +12,8 @@ namespace VerifyGitHubReadmeLinks
     //Inspired by https://github.com/spboyer/ca-readme-tracking-links-action/
     static class VerifyWebTrendsFunction
     {
+        const string _webTrendsQueryKey = "WT.mc_id";
+
         static readonly IReadOnlyList<string> _microsoftDomainsList = new[]
         {
             "microsoft.com",
@@ -44,7 +46,7 @@ namespace VerifyGitHubReadmeLinks
         {
             foreach (var domain in _microsoftDomainsList)
             {
-                if (link.Contains(domain) && !link.Contains('@'))
+                if (link.Contains(domain) && !link.Contains('@') && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase))
                 {
                     var uriBuilder = new UriBuilder(link);
 
@@ -69,12 +71,11 @@ namespace VerifyGitHubReadmeLinks
 
         static void AddTrackingCode(in UriBuilder builder, in string eventName, in string channel, in string alias)
         {
-            const string trackingName = "WT.mc_id";
-            string trackingCode = $"{eventName}-{channel}-{alias}";
+            var webTrendsQueryValue = $"{eventName}-{channel}-{alias}";
 
             var queryStringDictionary = QueryHelpers.ParseQuery(builder.Query);
-            queryStringDictionary.Remove(trackingName);
-            queryStringDictionary.Add(trackingName, trackingCode);
+            queryStringDictionary.Remove(_webTrendsQueryKey);
+            queryStringDictionary.Add(_webTrendsQueryKey, webTrendsQueryValue);
 
             var queryBuilder = new QueryBuilder(queryStringDictionary.SelectMany(x => x.Value, (c, v) => new KeyValuePair<string, string>(c.Key, v)).ToList());
             builder.Query = queryBuilder.ToQueryString().ToString();
