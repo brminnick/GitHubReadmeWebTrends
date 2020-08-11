@@ -18,7 +18,8 @@ namespace VerifyGitHubReadmeLinks
         {
             "microsoft.com",
             "msdn.com",
-            "visualstudio.com"
+            "visualstudio.com",
+            "azure.com"
         };
 
         static readonly Regex _urlRegex = new Regex(@"(((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)");
@@ -26,7 +27,7 @@ namespace VerifyGitHubReadmeLinks
 
         [FunctionName(nameof(VerifyWebTrendsFunction))]
         public static void Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
-                                        [Queue(QueueConstants.OpenPullRequestQueue)] ICollector<Repository> openPullRequestCollector)
+                                 [Queue(QueueConstants.OpenPullRequestQueue)] ICollector<Repository> openPullRequestCollector)
         {
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Started");
 
@@ -50,7 +51,14 @@ namespace VerifyGitHubReadmeLinks
                 //Include Microsoft Domains
                 //Exclude Email Addresses, e.g. bramin@microsoft.com
                 //Exclue existing WebTrends queries
-                if (link.Contains(domain) && !link.Contains('@') && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase))
+                //Exclude Azure DevOps Build Status Badges
+                //Exclude AppCenter Build Status Badges
+                //Exclude XAML Namespace
+                if (link.Contains(domain)
+                    && !link.Contains('@')
+                    && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase)
+                    && !(link.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build", StringComparison.OrdinalIgnoreCase) && link.Contains("status", StringComparison.OrdinalIgnoreCase))
+                    && !(link.Contains("schemas.microsoft.com", StringComparison.OrdinalIgnoreCase) && link.Contains("xaml", StringComparison.OrdinalIgnoreCase)))
                 {
                     var uriBuilder = new UriBuilder(link);
 
