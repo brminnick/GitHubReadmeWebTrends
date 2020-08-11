@@ -8,4 +8,4 @@ This is an automated tool created using [Azure Functions](https://docs.microsoft
 
 ## Architecture
 
-![](https://user-images.githubusercontent.com/13558917/89844969-1081a100-db32-11ea-80e0-118004affbfe.png)
+![](https://user-images.githubusercontent.com/13558917/89959435-40dc4480-dbf1-11ea-8c30-a4811fe819e9.png)
