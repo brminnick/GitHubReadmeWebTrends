@@ -12,6 +12,10 @@ namespace VerifyGitHubReadmeLinks
     {
         const string _runOncePerMonth = "0 0 5 * * *";
 
+#if DEBUG
+        readonly IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer" };
+#endif
+
         readonly HttpClient _httpClient;
         readonly YamlService _yamlService;
         readonly GitHubApiService _gitHubApiService;
@@ -28,7 +32,7 @@ namespace VerifyGitHubReadmeLinks
             await foreach (var gitHubUser in GetAzureAdvocates(log).ConfigureAwait(false))
             {
 #if DEBUG
-                if (gitHubUser.MicrosoftAlias != "bramin")
+                if (!_betaTesterAliases.Contains(gitHubUser.MicrosoftAlias))
                     continue;
 
                 log.LogInformation("Brandon Minnick Found");

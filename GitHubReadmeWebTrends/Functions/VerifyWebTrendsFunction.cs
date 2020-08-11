@@ -57,7 +57,7 @@ namespace VerifyGitHubReadmeLinks
                 if (link.Contains(domain)
                     && !link.Contains('@')
                     && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase)
-                    && !(link.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build", StringComparison.OrdinalIgnoreCase) && link.Contains("status", StringComparison.OrdinalIgnoreCase))
+                    && !(link.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build", StringComparison.OrdinalIgnoreCase))
                     && !(link.Contains("schemas.microsoft.com", StringComparison.OrdinalIgnoreCase) && link.Contains("xaml", StringComparison.OrdinalIgnoreCase)))
                 {
                     var uriBuilder = new UriBuilder(link);
