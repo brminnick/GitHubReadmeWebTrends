@@ -13,7 +13,7 @@ namespace VerifyGitHubReadmeLinks
         const string _runOncePerMonth = "0 0 5 * * *";
 
 #if DEBUG
-        readonly IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer" };
+        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer" };
 #endif
 
         readonly HttpClient _httpClient;

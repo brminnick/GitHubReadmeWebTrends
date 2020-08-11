@@ -42,9 +42,13 @@ namespace VerifyGitHubReadmeLinks
 
                 log.LogInformation($"Opened Pull Request from {forkedRepository.Owner} {forkedRepository.Name} to {repository.Owner} {repository.Name}");
             }
-            catch(ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.Conflict)
+            catch (ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.Conflict)
             {
-                //If a Pull Request with the same name is already open, GitHubGraphQLApiService.CreatePullRequest will return a 409 Conflict
+                //If a Pull Request with the same name is already open, GitHubGraphQLApiService.CreatePullRequest may return a 409 Conflict
+            }
+            catch (Exception e) when (e.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                //If a Pull Request with the same name is already open, GitHubGraphQLApiService.CreatePullRequest may return "A pull request already exists..."
             }
         }
 
