@@ -9,7 +9,7 @@ namespace VerifyGitHubReadmeLinks
 
         public GitHubApiService(IGitHubApiClient gitHubApiClient) => _gitHubApiClient = gitHubApiClient;
 
-        public Task<List<RepositoryFile>> GetAllAdvocateFiles() => _gitHubApiClient.GetAllAdvocateFiles();
+        public Task<IReadOnlyList<RepositoryFile>> GetAllAdvocateFiles() => _gitHubApiClient.GetAllAdvocateFiles();
         public Task<RepositoryFile> GetReadme(string repositoryOwner, string repositoryName) => _gitHubApiClient.GetReadme(repositoryOwner, repositoryName);
         public Task<RepositoryFile> OpenPullRequest(string gitHubUserName, string repositoryName) => _gitHubApiClient.OpenPullRequest(gitHubUserName, repositoryName);
         public Task<CreateForkResponseModel> CreateFork(string gitHubUserName, string repositoryName) => _gitHubApiClient.CreateFork(gitHubUserName, repositoryName);

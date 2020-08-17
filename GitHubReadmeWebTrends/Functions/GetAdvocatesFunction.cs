@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace VerifyGitHubReadmeLinks
         const string _runOncePerMonth = "0 0 5 * * *";
 
 #if DEBUG
-        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer" };
+        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin" };
 #endif
 
         readonly HttpClient _httpClient;
@@ -35,7 +36,7 @@ namespace VerifyGitHubReadmeLinks
                 if (!_betaTesterAliases.Contains(gitHubUser.MicrosoftAlias))
                     continue;
 
-                log.LogInformation("Brandon Minnick Found");
+                log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
 #endif
                 advocateModels.Add(gitHubUser);
             }

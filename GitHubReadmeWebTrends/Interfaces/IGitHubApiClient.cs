@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Refit;
 
@@ -9,7 +8,7 @@ namespace VerifyGitHubReadmeLinks
     interface IGitHubApiClient
     {
         [Get("/repos/MicrosoftDocs/cloud-developer-advocates/contents/advocates")]
-        public Task<List<RepositoryFile>> GetAllAdvocateFiles();
+        public Task<IReadOnlyList<RepositoryFile>> GetAllAdvocateFiles();
 
         [Get("/repos/{owner}/{repo}/readme")]
         public Task<RepositoryFile> GetReadme([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);

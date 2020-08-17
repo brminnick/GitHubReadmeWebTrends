@@ -7,16 +7,19 @@ namespace VerifyGitHubReadmeLinks
     {
         public RepositoriesConnectionResponse(User_RepositoriesConnectionResponse user)
         {
+            var repositoryList = new List<Repository>();
+
             foreach (var repository in user.Repositories.RepositoryList)
             {
                 if (!repository.IsFork && !RepositoryList.Any(x => x.Name == repository.Name && x.Owner == user.Login))
-                    RepositoryList.Add(new Repository(repository.Id, user.Login, repository.Name, repository.DefaultBranch));
+                    repositoryList.Add(new Repository(repository.Id, user.Login, repository.Name, repository.DefaultBranch));
             }
 
+            RepositoryList = repositoryList;
             PageInfo = user.Repositories.PageInfo;
         }
 
-        public List<Repository> RepositoryList { get; } = Enumerable.Empty<Repository>().ToList();
+        public IReadOnlyList<Repository> RepositoryList { get; }
         public PageInfo PageInfo { get; }
     }
 

@@ -26,7 +26,7 @@ namespace VerifyGitHubReadmeLinks
         public Image Image { get; set; } = new Image();
 
         [YamlMember(Alias = "connect")]
-        public List<Connect> Connect { get; set; } = Enumerable.Empty<Connect>().ToList();
+        public IReadOnlyList<Connect> Connect { get; set; } = new List<Connect>();
 
         [YamlMember(Alias = "location")]
         public Location Location { get; set; } = new Location();
