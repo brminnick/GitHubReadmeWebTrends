@@ -9,3 +9,12 @@ This is an automated tool created using [Azure Functions](https://docs.microsoft
 ## Architecture
 
 ![](https://user-images.githubusercontent.com/13558917/89959435-40dc4480-dbf1-11ea-8c30-a4811fe819e9.png)
+
+## QA 
+
+How do I opt-in to the tool? (Prerequisite: You must be a Microsoft employee)
+- Add a `yml` file to the [Cloud Developer Advocates GitHub repository](https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates) 
+- This also adds you to the [Cloud Advacates Webpage](https://developer.microsoft.com/advocates/?WT.mc_id=githubreadmewebtrends-github-bramin)
+
+How do I opt-out from the tool? 
+- Remove your `yml` file from the [Cloud Developer Advocates GitHub repository](https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates) 
