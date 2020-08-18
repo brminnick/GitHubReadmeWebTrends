@@ -52,12 +52,14 @@ namespace VerifyGitHubReadmeLinks
                 //Exclude Email Addresses, e.g. bramin@microsoft.com
                 //Exclue existing WebTrends queries
                 //Exclude Azure DevOps Build Status Badges
+                //Exclude Azure DevOps Build Status Badges
                 //Exclude AppCenter Build Status Badges
                 //Exclude XAML Namespace
                 if (link.Contains(domain)
                     && !link.Contains('@')
                     && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase)
-                    && !(link.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build", StringComparison.OrdinalIgnoreCase))
+                    && !(link.Contains("dev.azure.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build/status", StringComparison.OrdinalIgnoreCase))
+                    && !(link.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build/status", StringComparison.OrdinalIgnoreCase))
                     && !(link.Contains("schemas.microsoft.com", StringComparison.OrdinalIgnoreCase) && link.Contains("xaml", StringComparison.OrdinalIgnoreCase)))
                 {
                     var uriBuilder = new UriBuilder(link);

@@ -39,7 +39,7 @@ namespace VerifyGitHubReadmeLinks
                 logger.LogError(e, $"Invalid YAML File Found\n{file}");
                 return null;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogError(e, $"Unknown Error, {e}\n{file}");
                 return null;

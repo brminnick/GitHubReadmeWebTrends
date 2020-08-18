@@ -11,10 +11,10 @@ namespace VerifyGitHubReadmeLinks
 {
     class GetAdvocatesFunction
     {
-        const string _runOncePerMonth = "0 0 5 * * *";
+        const string _runOncePerMonth = "0 0 0 5 * *";
 
 #if DEBUG
-        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin" };
+        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin", "jopapa" };
 #endif
 
         readonly HttpClient _httpClient;
