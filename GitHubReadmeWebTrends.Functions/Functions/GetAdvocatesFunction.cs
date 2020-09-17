@@ -25,7 +25,7 @@ namespace VerifyGitHubReadmeLinks.Functions
             (_gitHubApiService, _yamlService, _httpClient) = (gitHubApiService, yamlService, httpClientFactory.CreateClient());
 
         [FunctionName(nameof(GetAdvocatesFunction))]
-        public async Task Run([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
+        public async Task RunTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
@@ -72,7 +72,7 @@ namespace VerifyGitHubReadmeLinks.Functions
 
                 var file = await downloadFileTask.ConfigureAwait(false);
 
-                if (file != null)
+                if (file != null && file.StartsWith("### YamlMime:Profile") && !file.StartsWith("### YamlMime:ProfileList"))
                     yield return file;
             }
         }
