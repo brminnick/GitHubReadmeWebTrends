@@ -1,0 +1,9 @@
+{
+    "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "Token": "335166a467d4e82f65afd42d2f594613ebf1aecb",
+    "BackupEmailAddress": "13558917+brminnick@users.noreply.github.com"
+  }
+}
