@@ -1,94 +1,116 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Common
 {
     public class OptOutDatabase
     {
         readonly static string _connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString") ?? string.Empty;
+        readonly ILogger _logger;
 
-        public List<OptOutModel> GetAllOptOutModels(Func<OptOutModel, bool> wherePredicate)
+        public OptOutDatabase(ILogger logger) => _logger = logger;
+
+        public List<OptOutModel> GetAllOptOutModels(Func<IOptOutModel, bool> wherePredicate)
         {
             using var connection = new DatabaseContext();
 
-            return connection.OptOutDatabaseModel?.Where(wherePredicate).ToList() ?? new List<OptOutModel>();
+            var optOutDatabaseList = connection.OptOutDatabaseModel?.Where(x => wherePredicate.Invoke(x)).ToList() ?? Enumerable.Empty<OptOutDatabaseModel>();
+            return optOutDatabaseList.Select(x => OptOutDatabaseModel.ToOptOutModel(x)).ToList();
         }
 
-        public List<OptOutModel> GetAllOptOutModels() => GetAllOptOutModels(x => true);
+        public List<OptOutModel> GetAllOptOutModels() => GetAllOptOutModels(_ => true);
 
-        public Task<OptOutModel> GetOptOutModel(string id)
+        public async Task<OptOutModel> GetOptOutModel(string id)
         {
-            return PerformDatabaseFunction(getOptOutModelFunction);
+            var optOutDatabaseModel = await PerformDatabaseFunction(context => getOptOutModelFunction(context, id), _logger).ConfigureAwait(false);
+            return OptOutDatabaseModel.ToOptOutModel(optOutDatabaseModel);
 
-            Task<OptOutModel> getOptOutModelFunction(DatabaseContext dataContext) => dataContext.OptOutDatabaseModel.SingleAsync(x => x.Id.Equals(id));
+            static Task<OptOutDatabaseModel> getOptOutModelFunction(DatabaseContext dataContext, string id) => dataContext.OptOutDatabaseModel.SingleAsync(x => x.Id.Equals(id));
         }
 
-        public Task<OptOutModel> InsertOptOutModel(OptOutModel contact)
+        public async Task<OptOutModel> InsertOptOutModel(OptOutModel optOutModel)
         {
-            return PerformDatabaseFunction(insertOptOutModelFunction);
+            var optOutDatabaseModel = await PerformDatabaseFunction(context => insertOptOutModelFunction(context, optOutModel), _logger).ConfigureAwait(false);
 
-            async Task<OptOutModel> insertOptOutModelFunction(DatabaseContext dataContext)
+            return OptOutDatabaseModel.ToOptOutModel(optOutDatabaseModel);
+
+            static async Task<OptOutDatabaseModel> insertOptOutModelFunction(DatabaseContext dataContext, OptOutModel optOutModel)
             {
-                if (string.IsNullOrWhiteSpace(contact.Id))
-                    contact.Id = Guid.NewGuid().ToString();
+                var optOutDatabaseModel = OptOutDatabaseModel.ToOptOutDatabaseModel(optOutModel);
 
-                contact.CreatedAt = DateTimeOffset.UtcNow;
-                contact.UpdatedAt = DateTimeOffset.UtcNow;
+                var entityEntry = await dataContext.AddAsync(optOutDatabaseModel).ConfigureAwait(false);
 
-                await dataContext.AddAsync(contact).ConfigureAwait(false);
-
-                return contact;
+                return entityEntry.Entity;
             }
         }
 
-        public OptOutModel PatchOptOutModel(OptOutModel optOutModel)
+        public async Task<OptOutModel> PatchOptOutModel(OptOutModel optOutModel)
         {
-            return PerformDatabaseFunction(patchOptOutModelFunction);
+            var optOutDatabaseModel = await PerformDatabaseFunction(context => patchOptOutModelFunction(context, optOutModel), _logger).ConfigureAwait(false);
 
-            OptOutModel patchOptOutModelFunction(DatabaseContext dataContext)
+            return OptOutDatabaseModel.ToOptOutModel(optOutDatabaseModel);
+
+            static OptOutDatabaseModel patchOptOutModelFunction(DatabaseContext dataContext, OptOutModel optOutModel)
             {
-                dataContext.Update(optOutModel);
+                var entityEntry = dataContext.Update(OptOutDatabaseModel.ToOptOutDatabaseModel(optOutModel));
 
-                return optOutModel;
+                return entityEntry.Entity;
             }
         }
 
-        internal Task<OptOutModel> RemoveOptOutModel(string id)
+        internal async Task<OptOutModel> RemoveOptOutModel(string id)
         {
-            return PerformDatabaseFunction(removeContactDatabaseFunction);
+            var optOutDatabaseModel = await PerformDatabaseFunction(context => removeContactDatabaseFunction(context, id), _logger).ConfigureAwait(false);
+            return OptOutDatabaseModel.ToOptOutModel(optOutDatabaseModel);
 
-            async Task<OptOutModel> removeContactDatabaseFunction(DatabaseContext dataContext)
+            static async Task<OptOutDatabaseModel> removeContactDatabaseFunction(DatabaseContext dataContext, string id)
             {
-                var answerModelFromDatabase = await dataContext.OptOutDatabaseModel.SingleAsync(x => x.Id.Equals(id)).ConfigureAwait(false);
+                var optOutDatabaseModel = await dataContext.OptOutDatabaseModel.SingleAsync(x => x.Id.Equals(id)).ConfigureAwait(false);
 
-                dataContext.Remove(answerModelFromDatabase);
+                var entityEntry = dataContext.Remove(optOutDatabaseModel);
 
-                return answerModelFromDatabase;
+                return entityEntry.Entity;
             }
         }
 
-        static async Task<TResult> PerformDatabaseFunction<TResult>(Func<DatabaseContext, Task<TResult>> databaseFunction) where TResult : class
+        static async Task<TResult> PerformDatabaseFunction<TResult>(Func<DatabaseContext, TResult> databaseFunction, ILogger logger) where TResult : class
         {
             using var connection = new DatabaseContext();
 
             try
             {
-                var result = await databaseFunction.Invoke(connection).ConfigureAwait(false);
+                var result = databaseFunction(connection);
                 await connection.SaveChangesAsync().ConfigureAwait(false);
 
                 return result;
             }
             catch (Exception e)
             {
-                Debug.WriteLine("");
-                Debug.WriteLine(e.Message);
-                Debug.WriteLine(e.ToString());
-                Debug.WriteLine("");
+                logger.LogError(e, e.Message);
+                throw;
+            }
+        }
 
+        static async Task<TResult> PerformDatabaseFunction<TResult>(Func<DatabaseContext, Task<TResult>> databaseFunction, ILogger logger) where TResult : class
+        {
+            using var connection = new DatabaseContext();
+
+            try
+            {
+                var result = await databaseFunction(connection).ConfigureAwait(false);
+                await connection.SaveChangesAsync().ConfigureAwait(false);
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
                 throw;
             }
         }
@@ -104,11 +126,30 @@ namespace GitHubReadmeWebTrends.Common
 
         class OptOutDatabaseModel : IOptOutModel
         {
+            [Key, DatabaseGenerat‌ed(DatabaseGeneratedOp‌​tion.Identity)]
             public Guid Id { get; set; }
+
             public string Alias { get; set; } = string.Empty;
+
             public bool HasOptedOut { get; set; }
+
+            [DatabaseGenerat‌ed(DatabaseGeneratedOp‌​tion.Identity)]
             public DateTimeOffset CreatedAt { get; set; }
+
+            [DatabaseGenerat‌ed(DatabaseGeneratedOp‌​tion.Computed)]
             public DateTimeOffset UpdatedAt { get; set; }
+
+            public static OptOutModel ToOptOutModel(OptOutDatabaseModel optOutDatabaseModel) =>
+                new OptOutModel(optOutDatabaseModel.Id, optOutDatabaseModel.Alias, optOutDatabaseModel.HasOptedOut, optOutDatabaseModel.CreatedAt, optOutDatabaseModel.UpdatedAt);
+
+            public static OptOutDatabaseModel ToOptOutDatabaseModel(OptOutModel optOutModel) => new OptOutDatabaseModel
+            {
+                Id = optOutModel.Id,
+                Alias = optOutModel.Alias,
+                HasOptedOut = optOutModel.HasOptedOut,
+                CreatedAt = optOutModel.CreatedAt,
+                UpdatedAt = optOutModel.UpdatedAt
+            };
         }
     }
 }

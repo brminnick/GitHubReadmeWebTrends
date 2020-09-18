@@ -20,7 +20,7 @@ namespace GitHubReadmeWebTrends.Common
         public DateTimeOffset UpdatedAt { get; }
     }
 
-    interface IOptOutModel
+    public interface IOptOutModel
     {
         Guid Id { get; }
         string Alias { get; }
