@@ -122,6 +122,12 @@ namespace GitHubReadmeWebTrends.Common
             public DbSet<OptOutDatabaseModel>? OptOutDatabaseModel { get; set; }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(_connectionString);
+
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                modelBuilder.Entity<OptOutDatabaseModel>().Property(b => b.CreatedAt).HasDefaultValue(DateTimeOffset.UtcNow);
+                modelBuilder.Entity<OptOutDatabaseModel>().Property(b => b.UpdatedAt).HasDefaultValue(DateTimeOffset.UtcNow);
+            }
         }
 
         class OptOutDatabaseModel : IOptOutModel
