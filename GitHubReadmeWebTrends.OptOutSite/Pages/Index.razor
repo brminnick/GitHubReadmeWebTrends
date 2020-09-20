@@ -1,6 +1,62 @@
-﻿@page "/"
+﻿@namespace GitHubReadmeWebTrends.Common
+
+@page "/"
 
 <h1>Opt Out</h1>
 <h2>GitHub Readme Links</h2>
 
-@*Add Logic to see if they are currently opted out / in and display the button appropriately*@
+<button @onclick="HandleOptOutButtonClicked">@OptOutText: bramin</button>
+
+@code
+{
+    const string _optOutText = "Opt-Out";
+    const string _optInText = "Opt-In";
+
+    readonly OptOutDatabase _optOutDatabase;
+
+    OptOutModel? _userOptOutModel;
+
+    public Index(OptOutDatabase optOutDatabase) => _optOutDatabase = optOutDatabase;
+
+    public string OptOutText { get; private set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync().ConfigureAwait(false);
+
+        var optOutModelList = _optOutDatabase.GetAllOptOutModels();
+
+        _userOptOutModel = optOutModelList.FirstOrDefault(x => x.Alias is "bramin");
+
+        UpdateOptOutButtonText();
+    }
+
+    void UpdateOptOutButtonText()
+    {
+        OptOutText = _userOptOutModel switch
+        {
+            { HasOptedOut: true } => _optInText,
+            _ => _optOutText
+        };
+    }
+
+    async void HandleOptOutButtonClicked()
+    {
+        var updatedOptOutModel = _userOptOutModel?.HasOptedOut switch
+        {
+            true => new OptOutModel(_userOptOutModel.Id, _userOptOutModel.Alias, false, _userOptOutModel.CreatedAt, _userOptOutModel.UpdatedAt),
+            false => new OptOutModel(_userOptOutModel.Id, _userOptOutModel.Alias, true, _userOptOutModel.CreatedAt, _userOptOutModel.UpdatedAt),
+            _ => new OptOutModel(Guid.NewGuid(), "bramin", true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
+        };
+
+        var savedOptOutModel = _userOptOutModel switch
+        {
+            null => await _optOutDatabase.InsertOptOutModel(updatedOptOutModel).ConfigureAwait(false),
+            _ => await _optOutDatabase.PatchOptOutModel(updatedOptOutModel).ConfigureAwait(false)
+        };
+
+        _userOptOutModel = savedOptOutModel;
+
+        UpdateOptOutButtonText();
+    }
+}
