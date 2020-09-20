@@ -1,4 +1,5 @@
 ﻿@namespace GitHubReadmeWebTrends.Common
+@inject GitHubReadmeWebTrends.Common.OptOutDatabase _optOutDatabase
 
 @page "/"
 
@@ -12,11 +13,7 @@
     const string _optOutText = "Opt-Out";
     const string _optInText = "Opt-In";
 
-    readonly OptOutDatabase _optOutDatabase;
-
     OptOutModel? _userOptOutModel;
-
-    public Index(OptOutDatabase optOutDatabase) => _optOutDatabase = optOutDatabase;
 
     public string OptOutText { get; private set; } = string.Empty;
 
