@@ -5,7 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VerifyGitHubReadmeLinks.Fun
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Common", "GitHubReadmeWebTrends.Common\GitHubReadmeWebTrends.Common.csproj", "{54892DEC-6E98-4A2E-AA3E-104B00758242}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.OptOutSite", "GitHubReadmeWebTrends.OptOutSite\GitHubReadmeWebTrends.OptOutSite.csproj", "{385384D4-0F1C-42E7-A43C-37D737E93047}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.OptOutSite.Blazor", "GitHubReadmeWebTrends.OptOutSite.Blazor\GitHubReadmeWebTrends.OptOutSite.Blazor.csproj", "{385384D4-0F1C-42E7-A43C-37D737E93047}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Website", "GitHubReadmeWebTrends.Website\GitHubReadmeWebTrends.Website.csproj", "{67710356-35FB-48E8-BF21-073F2796589F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,5 +27,9 @@ Global
 		{385384D4-0F1C-42E7-A43C-37D737E93047}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{385384D4-0F1C-42E7-A43C-37D737E93047}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{385384D4-0F1C-42E7-A43C-37D737E93047}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67710356-35FB-48E8-BF21-073F2796589F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67710356-35FB-48E8-BF21-073F2796589F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67710356-35FB-48E8-BF21-073F2796589F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67710356-35FB-48E8-BF21-073F2796589F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

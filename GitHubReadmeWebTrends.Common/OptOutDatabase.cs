@@ -14,7 +14,7 @@ namespace GitHubReadmeWebTrends.Common
         readonly static string _connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString") ?? string.Empty;
         readonly ILogger _logger;
 
-        public OptOutDatabase(ILogger logger) => _logger = logger;
+        public OptOutDatabase(ILogger<OptOutDatabase> logger) => _logger = logger;
 
         public List<OptOutModel> GetAllOptOutModels(Func<IOptOutModel, bool> wherePredicate)
         {
