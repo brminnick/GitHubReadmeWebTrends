@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
@@ -26,16 +27,24 @@ namespace VerifyGitHubReadmeLinks.Functions
 
         readonly HttpClient _httpClient;
         readonly YamlService _yamlService;
+        readonly OptOutDatabase _optOutDatabase;
         readonly GitHubApiService _gitHubApiService;
 
-        public GetAdvocatesFunction(GitHubApiService gitHubApiService, YamlService yamlService, IHttpClientFactory httpClientFactory) =>
-            (_gitHubApiService, _yamlService, _httpClient) = (gitHubApiService, yamlService, httpClientFactory.CreateClient());
+        public GetAdvocatesFunction(GitHubApiService gitHubApiService, YamlService yamlService, IHttpClientFactory httpClientFactory, OptOutDatabase optOutDatabase)
+        {
+            _yamlService = yamlService;
+            _optOutDatabase = optOutDatabase;
+            _gitHubApiService = gitHubApiService;
+            _httpClient = httpClientFactory.CreateClient();
+        }
 
         [FunctionName(nameof(GetAdvocatesFunction))]
         public async Task RunTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
+
+            var optOutDatabaseList = _optOutDatabase.GetAllOptOutModels();
 
             await foreach (var gitHubUser in GetAzureAdvocates(log).ConfigureAwait(false))
             {
@@ -45,7 +54,13 @@ namespace VerifyGitHubReadmeLinks.Functions
 
                 log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
 #endif
-                advocateModels.Add(gitHubUser);
+
+                var matchingOptOutModel = optOutDatabaseList.SingleOrDefault(x => x.Alias == gitHubUser.MicrosoftAlias);
+
+                // Only add users who have not opted out
+                // `null` indicates that the user has never used GitHubReadmeWebTrends.Website 
+                if (matchingOptOutModel is null || !matchingOptOutModel.HasOptedOut)
+                    advocateModels.Add(gitHubUser);
             }
 
             log.LogInformation($"Completed");
