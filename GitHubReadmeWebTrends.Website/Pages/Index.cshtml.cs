@@ -16,7 +16,8 @@ namespace GitHubReadmeWebTrends.Website.Pages
         readonly OptOutDatabase _optOutDatabase;
         readonly ILogger<IndexModel> _logger;
 
-        OptOutModel? _userOptOutModel;
+        [ThreadStatic]
+        static OptOutModel? _userOptOutModel;
 
         public IndexModel(OptOutDatabase optOutDatabase, ILogger<IndexModel> logger) =>
             (_optOutDatabase, _logger) = (optOutDatabase, logger);
