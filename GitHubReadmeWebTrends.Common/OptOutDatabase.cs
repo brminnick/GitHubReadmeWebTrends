@@ -20,7 +20,9 @@ namespace GitHubReadmeWebTrends.Common
         {
             using var connection = new DatabaseContext();
 
-            return connection.OptOutDatabaseModel?.ToList() ?? Enumerable.Empty<OptOutDatabaseModel>();
+            var optOutDatabaseModelList = connection.OptOutDatabaseModel?.ToList() ?? Enumerable.Empty<OptOutDatabaseModel>();
+
+            return optOutDatabaseModelList.Select(x => OptOutDatabaseModel.ToOptOutModel(x)).ToList();
         }
 
         public async Task<OptOutModel> GetOptOutModel(string id)
