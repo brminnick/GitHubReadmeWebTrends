@@ -16,15 +16,12 @@ namespace GitHubReadmeWebTrends.Common
 
         public OptOutDatabase(ILogger<OptOutDatabase> logger) => _logger = logger;
 
-        public List<OptOutModel> GetAllOptOutModels(Func<IOptOutModel, bool> wherePredicate)
+        public List<OptOutModel> GetAllOptOutModels()
         {
             using var connection = new DatabaseContext();
 
-            var optOutDatabaseList = connection.OptOutDatabaseModel?.Where(x => wherePredicate.Invoke(x)).ToList() ?? Enumerable.Empty<OptOutDatabaseModel>();
-            return optOutDatabaseList.Select(x => OptOutDatabaseModel.ToOptOutModel(x)).ToList();
+            return connection.OptOutDatabaseModel?.ToList() ?? Enumerable.Empty<OptOutDatabaseModel>();
         }
-
-        public List<OptOutModel> GetAllOptOutModels() => GetAllOptOutModels(_ => true);
 
         public async Task<OptOutModel> GetOptOutModel(string id)
         {
