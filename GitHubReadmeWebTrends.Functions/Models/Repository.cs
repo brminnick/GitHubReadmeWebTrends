@@ -4,18 +4,19 @@ namespace VerifyGitHubReadmeLinks.Functions
 {
     class Repository
     {
-        public Repository(string id, string owner, string name, DefaultBranchModel defaultBranch)
-            : this(id, owner, name, defaultBranch.BranchOid, defaultBranch.Prefix, defaultBranch.Name, string.Empty)
+        public Repository(string id, string owner, string name, DefaultBranchModel defaultBranch, bool isFork)
+            : this(id, owner, name, defaultBranch.BranchOid, defaultBranch.Prefix, defaultBranch.Name, isFork, string.Empty)
         {
 
         }
 
         [JsonConstructor]
-        public Repository(string id, string owner, string name, string defaultBranchOid, string defaultBranchPrefix, string defaultBranchName, string readmeText)
+        public Repository(string id, string owner, string name, string defaultBranchOid, string defaultBranchPrefix, string defaultBranchName, bool isFork, string readmeText)
         {
             Id = id;
             Owner = owner;
             Name = name;
+            IsFork = isFork;
             DefaultBranchOid = defaultBranchOid;
             DefaultBranchPrefix = defaultBranchPrefix;
             DefaultBranchName = defaultBranchName;
@@ -30,6 +31,9 @@ namespace VerifyGitHubReadmeLinks.Functions
 
         [JsonProperty("name")]
         public string Name { get; }
+
+        [JsonProperty("isFork")]
+        public bool IsFork { get; }
 
         [JsonProperty("defaultBranchOid")]
         public string DefaultBranchOid { get; }

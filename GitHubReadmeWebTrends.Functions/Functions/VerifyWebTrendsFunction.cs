@@ -38,7 +38,7 @@ namespace VerifyGitHubReadmeLinks.Functions
             if (!updatedReadme.Equals(repository.ReadmeText))
             {
                 log.LogInformation($"Updated Readme for {repository.Owner} {repository.Name}");
-                openPullRequestCollector.Add(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, updatedReadme));
+                openPullRequestCollector.Add(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, updatedReadme));
             }
 
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Completed");

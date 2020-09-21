@@ -12,7 +12,7 @@ namespace VerifyGitHubReadmeLinks.Functions
             foreach (var repository in user.Repositories.RepositoryList)
             {
                 if (!repository.IsFork && !repositoryList.Any(x => x.Name == repository.Name && x.Owner == user.Login))
-                    repositoryList.Add(new Repository(repository.Id, user.Login, repository.Name, repository.DefaultBranch));
+                    repositoryList.Add(new Repository(repository.Id, user.Login, repository.Name, repository.DefaultBranch, repository.IsFork));
             }
 
             RepositoryList = repositoryList;

@@ -126,7 +126,7 @@ namespace VerifyGitHubReadmeLinks.Functions
     class RepositoryConnectionQueryContent : GraphQLRequest
     {
         public RepositoryConnectionQueryContent(in string repositoryOwner, in string repositoryName)
-            : base("query { user(login:\"" + repositoryOwner + "\") { login, repository(name:\"" + repositoryName + "\"){ id, name, defaultBranchRef { id, name, prefix, target { oid } } } } }")
+            : base("query { user(login:\"" + repositoryOwner + "\") { login, repository(name:\"" + repositoryName + "\"){ id, name, isFork, defaultBranchRef { id, name, prefix, target { oid } } } } }")
         {
 
         }

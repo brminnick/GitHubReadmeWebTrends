@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace VerifyGitHubReadmeLinks.Functions
 {
@@ -15,5 +16,12 @@ namespace VerifyGitHubReadmeLinks.Functions
         public Task<CreateForkResponseModel> CreateFork(string gitHubUserName, string repositoryName) => _gitHubApiClient.CreateFork(gitHubUserName, repositoryName);
         public Task<RepositoryFile> GetFile(string repositoryOwner, string repositoryName, string filePath, string branchName) => _gitHubApiClient.GetFile(repositoryOwner, repositoryName, filePath, branchName);
         public Task<UpdateFileResponseModel> UpdateFile(string repositoryOwner, string repositoryName, string filePath, UpdateFileContentModel updateFileContentMode) => _gitHubApiClient.UpdateFile(repositoryOwner, repositoryName, filePath, updateFileContentMode);
+
+        public async Task DeleteRepository(string gitHubUserName, string repositoryName)
+        {
+            var response = await _gitHubApiClient.DeleteRepository(gitHubUserName, repositoryName).ConfigureAwait(false);
+            if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
+                throw new System.Exception("Failed to Delete Repository", new HttpResponseException(response));
+        }
     }
 }

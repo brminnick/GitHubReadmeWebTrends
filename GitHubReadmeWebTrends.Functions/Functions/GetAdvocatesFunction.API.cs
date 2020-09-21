@@ -30,6 +30,7 @@ namespace VerifyGitHubReadmeLinks.Functions
 
                 yield return new CloudAdvocatePowerBIModel(advocate.Name, advocate.Metadata.Alias, gitHubUri, twitterUri, linkedInUri);
             }
+
             log.LogInformation($"Completed");
         }
     }

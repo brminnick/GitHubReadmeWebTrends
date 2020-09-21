@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Refit;
 
@@ -24,5 +25,8 @@ namespace VerifyGitHubReadmeLinks.Functions
 
         [Post("/repos/{owner}/{repo}/forks")]
         public Task<CreateForkResponseModel> CreateFork([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);
+
+        [Delete("/repos/{owner}/{repo}")]
+        public Task<HttpResponseMessage> DeleteRepository([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);
     }
 }
