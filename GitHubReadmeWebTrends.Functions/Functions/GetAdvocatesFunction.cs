@@ -13,6 +13,13 @@ namespace VerifyGitHubReadmeLinks.Functions
     {
         const string _runOncePerMonth = "0 0 0 5 * *";
 
+        const bool _shouldRunOnStartup =
+#if DEBUG
+            true;
+#else
+            false;
+#endif
+
 #if DEBUG
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin", "jopapa", "masoucou" };
 #endif
@@ -25,7 +32,7 @@ namespace VerifyGitHubReadmeLinks.Functions
             (_gitHubApiService, _yamlService, _httpClient) = (gitHubApiService, yamlService, httpClientFactory.CreateClient());
 
         [FunctionName(nameof(GetAdvocatesFunction))]
-        public async Task RunTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
+        public async Task RunTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");

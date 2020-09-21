@@ -7,16 +7,19 @@ namespace VerifyGitHubReadmeLinks.Functions
         public RepositoryConnectionResponse(User_RepositoryConnectionResponse user) => Repository = user.Repository;
 
         [JsonProperty("repository")]
-        public Repository Repository { get; }
+        public Repository? Repository { get; }
     }
 
     class User_RepositoryConnectionResponse
     {
-        public User_RepositoryConnectionResponse(string login, Repository_RepositoryConnectionResponse repository) =>
-            Repository = new Repository(repository.Id, login, repository.Name, repository.DefaultBranch, repository.IsFork);
+        public User_RepositoryConnectionResponse(string login, Repository_RepositoryConnectionResponse? repository)
+        {
+            if (repository != null)
+                Repository = new Repository(repository.Id, login, repository.Name, repository.DefaultBranch, repository.IsFork);
+        }
 
         [JsonProperty("repository")]
-        public Repository Repository { get; }
+        public Repository? Repository { get; }
     }
 
     class Repository_RepositoryConnectionResponse

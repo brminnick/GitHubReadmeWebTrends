@@ -11,7 +11,7 @@ namespace VerifyGitHubReadmeLinks.Functions
 
             foreach (var repository in user.Repositories.RepositoryList)
             {
-                if (!repository.IsFork && !repositoryList.Any(x => x.Name == repository.Name && x.Owner == user.Login))
+                if (!repository.IsFork && repository.DefaultBranch != null && !repositoryList.Any(x => x.Name == repository.Name && x.Owner == user.Login))
                     repositoryList.Add(new Repository(repository.Id, user.Login, repository.Name, repository.DefaultBranch, repository.IsFork));
             }
 
@@ -44,12 +44,12 @@ namespace VerifyGitHubReadmeLinks.Functions
 
     class Repository_RepositoriesConnectionResponse
     {
-        public Repository_RepositoriesConnectionResponse(string id, string name, bool isFork, DefaultBranchModel defaultBranchRef) =>
+        public Repository_RepositoriesConnectionResponse(string id, string name, bool isFork, DefaultBranchModel? defaultBranchRef) =>
             (Id, Name, IsFork, DefaultBranch) = (id, name, isFork, defaultBranchRef);
 
         public string Id { get; }
         public string Name { get; }
         public bool IsFork { get; }
-        public DefaultBranchModel DefaultBranch { get; }
+        public DefaultBranchModel? DefaultBranch { get; }
     }
 }

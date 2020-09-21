@@ -104,7 +104,7 @@ namespace VerifyGitHubReadmeLinks.Functions
             {
                 var repositoryResponse = await _gitHubGraphQLApiService.GetRepository(owner, repositoryName).ConfigureAwait(false);
 
-                return repositoryResponse.Repository is null || repositoryResponse.Repository.IsFork;
+                return repositoryResponse.Repository != null && repositoryResponse.Repository.IsFork;
             }
         }
 
