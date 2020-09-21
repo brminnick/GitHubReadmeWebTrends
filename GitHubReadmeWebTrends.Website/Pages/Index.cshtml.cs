@@ -37,9 +37,9 @@ namespace GitHubReadmeWebTrends.Website.Pages
         {
             var updatedOptOutModel = _userOptOutModel?.HasOptedOut switch
             {
-                true => new OptOutModel(_userOptOutModel.Id, _userOptOutModel.Alias, false, _userOptOutModel.CreatedAt, _userOptOutModel.UpdatedAt),
-                false => new OptOutModel(_userOptOutModel.Id, _userOptOutModel.Alias, true, _userOptOutModel.CreatedAt, _userOptOutModel.UpdatedAt),
-                _ => new OptOutModel(Guid.NewGuid(), "bramin", true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
+                true => new OptOutModel(_userOptOutModel.Alias, false, _userOptOutModel.CreatedAt, _userOptOutModel.UpdatedAt),
+                false => new OptOutModel(_userOptOutModel.Alias, true, _userOptOutModel.CreatedAt, _userOptOutModel.UpdatedAt),
+                _ => new OptOutModel("bramin", true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
             };
 
             var savedOptOutModel = _userOptOutModel switch

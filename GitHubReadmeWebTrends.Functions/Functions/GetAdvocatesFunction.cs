@@ -44,7 +44,7 @@ namespace VerifyGitHubReadmeLinks.Functions
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
 
-            var optOutDatabaseList = _optOutDatabase.GetAllOptOutModels();
+            var optOutList = _optOutDatabase.GetAllOptOutModels();
 
             await foreach (var gitHubUser in GetAzureAdvocates(log).ConfigureAwait(false))
             {
@@ -55,7 +55,7 @@ namespace VerifyGitHubReadmeLinks.Functions
                 log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
 #endif
 
-                var matchingOptOutModel = optOutDatabaseList.SingleOrDefault(x => x.Alias == gitHubUser.MicrosoftAlias);
+                var matchingOptOutModel = optOutList.SingleOrDefault(x => x.Alias == gitHubUser.MicrosoftAlias);
 
                 // Only add users who have not opted out
                 // `null` indicates that the user has never used GitHubReadmeWebTrends.Website 

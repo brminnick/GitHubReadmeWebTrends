@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
@@ -38,6 +39,7 @@ namespace VerifyGitHubReadmeLinks.Functions
               .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
 
             builder.Services.AddSingleton<YamlService>();
+            builder.Services.AddSingleton<OptOutDatabase>();
             builder.Services.AddSingleton<GitHubApiService>();
             builder.Services.AddSingleton<GitHubGraphQLApiService>();
 

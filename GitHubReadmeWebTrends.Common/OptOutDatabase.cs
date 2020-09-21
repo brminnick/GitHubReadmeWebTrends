@@ -25,12 +25,12 @@ namespace GitHubReadmeWebTrends.Common
             return optOutDatabaseModelList.Select(x => OptOutDatabaseModel.ToOptOutModel(x)).ToList();
         }
 
-        public async Task<OptOutModel> GetOptOutModel(string id)
+        public async Task<OptOutModel> GetOptOutModel(string alias)
         {
-            var optOutDatabaseModel = await PerformDatabaseFunction(context => getOptOutModelFunction(context, id), _logger).ConfigureAwait(false);
+            var optOutDatabaseModel = await PerformDatabaseFunction(context => getOptOutModelFunction(context, alias), _logger).ConfigureAwait(false);
             return OptOutDatabaseModel.ToOptOutModel(optOutDatabaseModel);
 
-            static Task<OptOutDatabaseModel> getOptOutModelFunction(DatabaseContext dataContext, string id) => dataContext.OptOutDatabaseModel.SingleAsync(x => x.Id.Equals(id));
+            static Task<OptOutDatabaseModel> getOptOutModelFunction(DatabaseContext dataContext, string alias) => dataContext.OptOutDatabaseModel.SingleAsync(x => x.Alias.Equals(alias));
         }
 
         public async Task<OptOutModel> InsertOptOutModel(OptOutModel optOutModel)
@@ -68,9 +68,9 @@ namespace GitHubReadmeWebTrends.Common
             var optOutDatabaseModel = await PerformDatabaseFunction(context => removeContactDatabaseFunction(context, id), _logger).ConfigureAwait(false);
             return OptOutDatabaseModel.ToOptOutModel(optOutDatabaseModel);
 
-            static async Task<OptOutDatabaseModel> removeContactDatabaseFunction(DatabaseContext dataContext, string id)
+            static async Task<OptOutDatabaseModel> removeContactDatabaseFunction(DatabaseContext dataContext, string alias)
             {
-                var optOutDatabaseModel = await dataContext.OptOutDatabaseModel.SingleAsync(x => x.Id.Equals(id)).ConfigureAwait(false);
+                var optOutDatabaseModel = await dataContext.OptOutDatabaseModel.SingleAsync(x => x.Alias.Equals(alias)).ConfigureAwait(false);
 
                 var entityEntry = dataContext.Remove(optOutDatabaseModel);
 
@@ -131,9 +131,7 @@ namespace GitHubReadmeWebTrends.Common
 
         class OptOutDatabaseModel : IOptOutModel
         {
-            [Key, DatabaseGenerat‌ed(DatabaseGeneratedOp‌​tion.Identity)]
-            public Guid Id { get; set; }
-
+            [Key]
             public string Alias { get; set; } = string.Empty;
 
             public bool HasOptedOut { get; set; }
@@ -145,11 +143,10 @@ namespace GitHubReadmeWebTrends.Common
             public DateTimeOffset UpdatedAt { get; set; }
 
             public static OptOutModel ToOptOutModel(OptOutDatabaseModel optOutDatabaseModel) =>
-                new OptOutModel(optOutDatabaseModel.Id, optOutDatabaseModel.Alias, optOutDatabaseModel.HasOptedOut, optOutDatabaseModel.CreatedAt, optOutDatabaseModel.UpdatedAt);
+                new OptOutModel(optOutDatabaseModel.Alias, optOutDatabaseModel.HasOptedOut, optOutDatabaseModel.CreatedAt, optOutDatabaseModel.UpdatedAt);
 
             public static OptOutDatabaseModel ToOptOutDatabaseModel(OptOutModel optOutModel) => new OptOutDatabaseModel
             {
-                Id = optOutModel.Id,
                 Alias = optOutModel.Alias,
                 HasOptedOut = optOutModel.HasOptedOut,
                 CreatedAt = optOutModel.CreatedAt,
