@@ -32,9 +32,6 @@
     <Folder Include="Interfaces\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Functions\OpenPullRequestFunction.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\GitHubReadmeWebTrends.Common\GitHubReadmeWebTrends.Common.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>

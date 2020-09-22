@@ -23,6 +23,8 @@ namespace VerifyGitHubReadmeLinks.Functions
             var branchName = $"AddWebTrends-{DateTimeOffset.UtcNow:yyyy-MM}";
 
             var forkedRepository = await ForkRepository(repository).ConfigureAwait(false);
+            if (forkedRepository is null)
+                return;
 
             log.LogInformation($"Forked Repository for {repository.Owner} {repository.Name}");
 
@@ -79,7 +81,7 @@ namespace VerifyGitHubReadmeLinks.Functions
                 throw new Exception($"Failed to Create New Pull Request for \"{forkedRepository.Name}\"");
         }
 
-        async Task<Repository> ForkRepository(Repository repository)
+        async Task<Repository?> ForkRepository(Repository repository)
         {
             var currentUserInfo = await _gitHubGraphQLApiService.GetViewerInformation().ConfigureAwait(false);
 
@@ -90,6 +92,8 @@ namespace VerifyGitHubReadmeLinks.Functions
             var createForkResponse = await _gitHubApiService.CreateFork(repository.Owner, repository.Name).ConfigureAwait(false);
 
             var forkedRepositoryResponse = await _gitHubGraphQLApiService.GetRepository(createForkResponse.OwnerLogin, createForkResponse.Name).ConfigureAwait(false);
+            if (forkedRepositoryResponse.Repository is null)
+                return null;
 
             return new Repository(forkedRepositoryResponse.Repository.Id,
                                     forkedRepositoryResponse.Repository.Owner,

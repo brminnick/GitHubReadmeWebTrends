@@ -14,7 +14,7 @@ namespace VerifyGitHubReadmeLinks.Functions
     {
         public User_RepositoryConnectionResponse(string login, Repository_RepositoryConnectionResponse? repository)
         {
-            if (repository != null)
+            if (repository?.DefaultBranch != null)
                 Repository = new Repository(repository.Id, login, repository.Name, repository.DefaultBranch, repository.IsFork);
         }
 
