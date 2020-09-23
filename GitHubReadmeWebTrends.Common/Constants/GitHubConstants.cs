@@ -1,4 +1,4 @@
-﻿namespace GitHubReadmeWebTrends.Functions
+﻿namespace GitHubReadmeWebTrends.Common
 {
     static class GitHubConstants
     {

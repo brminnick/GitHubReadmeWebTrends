@@ -25,11 +25,11 @@ namespace GitHubReadmeWebTrends.Common
             return optOutDatabaseModelList.Select(x => OptOutDatabaseModel.ToOptOutModel(x)).ToList();
         }
 
-        public OptOutModel? GetOptOutModel(string alias, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+        public OptOutModel? GetOptOutModel(string alias)
         {
             using var connection = new DatabaseContext();
 
-            var optOutDatabaseModel = connection.OptOutDatabaseModel?.SingleOrDefault(x => x.Alias.Equals(alias, stringComparison));
+            var optOutDatabaseModel = connection.OptOutDatabaseModel?.SingleOrDefault(x => x.Alias == alias);
 
             if (optOutDatabaseModel is null)
                 return null;

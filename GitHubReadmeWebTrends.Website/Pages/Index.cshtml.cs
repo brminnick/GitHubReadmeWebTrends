@@ -12,34 +12,41 @@ namespace GitHubReadmeWebTrends.Website.Pages
         const string _optOutText = "Opt-Out";
         const string _optInText = "Opt-In";
 
-        readonly OptOutDatabase _optOutDatabase;
         readonly ILogger<IndexModel> _logger;
+        readonly OptOutDatabase _optOutDatabase;
+        readonly CloudAdvocateYamlService _cloudAdvocateYamlService;
 
-        public IndexModel(OptOutDatabase optOutDatabase, ILogger<IndexModel> logger) =>
-            (_optOutDatabase, _logger) = (optOutDatabase, logger);
+        public IndexModel(OptOutDatabase optOutDatabase, CloudAdvocateYamlService cloudAdvocateYamlService, ILogger<IndexModel> logger) =>
+            (_optOutDatabase, _cloudAdvocateYamlService, _logger) = (optOutDatabase, cloudAdvocateYamlService, logger);
 
-        public string OptOutButtonText { get; private set; } = "Update Opt-Out Preference";
         public string OutputText { get; private set; } = string.Empty;
 
         public async Task OnPostOptOutButtonClicked(string aliasInputText)
         {
-            var temp = _optOutDatabase.GetAllOptOutModels();
+            CloudAdvocateGitHubUserModel? matchingAzureAdvocate = null;
 
-            var matchingAzureAdvocate = _optOutDatabase.GetOptOutModel(aliasInputText);
+            await foreach (var advocate in _cloudAdvocateYamlService.GetAzureAdvocates().ConfigureAwait(false))
+            {
+                if (advocate.MicrosoftAlias.Equals(aliasInputText, StringComparison.OrdinalIgnoreCase))
+                {
+                    matchingAzureAdvocate = advocate;
+                    break;
+                }
+            }
 
             if (matchingAzureAdvocate is null)
             {
-                OutputText = "Error: Alias not Found\nEnsure YAML file exists on cloud-developer-advocates: https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates";
+                OutputText = "Error: Alias not Found\nEnsure `alias` field in your YAML file exists on cloud-developer-advocates: https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates";
             }
             else
             {
-                var userOptOutModel = _optOutDatabase.GetAllOptOutModels().FirstOrDefault(x => x.Alias.Equals(matchingAzureAdvocate.Alias, StringComparison.OrdinalIgnoreCase));
+                var userOptOutModel = _optOutDatabase.GetAllOptOutModels().FirstOrDefault(x => x.Alias.Equals(matchingAzureAdvocate.MicrosoftAlias, StringComparison.OrdinalIgnoreCase));
 
                 var updatedOptOutModel = userOptOutModel?.HasOptedOut switch
                 {
-                    true => new OptOutModel(matchingAzureAdvocate.Alias, false, userOptOutModel.CreatedAt, userOptOutModel.UpdatedAt),
-                    false => new OptOutModel(matchingAzureAdvocate.Alias, true, userOptOutModel.CreatedAt, userOptOutModel.UpdatedAt),
-                    _ => new OptOutModel(matchingAzureAdvocate.Alias, true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
+                    true => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, false, userOptOutModel.CreatedAt, userOptOutModel.UpdatedAt),
+                    false => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, true, userOptOutModel.CreatedAt, userOptOutModel.UpdatedAt),
+                    _ => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
                 };
 
                 var savedOptOutModel = userOptOutModel switch
@@ -48,18 +55,8 @@ namespace GitHubReadmeWebTrends.Website.Pages
                     _ => await _optOutDatabase.PatchOptOutModel(updatedOptOutModel).ConfigureAwait(false)
                 };
 
-                userOptOutModel = savedOptOutModel;
-
-                OutputText = $"Success: {savedOptOutModel.Alias} preference has been set to {(savedOptOutModel.HasOptedOut ? _optInText : _optOutText)}";
-
-                OptOutButtonText = savedOptOutModel switch
-                {
-                    { HasOptedOut: true } => _optInText,
-                    _ => _optOutText
-                };
+                OutputText = $"Success: {savedOptOutModel.Alias}'s preference has been set to {(savedOptOutModel.HasOptedOut ? _optInText : _optOutText)}";
             }
         }
     }
-
-
 }

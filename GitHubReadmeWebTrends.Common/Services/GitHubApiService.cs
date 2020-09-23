@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web.Http;
 
 namespace GitHubReadmeWebTrends.Common
 {
@@ -21,7 +20,7 @@ namespace GitHubReadmeWebTrends.Common
         {
             var response = await _gitHubApiClient.DeleteRepository(gitHubUserName, repositoryName).ConfigureAwait(false);
             if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
-                throw new System.Exception("Failed to Delete Repository", new HttpResponseException(response));
+                throw new System.Exception("Failed to Delete Repository");
         }
     }
 }
