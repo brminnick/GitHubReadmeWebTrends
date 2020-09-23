@@ -3,14 +3,14 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using GitHubReadmeWebTrends.Common;
+using GitHubReadmeWebTrends.Functions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Refit;
-using VerifyGitHubReadmeLinks.Functions;
 
 [assembly: FunctionsStartup(typeof(Startup))]
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     public class Startup : FunctionsStartup
     {

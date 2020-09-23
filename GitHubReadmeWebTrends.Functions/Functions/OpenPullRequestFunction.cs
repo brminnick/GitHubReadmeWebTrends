@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Refit;
+using GitHubReadmeWebTrends.Common;
 
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     class OpenPullRequestFunction
     {

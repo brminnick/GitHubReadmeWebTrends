@@ -1,4 +1,4 @@
-﻿namespace VerifyGitHubReadmeLinks.Functions
+﻿namespace GitHubReadmeWebTrends.Functions
 {
     static class GitHubConstants
     {

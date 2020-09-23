@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using GitHubReadmeWebTrends.Common;
 
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     //Inspired by https://github.com/spboyer/ca-readme-tracking-links-action/
     static class VerifyWebTrendsFunction

@@ -8,7 +8,7 @@ using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     partial class GetAdvocatesFunction
     {
@@ -16,7 +16,7 @@ namespace VerifyGitHubReadmeLinks.Functions
 
         const bool _shouldRunOnStartup =
 #if DEBUG
-            true;
+           false;// true;
 #else
             false;
 #endif

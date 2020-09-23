@@ -7,6 +7,10 @@
 <h1>Opt Out</h1>
 <h2>GitHub Readme Links</h2>
 
+
 <form method="post" asp-page="Index">
-    <input class="button" type="submit" value=@Model.OptOutText asp-page-handler="OptOutButtonClicked" />
+    <input type="text" placeholder="Alias" name="aliasInputText">
+    <input class="button" type="submit" value=@Model.OptOutButtonText asp-page-handler="OptOutButtonClicked" />
 </form>
+
+<label>@Model.OutputText</label>
