@@ -4,33 +4,47 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     partial class GetAdvocatesFunction
     {
         const string _runOncePerMonth = "0 0 0 5 * *";
 
+        const bool _shouldRunOnStartup =
+#if DEBUG
+           false;// true;
+#else
+            false;
+#endif
+
 #if DEBUG
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin", "jopapa", "masoucou" };
 #endif
 
-        readonly HttpClient _httpClient;
         readonly YamlService _yamlService;
-        readonly GitHubApiService _gitHubApiService;
+        readonly OptOutDatabase _optOutDatabase;
+        readonly CloudAdvocateYamlService _cloudAdvocateYamlService;
 
-        public GetAdvocatesFunction(GitHubApiService gitHubApiService, YamlService yamlService, IHttpClientFactory httpClientFactory) =>
-            (_gitHubApiService, _yamlService, _httpClient) = (gitHubApiService, yamlService, httpClientFactory.CreateClient());
+        public GetAdvocatesFunction(YamlService yamlService, CloudAdvocateYamlService cloudAdvocateYamlService, OptOutDatabase optOutDatabase)
+        {
+            _yamlService = yamlService;
+            _optOutDatabase = optOutDatabase;
+            _cloudAdvocateYamlService = cloudAdvocateYamlService;
+        }
 
         [FunctionName(nameof(GetAdvocatesFunction))]
-        public async Task RunTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
+        public async Task RunTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
 
-            await foreach (var gitHubUser in GetAzureAdvocates(log).ConfigureAwait(false))
+            var optOutList = _optOutDatabase.GetAllOptOutModels();
+
+            await foreach (var gitHubUser in _cloudAdvocateYamlService.GetAzureAdvocates().ConfigureAwait(false))
             {
 #if DEBUG
                 if (!_betaTesterAliases.Contains(gitHubUser.MicrosoftAlias))
@@ -38,43 +52,16 @@ namespace VerifyGitHubReadmeLinks.Functions
 
                 log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
 #endif
-                advocateModels.Add(gitHubUser);
+
+                var matchingOptOutModel = optOutList.SingleOrDefault(x => x.Alias == gitHubUser.MicrosoftAlias);
+
+                // Only add users who have not opted out
+                // `null` indicates that the user has never used GitHubReadmeWebTrends.Website 
+                if (matchingOptOutModel is null || !matchingOptOutModel.HasOptedOut)
+                    advocateModels.Add(gitHubUser);
             }
 
             log.LogInformation($"Completed");
-        }
-
-        async IAsyncEnumerable<CloudAdvocateGitHubUserModel> GetAzureAdvocates(ILogger log)
-        {
-            await foreach (var file in GetYamlFiles().ConfigureAwait(false))
-            {
-                var advocate = _yamlService.ParseCloudAdvocateGitHubUserModelFromYaml(file, log);
-
-                if (advocate is null || string.IsNullOrWhiteSpace(advocate.FullName))
-                    log.LogError($"Invalid GitHub Url\n{file}\n");
-                else if (string.IsNullOrWhiteSpace(advocate.GitHubUserName))
-                    log.LogError($"Invalid GitHub UserName for {advocate.FullName}");
-                else
-                    yield return advocate;
-            }
-        }
-
-        async IAsyncEnumerable<string> GetYamlFiles()
-        {
-            var azureAdvocateRepositoryFiles = await _gitHubApiService.GetAllAdvocateFiles().ConfigureAwait(false);
-
-            var downloadFileTaskList = azureAdvocateRepositoryFiles.Where(x => x.DownloadUrl != null).Select(x => _httpClient.GetStringAsync(x.DownloadUrl)).ToList();
-
-            while (downloadFileTaskList.Any())
-            {
-                var downloadFileTask = await Task.WhenAny(downloadFileTaskList).ConfigureAwait(false);
-                downloadFileTaskList.Remove(downloadFileTask);
-
-                var file = await downloadFileTask.ConfigureAwait(false);
-
-                if (file != null && file.StartsWith("### YamlMime:Profile") && !file.StartsWith("### YamlMime:ProfileList"))
-                    yield return file;
-            }
         }
 
         [Conditional("DEBUG")]

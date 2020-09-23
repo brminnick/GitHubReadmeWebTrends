@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using GitHubReadmeWebTrends.Common;
 
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     //Inspired by https://github.com/spboyer/ca-readme-tracking-links-action/
     static class VerifyWebTrendsFunction
@@ -38,7 +39,7 @@ namespace VerifyGitHubReadmeLinks.Functions
             if (!updatedReadme.Equals(repository.ReadmeText))
             {
                 log.LogInformation($"Updated Readme for {repository.Owner} {repository.Name}");
-                openPullRequestCollector.Add(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, updatedReadme));
+                openPullRequestCollector.Add(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, updatedReadme));
             }
 
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Completed");

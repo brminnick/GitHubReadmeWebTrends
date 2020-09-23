@@ -1,10 +1,10 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using System.Threading.Tasks;
 
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     class GetReadmeFunction
     {
@@ -30,7 +30,7 @@ namespace VerifyGitHubReadmeLinks.Functions
                 var readmeFile = await _gitHubApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
                 var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
 
-                outputData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, readmeText), gitHubUser));
+                outputData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, readmeText), gitHubUser));
 
                 log.LogInformation($"Found Readme for {repository.Owner} {repository.Name}");
             }

@@ -1,5 +1,5 @@
 ﻿using System;
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     static class QueueConstants
     {

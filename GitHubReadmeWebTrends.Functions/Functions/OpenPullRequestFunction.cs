@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Refit;
+using GitHubReadmeWebTrends.Common;
 
-namespace VerifyGitHubReadmeLinks.Functions
+namespace GitHubReadmeWebTrends.Functions
 {
     class OpenPullRequestFunction
     {
@@ -23,6 +24,8 @@ namespace VerifyGitHubReadmeLinks.Functions
             var branchName = $"AddWebTrends-{DateTimeOffset.UtcNow:yyyy-MM}";
 
             var forkedRepository = await ForkRepository(repository).ConfigureAwait(false);
+            if (forkedRepository is null)
+                return;
 
             log.LogInformation($"Forked Repository for {repository.Owner} {repository.Name}");
 
@@ -56,10 +59,9 @@ namespace VerifyGitHubReadmeLinks.Functions
             var forkedReameFile_AddWebTrendsBranch = await _gitHubApiService.GetFile(forkedRepository.Owner, forkedRepository.Name, forkedReadmeFile_DefaultBranch.Path, branchName).ConfigureAwait(false);
 
             var currentUserInformation = await _gitHubGraphQLApiService.GetViewerInformation().ConfigureAwait(false);
-#if DEBUG
+
             if (string.IsNullOrWhiteSpace(currentUserInformation.Viewer.Email))
                 currentUserInformation = new GitHubViewerResponse(new Viewer(currentUserInformation.Viewer.Name, currentUserInformation.Viewer.Login, _backupEmailAddress));
-#endif
 
             var readmeAsBase64String = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(forkedRepository.ReadmeText));
             var updateFileContent = new UpdateFileContentModel("Added Web Trends",
@@ -80,11 +82,19 @@ namespace VerifyGitHubReadmeLinks.Functions
                 throw new Exception($"Failed to Create New Pull Request for \"{forkedRepository.Name}\"");
         }
 
-        async Task<Repository> ForkRepository(Repository repository)
+        async Task<Repository?> ForkRepository(Repository repository)
         {
+            var currentUserInfo = await _gitHubGraphQLApiService.GetViewerInformation().ConfigureAwait(false);
+
+            var forkExists = await doesForkExist(currentUserInfo.Viewer.Login, repository.Name).ConfigureAwait(false);
+            if (forkExists)
+                await _gitHubApiService.DeleteRepository(currentUserInfo.Viewer.Login, repository.Name).ConfigureAwait(false);
+
             var createForkResponse = await _gitHubApiService.CreateFork(repository.Owner, repository.Name).ConfigureAwait(false);
 
             var forkedRepositoryResponse = await _gitHubGraphQLApiService.GetRepository(createForkResponse.OwnerLogin, createForkResponse.Name).ConfigureAwait(false);
+            if (forkedRepositoryResponse.Repository is null)
+                return null;
 
             return new Repository(forkedRepositoryResponse.Repository.Id,
                                     forkedRepositoryResponse.Repository.Owner,
@@ -92,7 +102,15 @@ namespace VerifyGitHubReadmeLinks.Functions
                                     forkedRepositoryResponse.Repository.DefaultBranchOid,
                                     forkedRepositoryResponse.Repository.DefaultBranchPrefix,
                                     forkedRepositoryResponse.Repository.DefaultBranchName,
+                                    repository.IsFork,
                                     repository.ReadmeText);
+
+            async Task<bool> doesForkExist(string owner, string repositoryName)
+            {
+                var repositoryResponse = await _gitHubGraphQLApiService.GetRepository(owner, repositoryName).ConfigureAwait(false);
+
+                return repositoryResponse.Repository != null && repositoryResponse.Repository.IsFork;
+            }
         }
 
         async Task CreateNewBranch(Repository repository, string branchName)

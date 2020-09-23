@@ -1,0 +1,20 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<h1>Opt Out</h1>
+
+<br/>
+
+<h2>GitHub Readme Links</h2>
+
+<br />
+
+<form method="post" asp-page="Index">
+    <input type="text" placeholder="Microsoft alias" name="aliasInputText">
+    <input class="button" type="submit" value="Update Opt-Out Preference" asp-page-handler="OptOutButtonClicked" />
+</form>
+
+<label>@Model.OutputText</label>
