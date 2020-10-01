@@ -1,12 +1,15 @@
 ﻿using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
+using Microsoft.Identity.Web;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace GitHubReadmeWebTrends.Website.Pages
 {
+    [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
     public class IndexModel : PageModel
     {
         const string _optOutText = "Opt-Out";
@@ -14,12 +17,24 @@ namespace GitHubReadmeWebTrends.Website.Pages
 
         readonly ILogger<IndexModel> _logger;
         readonly OptOutDatabase _optOutDatabase;
+        readonly GraphServiceClient _graphServiceClient;
         readonly CloudAdvocateYamlService _cloudAdvocateYamlService;
 
-        public IndexModel(OptOutDatabase optOutDatabase, CloudAdvocateYamlService cloudAdvocateYamlService, ILogger<IndexModel> logger) =>
-            (_optOutDatabase, _cloudAdvocateYamlService, _logger) = (optOutDatabase, cloudAdvocateYamlService, logger);
+        public IndexModel(OptOutDatabase optOutDatabase, CloudAdvocateYamlService cloudAdvocateYamlService, GraphServiceClient graphServiceClient, ILogger<IndexModel> logger)
+        {
+            _logger = logger;
+            _optOutDatabase = optOutDatabase;
+            _graphServiceClient = graphServiceClient;
+            _cloudAdvocateYamlService = cloudAdvocateYamlService;
+        }
 
         public string OutputText { get; private set; } = string.Empty;
+
+        public async Task OnGet()
+        {
+            //var user = await _graphServiceClient.Me.Request().GetAsync().ConfigureAwait(false);
+            //OutputText = user.EmployeeId;
+        }
 
         public async Task OnPostOptOutButtonClicked(string aliasInputText)
         {
