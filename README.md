@@ -17,4 +17,4 @@ How do I opt-in to the tool? (Prerequisite: Only Microsoft employees are able to
 - This also adds you to the [Cloud Advacates Webpage](https://developer.microsoft.com/advocates/?WT.mc_id=githubreadmewebtrends-github-bramin)
 
 How do I opt-out from the tool? 
-- Remove your `yml` file from the [Cloud Developer Advocates GitHub repository](https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates) 
+- You may opt-out (or opt back in) any time at https://optout-githubreadmelinks.azurewebsites.net
