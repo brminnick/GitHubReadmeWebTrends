@@ -77,7 +77,7 @@ namespace GitHubReadmeWebTrends.Functions
         {
             var createPullRequestGuid = Guid.NewGuid();
 
-            var createPullRequestResult = await _gitHubGraphQLApiService.CreatePullRequest(forkedRepository.Id, originalRepository.DefaultBranchName, branchName, branchName, PullRequestConstants.BodyText, createPullRequestGuid).ConfigureAwait(false);
+            var createPullRequestResult = await _gitHubGraphQLApiService.CreatePullRequest(originalRepository.Id, originalRepository.DefaultBranchName, $"{forkedRepository.Owner}:{branchName}", branchName, PullRequestConstants.BodyText, createPullRequestGuid).ConfigureAwait(false);
             if (createPullRequestResult.Result.ClientMutationId != createPullRequestGuid.ToString())
                 throw new Exception($"Failed to Create New Pull Request for \"{forkedRepository.Name}\"");
         }

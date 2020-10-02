@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -129,12 +128,6 @@ namespace GitHubReadmeWebTrends.Common
             public DbSet<OptOutDatabaseModel>? OptOutDatabaseModel { get; set; }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(_connectionString);
-
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
-            {
-                modelBuilder.Entity<OptOutDatabaseModel>().Property(b => b.CreatedAt).HasDefaultValue(DateTimeOffset.UtcNow);
-                modelBuilder.Entity<OptOutDatabaseModel>().Property(b => b.UpdatedAt).HasDefaultValue(DateTimeOffset.UtcNow);
-            }
         }
 
         class OptOutDatabaseModel : IOptOutModel
