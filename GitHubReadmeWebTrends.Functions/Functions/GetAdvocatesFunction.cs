@@ -15,7 +15,7 @@ namespace GitHubReadmeWebTrends.Functions
 
         const bool _shouldRunOnStartup =
 #if DEBUG
-           true;
+            true;
 #else
             false;
 #endif
