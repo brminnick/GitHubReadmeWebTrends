@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
@@ -10,13 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    partial class GetAdvocatesFunction
+    class GetAdvocatesFunction
     {
         const string _runOncePerMonth = "0 0 0 5 * *";
 
         const bool _shouldRunOnStartup =
 #if DEBUG
-           false;// true;
+           true;
 #else
             false;
 #endif
