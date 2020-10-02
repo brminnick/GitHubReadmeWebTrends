@@ -1,11 +1,11 @@
-﻿using GitHubReadmeWebTrends.Common;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GitHubReadmeWebTrends.Website.Pages
 {
@@ -28,21 +28,29 @@ namespace GitHubReadmeWebTrends.Website.Pages
             _cloudAdvocateYamlService = cloudAdvocateYamlService;
         }
 
+        public string LoggedInLabelText { get; private set; } = string.Empty;
+        public string CurrentPreferenceText { get; private set; } = string.Empty;
+        public string ButtonText { get; private set; } = string.Empty;
         public string OutputText { get; private set; } = string.Empty;
 
         public async Task OnGet()
         {
-            //var user = await _graphServiceClient.Me.Request().GetAsync().ConfigureAwait(false);
-            //OutputText = user.EmployeeId;
+            var microsoftAlias = await GetCurrentUserAlias().ConfigureAwait(false);
+            var userOptOutModel = GetOptOutModel(microsoftAlias);
+
+            UpdateButtonText(userOptOutModel);
+            UpdateLoggedInLabelText(microsoftAlias);
+            UpdateCurrentPreferenceText(userOptOutModel);
         }
 
-        public async Task OnPostOptOutButtonClicked(string aliasInputText)
+        public async Task OnPostOptOutButtonClicked()
         {
             CloudAdvocateGitHubUserModel? matchingAzureAdvocate = null;
+            var microsoftAlias = await GetCurrentUserAlias().ConfigureAwait(false);
 
             await foreach (var advocate in _cloudAdvocateYamlService.GetAzureAdvocates().ConfigureAwait(false))
             {
-                if (advocate.MicrosoftAlias.Equals(aliasInputText, StringComparison.OrdinalIgnoreCase))
+                if (advocate.MicrosoftAlias.Equals(microsoftAlias, StringComparison.OrdinalIgnoreCase))
                 {
                     matchingAzureAdvocate = advocate;
                     break;
@@ -52,15 +60,17 @@ namespace GitHubReadmeWebTrends.Website.Pages
             if (matchingAzureAdvocate is null)
             {
                 OutputText = "Error: Alias not Found\nEnsure `alias` field in your YAML file exists on cloud-developer-advocates: https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates";
+
+                UpdateButtonText(null);
+                UpdateCurrentPreferenceText(null);
             }
             else
             {
-                var userOptOutModel = _optOutDatabase.GetAllOptOutModels().FirstOrDefault(x => x.Alias.Equals(matchingAzureAdvocate.MicrosoftAlias, StringComparison.OrdinalIgnoreCase));
-
+                var userOptOutModel = GetOptOutModel(microsoftAlias);
                 var updatedOptOutModel = userOptOutModel?.HasOptedOut switch
                 {
-                    true => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, false, userOptOutModel.CreatedAt, userOptOutModel.UpdatedAt),
-                    false => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, true, userOptOutModel.CreatedAt, userOptOutModel.UpdatedAt),
+                    true => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, false, userOptOutModel.CreatedAt, DateTimeOffset.UtcNow),
+                    false => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, true, userOptOutModel.CreatedAt, DateTimeOffset.UtcNow),
                     _ => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
                 };
 
@@ -70,8 +80,37 @@ namespace GitHubReadmeWebTrends.Website.Pages
                     _ => await _optOutDatabase.PatchOptOutModel(updatedOptOutModel).ConfigureAwait(false)
                 };
 
-                OutputText = $"Success: {savedOptOutModel.Alias}'s preference has been set to {(savedOptOutModel.HasOptedOut ? _optInText : _optOutText)}";
+                OutputText = $"Success! {savedOptOutModel.Alias}'s GitHub Readme Preference has been set to {(savedOptOutModel.HasOptedOut ? _optOutText : _optInText)}";
+
+                UpdateButtonText(savedOptOutModel);
+                UpdateCurrentPreferenceText(savedOptOutModel);
             }
+
+            UpdateLoggedInLabelText(microsoftAlias);
         }
+
+        async Task<string> GetCurrentUserAlias()
+        {
+            var user = await _graphServiceClient.Me.Request().GetAsync().ConfigureAwait(false);
+
+            var email = user.Mail;
+            return email?.Split('@')[0] ?? throw new NullReferenceException();
+        }
+
+        OptOutModel GetOptOutModel(string microsoftAlias) => _optOutDatabase.GetAllOptOutModels().FirstOrDefault(x => x.Alias.Equals(microsoftAlias, StringComparison.OrdinalIgnoreCase));
+
+        void UpdateLoggedInLabelText(in string microsoftAlias) => LoggedInLabelText = $"Logged in as {microsoftAlias}@microsoft.com";
+
+        void UpdateCurrentPreferenceText(in OptOutModel? userOptOutModel) => CurrentPreferenceText = userOptOutModel switch
+        {
+            { HasOptedOut: true } => $"Current Preference: {_optOutText}",
+            _ => $"Current Preference: {_optInText}"
+        };
+
+        void UpdateButtonText(in OptOutModel? userOptOutModel) => ButtonText = userOptOutModel switch
+        {
+            { HasOptedOut: true } => "Opt Back In",
+            _ => "Opt Out"
+        };
     }
 }

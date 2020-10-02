@@ -4,17 +4,22 @@
     ViewData["Title"] = "Home page";
 }
 
-<h1>Opt Out</h1>
+<h1>Cloud Advocacy GitHub Readme Preference</h1>
 
-<br/>
+<br />
 
-<h2>GitHub Readme Links</h2>
+<label>@Model.LoggedInLabelText</label>
+
+<br />
+
+<label>@Model.CurrentPreferenceText</label>
 
 <br />
 
 <form method="post" asp-page="Index">
-    <input type="text" placeholder="Microsoft alias" name="aliasInputText">
-    <input class="button" type="submit" value="Update Opt-Out Preference" asp-page-handler="OptOutButtonClicked" />
+    <input class="button" type="submit" value="@Model.ButtonText" asp-page-handler="OptOutButtonClicked" />
 </form>
+
+<br />
 
 <label>@Model.OutputText</label>

@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -61,6 +60,7 @@ namespace GitHubReadmeWebTrends.Website
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseCookiePolicy();
 
             app.UseRouting();
 

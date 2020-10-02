@@ -46,6 +46,7 @@ namespace GitHubReadmeWebTrends.Common
             static async Task<OptOutDatabaseModel> insertOptOutModelFunction(DatabaseContext dataContext, OptOutModel optOutModel)
             {
                 var optOutDatabaseModel = OptOutDatabaseModel.ToOptOutDatabaseModel(optOutModel);
+                optOutDatabaseModel.UpdatedAt = optOutDatabaseModel.CreatedAt = DateTimeOffset.UtcNow;
 
                 var entityEntry = await dataContext.AddAsync(optOutDatabaseModel).ConfigureAwait(false);
 
@@ -61,7 +62,10 @@ namespace GitHubReadmeWebTrends.Common
 
             static OptOutDatabaseModel patchOptOutModelFunction(DatabaseContext dataContext, OptOutModel optOutModel)
             {
-                var entityEntry = dataContext.Update(OptOutDatabaseModel.ToOptOutDatabaseModel(optOutModel));
+                var optOutDatabaseModel = OptOutDatabaseModel.ToOptOutDatabaseModel(optOutModel);
+                optOutDatabaseModel.UpdatedAt = DateTimeOffset.UtcNow;
+
+                var entityEntry = dataContext.Update(optOutDatabaseModel);
 
                 return entityEntry.Entity;
             }
@@ -140,10 +144,8 @@ namespace GitHubReadmeWebTrends.Common
 
             public bool HasOptedOut { get; set; }
 
-            [DatabaseGenerat‌ed(DatabaseGeneratedOp‌​tion.Identity)]
             public DateTimeOffset CreatedAt { get; set; }
 
-            [DatabaseGenerat‌ed(DatabaseGeneratedOp‌​tion.Computed)]
             public DateTimeOffset UpdatedAt { get; set; }
 
             public static OptOutModel ToOptOutModel(OptOutDatabaseModel optOutDatabaseModel) =>
