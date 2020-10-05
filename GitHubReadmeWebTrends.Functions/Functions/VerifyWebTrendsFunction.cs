@@ -70,8 +70,9 @@ namespace GitHubReadmeWebTrends.Functions
 
                     if (uriBuilder.Scheme is "http")
                     {
+                        var hadDefaultPort = uriBuilder.Uri.IsDefaultPort;
                         uriBuilder.Scheme = Uri.UriSchemeHttps;
-                        uriBuilder.Port = -1;
+                        uriBuilder.Port = hadDefaultPort ? -1 : uriBuilder.Port;
                     }
 
                     return uriBuilder.Uri.ToString();
