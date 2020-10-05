@@ -37,8 +37,8 @@ namespace GitHubReadmeWebTrends.Functions
             _cloudAdvocateService = cloudAdvocateService;
         }
 
-        [FunctionName(nameof(GetAzureAdvocatesTimeTrigger))]
-        public async Task GetAzureAdvocatesTimeTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = false)] TimerInfo myTimer, ILogger log,
+        [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]
+        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = false)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
