@@ -2,6 +2,7 @@
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using GitHubReadmeWebTrends.Common;
+using System.Linq;
 
 namespace GitHubReadmeWebTrends.Functions
 {
@@ -19,7 +20,7 @@ namespace GitHubReadmeWebTrends.Functions
 
             await foreach (var repositoryList in _gitHubGraphQLApiService.GetRepositories(gitHubUser.GitHubUserName).ConfigureAwait(false))
             {
-                foreach (var repository in repositoryList)
+                foreach (var repository in repositoryList?.Where(x => !x.IsFork) ?? Enumerable.Empty<Repository>())
                 {
                     outputData.Add((repository, gitHubUser));
                 }
