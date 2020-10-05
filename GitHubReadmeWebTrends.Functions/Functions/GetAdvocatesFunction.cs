@@ -23,7 +23,7 @@ namespace GitHubReadmeWebTrends.Functions
 #endif
 
 #if DEBUG
-        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin", "jopapa", "masoucou", "jamont" };
+        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin", "jopapa", "masoucou", "jamont", "v-gmohapi", "judubois", "ropreddy", "sakriema", "juyoo", "mijam", "ninarasi" };
 #endif
 
         readonly YamlService _yamlService;
