@@ -13,17 +13,17 @@ namespace GitHubReadmeWebTrends.Functions
     class GetAdvocatesForPowerBIDashboard
     {
         readonly YamlService _yamlService;
-        readonly CloudAdvocateYamlService _cloudAdvocateYamlService;
+        readonly CloudAdvocateService _cloudAdvocateService;
 
-        public GetAdvocatesForPowerBIDashboard(CloudAdvocateYamlService cloudAdvocateYamlService, YamlService yamlService) =>
-            (_cloudAdvocateYamlService, _yamlService) = (cloudAdvocateYamlService, yamlService);
+        public GetAdvocatesForPowerBIDashboard(CloudAdvocateService cloudAdvocateService, YamlService yamlService) =>
+            (_cloudAdvocateService, _yamlService) = (cloudAdvocateService, yamlService);
 
         [FunctionName(nameof(GetAdvocatesForPowerBIDashboard))]
         public async IAsyncEnumerable<CloudAdvocatePowerBIModel> RunHttpTrigger([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestMessage req, ILogger log)
         {
             log.LogInformation($"{nameof(GetAdvocatesForPowerBIDashboard)} Started");
 
-            await foreach (var yamlFile in _cloudAdvocateYamlService.GetCloudAdvocateYamlFiles().ConfigureAwait(false))
+            await foreach (var yamlFile in _cloudAdvocateService.GetCloudAdvocateYamlFiles().ConfigureAwait(false))
             {
                 var advocate = _yamlService.ParseCloudAdvocateModelFromYaml(yamlFile, log);
                 if (advocate is null)

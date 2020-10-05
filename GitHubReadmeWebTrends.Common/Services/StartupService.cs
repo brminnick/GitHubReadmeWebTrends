@@ -38,7 +38,7 @@ namespace GitHubReadmeWebTrends.Common
             services.AddSingleton<OptOutDatabase>();
             services.AddSingleton<GitHubApiService>();
             services.AddSingleton<GitHubGraphQLApiService>();
-            services.AddSingleton<CloudAdvocateYamlService>();
+            services.AddSingleton<CloudAdvocateService>();
 
             static TimeSpan sleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
 

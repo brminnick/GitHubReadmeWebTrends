@@ -18,9 +18,9 @@ namespace GitHubReadmeWebTrends.Website.Pages
         readonly ILogger<IndexModel> _logger;
         readonly OptOutDatabase _optOutDatabase;
         readonly GraphServiceClient _graphServiceClient;
-        readonly CloudAdvocateYamlService _cloudAdvocateYamlService;
+        readonly CloudAdvocateService _cloudAdvocateYamlService;
 
-        public IndexModel(OptOutDatabase optOutDatabase, CloudAdvocateYamlService cloudAdvocateYamlService, GraphServiceClient graphServiceClient, ILogger<IndexModel> logger)
+        public IndexModel(OptOutDatabase optOutDatabase, CloudAdvocateService cloudAdvocateYamlService, GraphServiceClient graphServiceClient, ILogger<IndexModel> logger)
         {
             _logger = logger;
             _optOutDatabase = optOutDatabase;

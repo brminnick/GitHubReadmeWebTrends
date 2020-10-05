@@ -3,17 +3,18 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace GitHubReadmeWebTrends.Common
 {
-    public class CloudAdvocateYamlService
+    public class CloudAdvocateService
     {
         readonly ILogger _logger;
         readonly HttpClient _httpClient;
         readonly YamlService _yamlService;
         readonly GitHubApiService _gitHubApiService;
 
-        public CloudAdvocateYamlService(GitHubApiService gitHubApiService, YamlService yamlService, IHttpClientFactory httpClientFactory, ILogger<CloudAdvocateYamlService> logger)
+        public CloudAdvocateService(GitHubApiService gitHubApiService, YamlService yamlService, IHttpClientFactory httpClientFactory, ILogger<CloudAdvocateService> logger)
         {
             _logger = logger;
             _yamlService = yamlService;
@@ -52,6 +53,13 @@ namespace GitHubReadmeWebTrends.Common
                 else
                     yield return advocate;
             }
+        }
+
+        public async Task<IReadOnlyList<CloudAdvocateGitHubUserModel>> GetFriendsOfAdvocates()
+        {
+            var json = await _httpClient.GetStringAsync("https://gist.githubusercontent.com/jamesmontemagno/f4d3986c91867449153c389cc31d0abc/raw/6576587b1300d47f41ffa7a627ac37cdc6aa0822/team.json");
+
+            return JsonConvert.DeserializeObject<CloudAdvocateGitHubUserModel[]>(json);
         }
     }
 }
