@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using GitHubReadmeWebTrends.Common;
-using System.Linq;
 
 namespace GitHubReadmeWebTrends.Functions
 {

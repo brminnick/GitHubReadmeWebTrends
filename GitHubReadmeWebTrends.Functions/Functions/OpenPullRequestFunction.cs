@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Refit;
-using GitHubReadmeWebTrends.Common;
 
 namespace GitHubReadmeWebTrends.Functions
 {

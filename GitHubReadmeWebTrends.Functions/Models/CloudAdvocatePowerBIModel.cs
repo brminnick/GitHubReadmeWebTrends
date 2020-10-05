@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace GitHubReadmeWebTrends.Functions
 {
     class CloudAdvocatePowerBIModel

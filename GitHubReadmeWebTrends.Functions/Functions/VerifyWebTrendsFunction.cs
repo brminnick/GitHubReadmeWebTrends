@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using GitHubReadmeWebTrends.Common;
 
 namespace GitHubReadmeWebTrends.Functions
 {
