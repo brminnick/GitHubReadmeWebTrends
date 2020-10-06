@@ -78,7 +78,7 @@ namespace GitHubReadmeWebTrends.Functions
 
                     if (GitHubApiService.GetNumberOfApiRequestsRemaining(response.Headers) >= 2000)
                     {
-                        await RetrieveReadme(repository, log, completedRepositoriesData).ConfigureAwait(false);
+                        await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
                         await _remainingRepositoriesQueueClient.DeleteMessageAsync(queueMessage.MessageId, queueMessage.PopReceipt).ConfigureAwait(false);
                     }
                     else
@@ -95,7 +95,7 @@ namespace GitHubReadmeWebTrends.Functions
             }
         }
 
-        async Task RetrieveReadme(Repository repository, ILogger log, ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
+        async Task RetrieveReadme(Repository repository, CloudAdvocateGitHubUserModel gitHubUser, ILogger log, ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
         {
             var readmeFile = await _gitHubRestApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
             var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);

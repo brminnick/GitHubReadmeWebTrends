@@ -15,7 +15,7 @@ namespace GitHubReadmeWebTrends.Common
 
         public OptOutDatabase(ILogger<OptOutDatabase> logger) => _logger = logger;
 
-        public List<OptOutModel> GetAllOptOutModels()
+        public IReadOnlyList<OptOutModel> GetAllOptOutModels()
         {
             using var connection = new DatabaseContext();
 

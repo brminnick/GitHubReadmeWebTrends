@@ -30,6 +30,6 @@ namespace GitHubReadmeWebTrends.Common
         public Task<HttpResponseMessage> DeleteRepository([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);
 
         [Get("/repos/brminnick/GitHubReadmeWebTrends")]
-        Task<HttpResponseMessage> GetGitHubApiResponse()
+        Task<HttpResponseMessage> GetGitHubApiResponse();
     }
 }
