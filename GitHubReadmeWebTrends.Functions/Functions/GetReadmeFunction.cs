@@ -72,14 +72,12 @@ namespace GitHubReadmeWebTrends.Functions
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
             var queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(32).ConfigureAwait(false);
-            log.LogInformation($"Found {queueResponse.Count()} Messages");
 
             while (queueResponse.Any())
             {
                 foreach (var queueMessage in queueResponse)
                 {
                     log.LogInformation($"Queue Message Id: {queueMessage.Id}");
-                    log.LogInformation($"Queue Message Text: {queueMessage.AsString}");
 
                     var dequeuedData = JsonConvert.DeserializeObject<(Repository, CloudAdvocateGitHubUserModel)>(queueMessage.AsString);
                     var (repository, gitHubUser) = dequeuedData;
@@ -100,7 +98,7 @@ namespace GitHubReadmeWebTrends.Functions
                     }
                     catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
                     {
-                        //If a Readme doesn't exist, GitHubApiService.GetReadme will return a 404 Not Found response
+                        await remainingRepositoriesQueue.DeleteMessageAsync(queueMessage).ConfigureAwait(false);
                     }
                 }
 
