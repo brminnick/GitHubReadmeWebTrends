@@ -20,9 +20,7 @@ namespace GitHubReadmeWebTrends.Functions
             false;
 #endif
 
-#if DEBUG
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin", "jopapa", "masoucou", "jamont", "v-gmohapi", "judubois", "ropreddy", "sakriema", "juyoo", "mijam", "ninarasi" };
-#endif
 
         readonly YamlService _yamlService;
         readonly OptOutDatabase _optOutDatabase;
@@ -35,23 +33,38 @@ namespace GitHubReadmeWebTrends.Functions
             _cloudAdvocateService = cloudAdvocateService;
         }
 
-        [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]
-        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
+        [FunctionName(nameof(GetAzureAdvocatesBetaTestersTimerTrigger))]
+        public async Task GetAzureAdvocatesBetaTestersTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
+                        [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
-            log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
+            log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Started");
 
             var optOutList = _optOutDatabase.GetAllOptOutModels();
 
             await foreach (var gitHubUser in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
             {
-#if DEBUG
                 if (!IsBetaTester(gitHubUser))
                     continue;
 
                 log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
-#endif
 
+                if (!HasUserOptedOut(gitHubUser, optOutList))
+                    advocateModels.Add(gitHubUser);
+            }
+
+            log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Completed");
+        }
+
+        [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]
+        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
+                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
+        {
+            log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Started");
+
+            var optOutList = _optOutDatabase.GetAllOptOutModels();
+
+            await foreach (var gitHubUser in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
+            {
                 if (!HasUserOptedOut(gitHubUser, optOutList))
                     advocateModels.Add(gitHubUser);
             }
@@ -69,21 +82,13 @@ namespace GitHubReadmeWebTrends.Functions
 
             foreach (var gitHubUser in friendsOfAzureList)
             {
-#if DEBUG
-                if (!IsBetaTester(gitHubUser))
-                    continue;
-
-                log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
-#endif
                 advocateModels.Add(gitHubUser);
             }
 
             log.LogInformation($"{nameof(GetFriendsTimerTrigger)} Completed");
         }
 
-#if DEBUG
         bool IsBetaTester(CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel) => _betaTesterAliases.Contains(cloudAdvocateGitHubUserModel.MicrosoftAlias);
-#endif
 
         bool HasUserOptedOut(CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel, IReadOnlyList<OptOutModel> optOutUserModels)
         {
