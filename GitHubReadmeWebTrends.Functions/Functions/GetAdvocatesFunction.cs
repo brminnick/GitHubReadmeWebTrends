@@ -52,7 +52,7 @@ namespace GitHubReadmeWebTrends.Functions
                 log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
 #endif
 
-                if (!HasUserOptedOut(gitHubUser))
+                if (!HasUserOptedOut(gitHubUser, optOutList))
                     advocateModels.Add(gitHubUser);
             }
 

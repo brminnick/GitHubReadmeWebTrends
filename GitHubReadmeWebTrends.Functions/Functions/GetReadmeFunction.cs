@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.Storage.Queues;
 using GitHubReadmeWebTrends.Common;
+using Microsoft.Azure.Storage.Queue;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -15,13 +16,13 @@ namespace GitHubReadmeWebTrends.Functions
 
         readonly HttpClient _httpClient;
         readonly GitHubRestApiService _gitHubRestApiService;
-        readonly RemainingRepositoriesQueueClient _remainingRepositoriesQueueClient;
+        readonly CloudQueueClient _cloudQueueClient;
 
-        public GetReadmeFunction(GitHubRestApiService gitHubApiService, IHttpClientFactory httpClientFactory, RemainingRepositoriesQueueClient remainingRepositoriesQueueClient)
+        public GetReadmeFunction(GitHubRestApiService gitHubApiService, IHttpClientFactory httpClientFactory, CloudQueueClient cloudQueueClient)
         {
             _httpClient = httpClientFactory.CreateClient();
             _gitHubRestApiService = gitHubApiService;
-            _remainingRepositoriesQueueClient = remainingRepositoriesQueueClient;
+            _cloudQueueClient = cloudQueueClient;
         }
         [FunctionName(nameof(GetReadmeQueueTriggerFunction))]
         public async Task GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
@@ -36,6 +37,9 @@ namespace GitHubReadmeWebTrends.Functions
             {
                 var response = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
 
+                // The GitHub API Limits requests to 5,0000 per hour https://developer.github.com/v3/#rate-limiting
+                // If the API Limit is approaching, output to RemainingRepositoriesQueue, where it will be handled by GetReadmeTimerTriggerFunction which runs once an hour
+                // Otherwise, process the data and place it on VerifyWebTrendsQueue
                 if (GitHubApiService.GetNumberOfApiRequestsRemaining(response.Headers) < 2000)
                 {
                     log.LogInformation($"Maximum API Requests Reached");
@@ -46,7 +50,7 @@ namespace GitHubReadmeWebTrends.Functions
                 }
                 else
                 {
-                    await RetrieveReadme(repository, log, completedRepositoriesData).ConfigureAwait(false);
+                    await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
                 }
             }
             catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
@@ -59,40 +63,51 @@ namespace GitHubReadmeWebTrends.Functions
 
 
         [FunctionName(nameof(GetReadmeTimerTriggerFunction))]
-        public async Task GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour, RunOnStartup = false)] TimerInfo myTimer, ILogger log,
+        public async Task GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour, RunOnStartup = true)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> remainingRepositoriesData,
                                 [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
         {
+            var remainingRepositoriesQueue = _cloudQueueClient.GetQueueReference(QueueConstants.RemainingRepositoriesQueue.ToLower());
+
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
-            var queueResponse = await _remainingRepositoriesQueueClient.ReceiveMessagesAsync().ConfigureAwait(false);
+            var queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(32).ConfigureAwait(false);
+            log.LogInformation($"Found {queueResponse.Count()} Messages");
 
-            foreach (var queueMessage in queueResponse.Value)
+            while (queueResponse.Any())
             {
-                var dequeuedData = JsonConvert.DeserializeObject<(Repository, CloudAdvocateGitHubUserModel)>(queueMessage.MessageText);
-                var (repository, gitHubUser) = dequeuedData;
-
-                try
+                foreach (var queueMessage in queueResponse)
                 {
-                    var response = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
+                    log.LogInformation($"Queue Message Id: {queueMessage.Id}");
+                    log.LogInformation($"Queue Message Text: {queueMessage.AsString}");
 
-                    if (GitHubApiService.GetNumberOfApiRequestsRemaining(response.Headers) >= 2000)
+                    var dequeuedData = JsonConvert.DeserializeObject<(Repository, CloudAdvocateGitHubUserModel)>(queueMessage.AsString);
+                    var (repository, gitHubUser) = dequeuedData;
+
+                    try
                     {
-                        await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
-                        await _remainingRepositoriesQueueClient.DeleteMessageAsync(queueMessage.MessageId, queueMessage.PopReceipt).ConfigureAwait(false);
+                        var response = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
+
+                        if (GitHubApiService.GetNumberOfApiRequestsRemaining(response.Headers) >= 2000)
+                        {
+                            await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
+                            await remainingRepositoriesQueue.DeleteMessageAsync(queueMessage).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            remainingRepositoriesData.Add(dequeuedData);
+                        }
                     }
-                    else
+                    catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
                     {
-                        remainingRepositoriesData.Add(dequeuedData);
+                        //If a Readme doesn't exist, GitHubApiService.GetReadme will return a 404 Not Found response
                     }
                 }
-                catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
-                {
-                    //If a Readme doesn't exist, GitHubApiService.GetReadme will return a 404 Not Found response
-                }
 
-                log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
+                queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(32).ConfigureAwait(false);
             }
+
+            log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
         }
 
         async Task RetrieveReadme(Repository repository, CloudAdvocateGitHubUserModel gitHubUser, ILogger log, ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
