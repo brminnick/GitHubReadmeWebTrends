@@ -36,7 +36,7 @@ namespace GitHubReadmeWebTrends.Functions
         }
 
         [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]
-        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = false)] TimerInfo myTimer, ILogger log,
+        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAdvocatesFunction)} Started");
@@ -52,11 +52,11 @@ namespace GitHubReadmeWebTrends.Functions
                 log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
 #endif
 
-                if (!HasUserOptedOut(gitHubUser))
+                if (!HasUserOptedOut(gitHubUser, optOutList))
                     advocateModels.Add(gitHubUser);
             }
 
-            log.LogInformation($"Completed");
+            log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Completed");
         }
 
         [FunctionName(nameof(GetFriendsTimerTrigger))]
@@ -78,18 +78,16 @@ namespace GitHubReadmeWebTrends.Functions
                 advocateModels.Add(gitHubUser);
             }
 
-            log.LogInformation($"Completed");
+            log.LogInformation($"{nameof(GetFriendsTimerTrigger)} Completed");
         }
 
 #if DEBUG
         bool IsBetaTester(CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel) => _betaTesterAliases.Contains(cloudAdvocateGitHubUserModel.MicrosoftAlias);
 #endif
 
-        bool HasUserOptedOut(CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel)
+        bool HasUserOptedOut(CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel, IReadOnlyList<OptOutModel> optOutUserModels)
         {
-            var optOutList = _optOutDatabase.GetAllOptOutModels();
-
-            var matchingOptOutModel = optOutList.SingleOrDefault(x => x.Alias == cloudAdvocateGitHubUserModel.MicrosoftAlias);
+            var matchingOptOutModel = optOutUserModels.SingleOrDefault(x => x.Alias == cloudAdvocateGitHubUserModel.MicrosoftAlias);
 
             // `null` indicates that the user has never opted out by using the GitHubReadmeWebTrends.Website 
             return matchingOptOutModel?.HasOptedOut ?? false;

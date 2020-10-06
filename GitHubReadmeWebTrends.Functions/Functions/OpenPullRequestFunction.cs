@@ -12,11 +12,11 @@ namespace GitHubReadmeWebTrends.Functions
     {
         readonly static string _backupEmailAddress = Environment.GetEnvironmentVariable("BackupEmailAddress") ?? string.Empty;
 
-        readonly GitHubApiService _gitHubApiService;
+        readonly GitHubRestApiService _gitHubRestApiService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
 
-        public OpenPullRequestFunction(GitHubApiService gitHubApiService, GitHubGraphQLApiService gitHubGraphQLApiService) =>
-            (_gitHubApiService, _gitHubGraphQLApiService) = (gitHubApiService, gitHubGraphQLApiService);
+        public OpenPullRequestFunction(GitHubRestApiService gitHubApiService, GitHubGraphQLApiService gitHubGraphQLApiService) =>
+            (_gitHubRestApiService, _gitHubGraphQLApiService) = (gitHubApiService, gitHubGraphQLApiService);
 
         [FunctionName(nameof(OpenPullRequestFunction))]
         public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
@@ -55,8 +55,8 @@ namespace GitHubReadmeWebTrends.Functions
 
         async Task CommitUpdatedReadme(Repository forkedRepository, string branchName)
         {
-            var forkedReadmeFile_DefaultBranch = await _gitHubApiService.GetReadme(forkedRepository.Owner, forkedRepository.Name).ConfigureAwait(false);
-            var forkedReameFile_AddWebTrendsBranch = await _gitHubApiService.GetFile(forkedRepository.Owner, forkedRepository.Name, forkedReadmeFile_DefaultBranch.Path, branchName).ConfigureAwait(false);
+            var forkedReadmeFile_DefaultBranch = await _gitHubRestApiService.GetReadme(forkedRepository.Owner, forkedRepository.Name).ConfigureAwait(false);
+            var forkedReameFile_AddWebTrendsBranch = await _gitHubRestApiService.GetFile(forkedRepository.Owner, forkedRepository.Name, forkedReadmeFile_DefaultBranch.Path, branchName).ConfigureAwait(false);
 
             var currentUserInformation = await _gitHubGraphQLApiService.GetViewerInformation().ConfigureAwait(false);
 
@@ -70,7 +70,7 @@ namespace GitHubReadmeWebTrends.Functions
                                                                 forkedReameFile_AddWebTrendsBranch.Sha,
                                                                 branchName);
 
-            var updateFileResponse = await _gitHubApiService.UpdateFile(forkedRepository.Owner, forkedRepository.Name, forkedReameFile_AddWebTrendsBranch.Path, updateFileContent).ConfigureAwait(false);
+            var updateFileResponse = await _gitHubRestApiService.UpdateFile(forkedRepository.Owner, forkedRepository.Name, forkedReameFile_AddWebTrendsBranch.Path, updateFileContent).ConfigureAwait(false);
         }
 
         async Task OpenPullRequest(Repository forkedRepository, Repository originalRepository, string branchName)
@@ -88,9 +88,9 @@ namespace GitHubReadmeWebTrends.Functions
 
             var forkExists = await doesForkExist(currentUserInfo.Viewer.Login, repository.Name).ConfigureAwait(false);
             if (forkExists)
-                await _gitHubApiService.DeleteRepository(currentUserInfo.Viewer.Login, repository.Name).ConfigureAwait(false);
+                await _gitHubRestApiService.DeleteRepository(currentUserInfo.Viewer.Login, repository.Name).ConfigureAwait(false);
 
-            var createForkResponse = await _gitHubApiService.CreateFork(repository.Owner, repository.Name).ConfigureAwait(false);
+            var createForkResponse = await _gitHubRestApiService.CreateFork(repository.Owner, repository.Name).ConfigureAwait(false);
 
             var forkedRepositoryResponse = await _gitHubGraphQLApiService.GetRepository(createForkResponse.OwnerLogin, createForkResponse.Name).ConfigureAwait(false);
             if (forkedRepositoryResponse.Repository is null)

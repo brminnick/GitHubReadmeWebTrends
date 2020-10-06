@@ -6,7 +6,7 @@ using Refit;
 namespace GitHubReadmeWebTrends.Common
 {
     [Headers("User-Agent: " + nameof(GitHubReadmeWebTrends), "Accept-Encoding: gzip", "Accept: application/json")]
-    public interface IGitHubApiClient
+    public interface IGitHubRestApiClient
     {
         [Get("/repos/MicrosoftDocs/cloud-developer-advocates/contents/advocates")]
         public Task<IReadOnlyList<RepositoryFile>> GetAllAdvocateFiles();
@@ -28,5 +28,8 @@ namespace GitHubReadmeWebTrends.Common
 
         [Delete("/repos/{owner}/{repo}")]
         public Task<HttpResponseMessage> DeleteRepository([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);
+
+        [Get("/repos/brminnick/GitHubReadmeWebTrends")]
+        Task<HttpResponseMessage> GetGitHubApiResponse();
     }
 }

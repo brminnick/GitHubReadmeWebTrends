@@ -8,5 +8,6 @@ namespace GitHubReadmeWebTrends.Functions
         public const string VerifyWebTrendsQueue = nameof(VerifyWebTrendsQueue);
         public const string UpdateReadmeFunction = nameof(UpdateReadmeFunction);
         public const string OpenPullRequestQueue = nameof(OpenPullRequestQueue);
+        public const string RemainingRepositoriesQueue = nameof(RemainingRepositoriesQueue);
     }
 }
