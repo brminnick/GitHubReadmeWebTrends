@@ -25,7 +25,7 @@ namespace GitHubReadmeWebTrends.Common
               .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
               .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
 
-            services.AddRefitClient<IGitHubApiClient>()
+            services.AddRefitClient<IGitHubRestApiClient>()
               .ConfigureHttpClient(client =>
               {
                   client.BaseAddress = new Uri(GitHubConstants.GitHubRestApiUrl);
@@ -36,7 +36,7 @@ namespace GitHubReadmeWebTrends.Common
 
             services.AddSingleton<YamlService>();
             services.AddSingleton<OptOutDatabase>();
-            services.AddSingleton<GitHubApiService>();
+            services.AddSingleton<GitHubRestApiService>();
             services.AddSingleton<GitHubGraphQLApiService>();
             services.AddSingleton<CloudAdvocateService>();
 

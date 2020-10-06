@@ -12,19 +12,19 @@ namespace GitHubReadmeWebTrends.Common
         readonly ILogger _logger;
         readonly HttpClient _httpClient;
         readonly YamlService _yamlService;
-        readonly GitHubApiService _gitHubApiService;
+        readonly GitHubRestApiService _gitHubRestApiService;
 
-        public CloudAdvocateService(GitHubApiService gitHubApiService, YamlService yamlService, IHttpClientFactory httpClientFactory, ILogger<CloudAdvocateService> logger)
+        public CloudAdvocateService(GitHubRestApiService gitHubApiService, YamlService yamlService, IHttpClientFactory httpClientFactory, ILogger<CloudAdvocateService> logger)
         {
             _logger = logger;
             _yamlService = yamlService;
-            _gitHubApiService = gitHubApiService;
+            _gitHubRestApiService = gitHubApiService;
             _httpClient = httpClientFactory.CreateClient();
         }
 
         public async IAsyncEnumerable<string> GetCloudAdvocateYamlFiles()
         {
-            var azureAdvocateRepositoryFiles = await _gitHubApiService.GetAllAdvocateFiles().ConfigureAwait(false);
+            var azureAdvocateRepositoryFiles = await _gitHubRestApiService.GetAllAdvocateFiles().ConfigureAwait(false);
 
             var downloadFileTaskList = azureAdvocateRepositoryFiles.Where(x => x.DownloadUrl != null).Select(x => _httpClient.GetStringAsync(x.DownloadUrl)).ToList();
 
