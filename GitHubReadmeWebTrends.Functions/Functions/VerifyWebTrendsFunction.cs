@@ -23,7 +23,7 @@ namespace GitHubReadmeWebTrends.Functions
             "azure.com"
         };
 
-        static readonly Regex _urlRegex = new Regex(@"(((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)");
+        static readonly Regex _urlRegex = new Regex(@"(((http|ftp|https):\/\/)+[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)");
         static readonly Regex _localeRegex = new Regex("^/\\w{2}-\\w{2}");
 
         [FunctionName(nameof(VerifyWebTrendsFunction))]
@@ -56,12 +56,14 @@ namespace GitHubReadmeWebTrends.Functions
                 //Exclude Azure DevOps Build Status Badges
                 //Exclude AppCenter Build Status Badges
                 //Exclude XAML Namespace
+                //Exclude CodeSpaces
                 if (link.Contains(domain)
                     && !link.Contains('@')
                     && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase)
                     && !link.Contains("dev.azure.com", StringComparison.OrdinalIgnoreCase)
                     && !(link.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build", StringComparison.OrdinalIgnoreCase))
-                    && !(link.Contains("schemas.microsoft.com", StringComparison.OrdinalIgnoreCase) && link.Contains("xaml", StringComparison.OrdinalIgnoreCase)))
+                    && !(link.Contains("schemas.microsoft.com", StringComparison.OrdinalIgnoreCase) && link.Contains("xaml", StringComparison.OrdinalIgnoreCase))
+                    && !link.Contains("online.visualstudio.com/environments"))
                 {
                     var uriBuilder = new UriBuilder(link);
 
