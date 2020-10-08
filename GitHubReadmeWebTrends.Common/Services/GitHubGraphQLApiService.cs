@@ -29,6 +29,7 @@ namespace GitHubReadmeWebTrends.Common
             do
             {
                 repositoryConnection = await GetRepositoryConnectionResponse(repositoryOwner, repositoryConnection?.PageInfo?.EndCursor, numberOfRepositoriesPerRequest).ConfigureAwait(false);
+
                 yield return repositoryConnection?.RepositoryList ?? Enumerable.Empty<Repository>();
             }
             while (repositoryConnection?.PageInfo?.HasNextPage is true);

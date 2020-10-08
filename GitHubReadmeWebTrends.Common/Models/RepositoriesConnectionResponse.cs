@@ -11,7 +11,7 @@ namespace GitHubReadmeWebTrends.Common
 
             foreach (var repository in user.Repositories.RepositoryList)
             {
-                if (!repository.IsFork && repository.DefaultBranch != null && !repositoryList.Any(x => x.Name == repository.Name && x.Owner == user.Login))
+                if (repository.Owner == user.Login && !repository.IsFork && repository.DefaultBranch != null && !repositoryList.Any(x => x.Name == repository.Name && x.Owner == user.Login))
                     repositoryList.Add(new Repository(repository.Id, user.Login, repository.Name, repository.DefaultBranch, repository.IsFork));
             }
 
@@ -44,12 +44,20 @@ namespace GitHubReadmeWebTrends.Common
 
     public class Repository_RepositoriesConnectionResponse
     {
-        public Repository_RepositoriesConnectionResponse(string id, string name, bool isFork, DefaultBranchModel? defaultBranchRef) =>
-            (Id, Name, IsFork, DefaultBranch) = (id, name, isFork, defaultBranchRef);
+        public Repository_RepositoriesConnectionResponse(string id, string name, bool isFork, Owner owner, DefaultBranchModel? defaultBranchRef) =>
+            (Id, Name, IsFork, Owner, DefaultBranch) = (id, name, isFork, owner.Login, defaultBranchRef);
 
         public string Id { get; }
         public string Name { get; }
         public bool IsFork { get; }
+        public string Owner { get; }
         public DefaultBranchModel? DefaultBranch { get; }
+    }
+
+    public class Owner_RepositoriesConnectionResponse
+    {
+        public Owner_RepositoriesConnectionResponse(string login) => Login = login;
+
+        public string Login { get; }
     }
 }
