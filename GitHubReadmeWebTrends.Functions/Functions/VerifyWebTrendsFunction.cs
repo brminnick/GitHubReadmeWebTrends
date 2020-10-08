@@ -34,7 +34,7 @@ namespace GitHubReadmeWebTrends.Functions
 
             var (repository, gitHubUser) = data;
 
-            var updatedReadme = _urlRegex.Replace(repository.ReadmeText, x => AppendTrackingInfo(x.Groups[0].Value, repository.Name.Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias));
+            var updatedReadme = _urlRegex.Replace(repository.ReadmeText, x => AppendTrackingInfo(x.Groups[0].Value, repository.Name.Replace(".", "").Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias));
 
             if (!updatedReadme.Equals(repository.ReadmeText))
             {
