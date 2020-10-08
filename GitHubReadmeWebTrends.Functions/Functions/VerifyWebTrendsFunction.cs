@@ -52,9 +52,8 @@ namespace GitHubReadmeWebTrends.Functions
                 //Include Microsoft Domains
                 //Exclude Email Addresses, e.g. bramin@microsoft.com
                 //Exclue existing WebTrends queries
-                //Exclude Azure DevOps Build Status Badges
-                //Exclude Azure DevOps Build Status Badges
-                //Exclude AppCenter Build Status Badges
+                //Exclude Azure DevOps
+                //Exclude Visual Studio Status Badges
                 //Exclude XAML Namespace
                 //Exclude CodeSpaces
                 if (link.Contains(domain)
