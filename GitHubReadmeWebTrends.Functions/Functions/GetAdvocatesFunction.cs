@@ -56,7 +56,7 @@ namespace GitHubReadmeWebTrends.Functions
         }
 
         [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]
-        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
+        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Started");
@@ -73,7 +73,7 @@ namespace GitHubReadmeWebTrends.Functions
         }
 
         [FunctionName(nameof(GetFriendsTimerTrigger))]
-        public async Task GetFriendsTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
+        public async Task GetFriendsTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
                                 [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetFriendsTimerTrigger)} Started");
