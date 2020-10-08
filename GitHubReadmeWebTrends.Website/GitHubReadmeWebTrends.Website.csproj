@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <UserSecretsId>32158e12-23ab-4f8f-aef5-a61c0a785020</UserSecretsId>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +14,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.1.0" />
   </ItemGroup>
 </Project>

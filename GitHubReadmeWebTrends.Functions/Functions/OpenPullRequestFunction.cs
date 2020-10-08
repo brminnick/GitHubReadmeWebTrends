@@ -70,7 +70,7 @@ namespace GitHubReadmeWebTrends.Functions
                                                                 forkedReameFile_AddWebTrendsBranch.Sha,
                                                                 branchName);
 
-            var updateFileResponse = await _gitHubRestApiService.UpdateFile(forkedRepository.Owner, forkedRepository.Name, forkedReameFile_AddWebTrendsBranch.Path, updateFileContent).ConfigureAwait(false);
+            await _gitHubRestApiService.UpdateFile(forkedRepository.Owner, forkedRepository.Name, forkedReameFile_AddWebTrendsBranch.Path, updateFileContent).ConfigureAwait(false);
         }
 
         async Task OpenPullRequest(Repository forkedRepository, Repository originalRepository, string branchName)

@@ -65,7 +65,7 @@ namespace GitHubReadmeWebTrends.Functions
                 {
                     var uriBuilder = new UriBuilder(link);
 
-                    uriBuilder.AddTrackingCode(eventName, channel, alias);
+                    uriBuilder.AddWebTrendsQuery(eventName, channel, alias);
                     uriBuilder.RemoveLocale();
 
                     if (uriBuilder.Scheme is "http")
@@ -84,7 +84,7 @@ namespace GitHubReadmeWebTrends.Functions
 
         static void RemoveLocale(this UriBuilder builder) => builder.Path = _localeRegex.Replace(builder.Path, string.Empty);
 
-        static void AddTrackingCode(this UriBuilder builder, in string eventName, in string channel, in string alias)
+        static void AddWebTrendsQuery(this UriBuilder builder, in string eventName, in string channel, in string alias)
         {
             var webTrendsQueryValue = $"{eventName}-{channel}-{alias}";
 

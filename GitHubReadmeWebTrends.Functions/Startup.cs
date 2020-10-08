@@ -15,7 +15,7 @@ namespace GitHubReadmeWebTrends.Functions
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddSingleton<CloudQueueClient>(services => CloudStorageAccount.Parse(_storageConnectionString).CreateCloudQueueClient());
+            builder.Services.AddSingleton<CloudQueueClient>(CloudStorageAccount.Parse(_storageConnectionString).CreateCloudQueueClient());
             StartupService.ConfigureServices(builder.Services);
         }
     }

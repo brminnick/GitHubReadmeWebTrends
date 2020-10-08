@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Azure.Storage.Queues;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Storage.Queue;
 using Microsoft.Azure.WebJobs;
@@ -67,11 +66,13 @@ namespace GitHubReadmeWebTrends.Functions
                                 [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> remainingRepositoriesData,
                                 [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
         {
+            const int getMessageCount = 32;
+
             var remainingRepositoriesQueue = _cloudQueueClient.GetQueueReference(QueueConstants.RemainingRepositoriesQueue.ToLower());
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
-            var queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(32).ConfigureAwait(false);
+            var queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(getMessageCount).ConfigureAwait(false);
 
             while (queueResponse.Any())
             {
@@ -102,7 +103,7 @@ namespace GitHubReadmeWebTrends.Functions
                     }
                 }
 
-                queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(32).ConfigureAwait(false);
+                queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(getMessageCount).ConfigureAwait(false);
             }
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
