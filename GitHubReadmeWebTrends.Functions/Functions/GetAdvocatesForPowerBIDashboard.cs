@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    class GetAdvocatesForPowerBIDashboard
+    public class GetAdvocatesForPowerBIDashboard
     {
         readonly YamlService _yamlService;
         readonly CloudAdvocateService _cloudAdvocateService;

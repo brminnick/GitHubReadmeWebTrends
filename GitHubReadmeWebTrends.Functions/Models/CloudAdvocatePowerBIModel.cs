@@ -2,7 +2,7 @@
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    class CloudAdvocatePowerBIModel
+    public class CloudAdvocatePowerBIModel
     {
         public CloudAdvocatePowerBIModel(string name, string alias, Uri gitHub, Uri twitter, Uri linkedIn)
         {

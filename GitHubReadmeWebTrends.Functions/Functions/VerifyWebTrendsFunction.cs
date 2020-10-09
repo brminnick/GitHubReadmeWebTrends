@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace GitHubReadmeWebTrends.Functions
 {
     //Inspired by https://github.com/spboyer/ca-readme-tracking-links-action/
-    static class VerifyWebTrendsFunction
+    public static class VerifyWebTrendsFunction
     {
         const string _webTrendsQueryKey = "WT.mc_id";
 
@@ -23,7 +23,8 @@ namespace GitHubReadmeWebTrends.Functions
             "azure.com"
         };
 
-        static readonly Regex _urlRegex = new Regex(@"(((http|ftp|https):\/\/)+[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?)");
+        //https://stackoverflow.com/a/64286141/5953643
+        static readonly Regex _urlRegex = new Regex(@"(?<!`)(`(?:`{2})?)(?:(?!\1).)*?\1|((?:ht|f)tps?:\/\/[\w-]+(?>\.[\w-]+)+(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)");
         static readonly Regex _localeRegex = new Regex("^/\\w{2}-\\w{2}");
 
         [FunctionName(nameof(VerifyWebTrendsFunction))]
@@ -34,7 +35,10 @@ namespace GitHubReadmeWebTrends.Functions
 
             var (repository, gitHubUser) = data;
 
-            var updatedReadme = _urlRegex.Replace(repository.ReadmeText, x => AppendTrackingInfo(x.Groups[0].Value, repository.Name.Replace(".", "").Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias));
+            var updatedReadme = _urlRegex.Replace(repository.ReadmeText,
+                                                    x => x.Groups[2].Success
+                                                        ? UpdateUrl(x.Groups[0].Value, repository.Name.Replace(".", "").Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias)
+                                                        : x.Value);
 
             if (!updatedReadme.Equals(repository.ReadmeText))
             {
@@ -45,7 +49,7 @@ namespace GitHubReadmeWebTrends.Functions
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Completed");
         }
 
-        static string AppendTrackingInfo(in string link, in string eventName, in string channel, in string alias)
+        static string UpdateUrl(in string link, in string eventName, in string channel, in string alias)
         {
             foreach (var domain in _microsoftDomainsList)
             {
