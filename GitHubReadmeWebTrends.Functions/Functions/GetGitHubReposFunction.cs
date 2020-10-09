@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    class GetGitHubReposFunction
+    public class GetGitHubReposFunction
     {
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
 

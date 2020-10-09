@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    class GetReadmeFunction
+    public class GetReadmeFunction
     {
         const string _runEveryHour = "0 0 * * * *";
 

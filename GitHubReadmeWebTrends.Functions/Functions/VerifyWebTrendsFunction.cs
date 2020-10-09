@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace GitHubReadmeWebTrends.Functions
 {
     //Inspired by https://github.com/spboyer/ca-readme-tracking-links-action/
-    static class VerifyWebTrendsFunction
+    public static class VerifyWebTrendsFunction
     {
         const string _webTrendsQueryKey = "WT.mc_id";
 
