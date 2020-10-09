@@ -24,7 +24,7 @@ namespace GitHubReadmeWebTrends.Functions
         };
 
         //https://stackoverflow.com/a/64286141/5953643
-        static readonly Regex _urlRegex = new Regex(@"(?<!`)(`(?:`{2})?)(?:(?!\1).)*?\1|((?:ht|f)tps?:\/\/[\w-]+(?>\.[\w-]+)+(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)");
+        static readonly Regex _urlRegex = new Regex(@"(?<!`)(`(?:`{2})?)(?:(?!\1).)*?\1|((?:ht|f)tps?://[\w-]+(?>\.[\w-]+)+(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)");
         static readonly Regex _localeRegex = new Regex("^/\\w{2}-\\w{2}");
 
         [FunctionName(nameof(VerifyWebTrendsFunction))]
