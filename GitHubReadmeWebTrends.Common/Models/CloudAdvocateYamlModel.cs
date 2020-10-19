@@ -71,5 +71,8 @@ namespace GitHubReadmeWebTrends.Common
 
         [YamlMember(Alias = "ms.author")]
         public string Alias { get; set; } = string.Empty;
+
+        [YamlMember(Alias = "team")]
+        public string Team { get; set; } = string.Empty;
     }
 }

@@ -44,7 +44,7 @@ namespace GitHubReadmeWebTrends.Common
 
                 var gitHubUserName = parseGitHubUserNameFromUrl(gitHubUrl.ToString());
 
-                return new CloudAdvocateGitHubUserModel(fullName, gitHubUserName, cloudAdvocate.Metadata.Alias);
+                return new CloudAdvocateGitHubUserModel(fullName, gitHubUserName, cloudAdvocate.Metadata.Alias, cloudAdvocate.Metadata.Team);
             }
             catch (Exception e)
             {
