@@ -37,7 +37,7 @@ namespace GitHubReadmeWebTrends.Functions
 
             var updatedReadme = _urlRegex.Replace(repository.ReadmeText,
                                                     x => x.Groups[2].Success
-                                                        ? UpdateUrl(x.Groups[0].Value, repository.Name.Replace(".", "").Replace("-", "").ToLower(), "github", gitHubUser.MicrosoftAlias)
+                                                        ? UpdateUrl(x.Groups[0].Value, gitHubUser.MicrosoftTeam, "0000", gitHubUser.MicrosoftAlias)
                                                         : x.Value);
 
             if (!updatedReadme.Equals(repository.ReadmeText))
@@ -49,31 +49,30 @@ namespace GitHubReadmeWebTrends.Functions
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Completed");
         }
 
-        static string UpdateUrl(in string link, in string eventName, in string channel, in string alias)
+        static string UpdateUrl(in string url, in string eventName, in string channel, in string alias)
         {
             foreach (var domain in _microsoftDomainsList)
             {
                 //Include Microsoft Domains
                 //Exclude Email Addresses, e.g. bramin@microsoft.com
-                //Exclue existing WebTrends queries
                 //Exclude Azure DevOps
                 //Exclude Visual Studio Status Badges
                 //Exclude XAML Namespace
                 //Exclude CodeSpaces
-                if (link.Contains(domain)
-                    && !link.Contains('@')
-                    && !link.Contains(_webTrendsQueryKey, StringComparison.OrdinalIgnoreCase)
-                    && !link.Contains("dev.azure.com", StringComparison.OrdinalIgnoreCase)
-                    && !(link.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && link.Contains("build", StringComparison.OrdinalIgnoreCase))
-                    && !(link.Contains("schemas.microsoft.com", StringComparison.OrdinalIgnoreCase) && link.Contains("xaml", StringComparison.OrdinalIgnoreCase))
-                    && !link.Contains("online.visualstudio.com/environments"))
+                if (url.Contains(domain)
+                    && !url.Contains('@')
+                    && !url.ContainsWebTrendsQuery()
+                    && !url.Contains("dev.azure.com", StringComparison.OrdinalIgnoreCase)
+                    && !(url.Contains("visualstudio.com", StringComparison.OrdinalIgnoreCase) && url.Contains("build", StringComparison.OrdinalIgnoreCase))
+                    && !(url.Contains("schemas.microsoft.com", StringComparison.OrdinalIgnoreCase) && url.Contains("xaml", StringComparison.OrdinalIgnoreCase))
+                    && !url.Contains("online.visualstudio.com/environments"))
                 {
-                    var uriBuilder = new UriBuilder(link);
+                    var uriBuilder = new UriBuilder(url);
 
                     uriBuilder.AddWebTrendsQuery(eventName, channel, alias);
                     uriBuilder.RemoveLocale();
 
-                    if (uriBuilder.Scheme is "http")
+                    if (uriBuilder.Scheme == Uri.UriSchemeHttp)
                     {
                         var hadDefaultPort = uriBuilder.Uri.IsDefaultPort;
                         uriBuilder.Scheme = Uri.UriSchemeHttps;
@@ -84,14 +83,32 @@ namespace GitHubReadmeWebTrends.Functions
                 }
             }
 
-            return link;
+            return url;
+        }
+
+        static bool ContainsWebTrendsQuery(this string url)
+        {
+            var uriBuilder = new UriBuilder(url);
+            var queryStringDictionary = QueryHelpers.ParseQuery(uriBuilder.Query);
+
+            if (queryStringDictionary.ContainsKey(_webTrendsQueryKey))
+            {
+                var webTrendsQuery = queryStringDictionary[_webTrendsQueryKey].First().ToString();
+                var webTrendsQuerySections = webTrendsQuery.Split("-");
+
+                //Ensure middle (second) category of the WebTrends Query is numberic
+                return webTrendsQuerySections.Count() is 3
+                        && long.TryParse(webTrendsQuerySections[1], out _);
+            }
+
+            return false;
         }
 
         static void RemoveLocale(this UriBuilder builder) => builder.Path = _localeRegex.Replace(builder.Path, string.Empty);
 
-        static void AddWebTrendsQuery(this UriBuilder builder, in string eventName, in string channel, in string alias)
+        static void AddWebTrendsQuery(this UriBuilder builder, in string team, in string devOpsId, in string alias)
         {
-            var webTrendsQueryValue = $"{eventName}-{channel}-{alias}";
+            var webTrendsQueryValue = $"{team}-{devOpsId}-{alias}";
 
             var queryStringDictionary = QueryHelpers.ParseQuery(builder.Query);
             queryStringDictionary.Remove(_webTrendsQueryKey);
