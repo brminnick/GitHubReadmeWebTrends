@@ -10,19 +10,19 @@ namespace GitHubReadmeWebTrends.Common
     public interface IGitHubGraphQLApiClient
     {
         [Post("")]
-        Task<GraphQLResponse<RepositoriesConnectionResponse>> RepositoriesConnectionQuery([Body] RepositoriesConnectionQueryContent request);
+        Task<ApiResponse<GraphQLResponse<RepositoriesConnectionResponse>>> RepositoriesConnectionQuery([Body] RepositoriesConnectionQueryContent request);
 
         [Post("")]
-        Task<GraphQLResponse<RepositoryConnectionResponse>> RepositoryConnectionQuery([Body] RepositoryConnectionQueryContent request);
+        Task<ApiResponse<GraphQLResponse<RepositoryConnectionResponse>>> RepositoryConnectionQuery([Body] RepositoryConnectionQueryContent request);
 
         [Post("")]
-        Task<GraphQLResponse<CreateBranchResponseModel>> CreateBranchMutation([Body] CreateBranchMutationContent request);
+        Task<ApiResponse<GraphQLResponse<CreateBranchResponseModel>>> CreateBranchMutation([Body] CreateBranchMutationContent request);
 
         [Post("")]
-        Task<GraphQLResponse<CreatePullRequestResponseModel>> CreatePullRequestMutation([Body] CreatePullRequestMutationContent request);
+        Task<ApiResponse<GraphQLResponse<CreatePullRequestResponseModel>>> CreatePullRequestMutation([Body] CreatePullRequestMutationContent request);
 
         [Post("")]
-        Task<GraphQLResponse<GitHubViewerResponse>> ViewerLoginQuery([Body] ViewerLoginQueryContent request);
+        Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> ViewerLoginQuery([Body] ViewerLoginQueryContent request);
     }
 
     public class CreatePullRequestMutationContent : GraphQLRequest

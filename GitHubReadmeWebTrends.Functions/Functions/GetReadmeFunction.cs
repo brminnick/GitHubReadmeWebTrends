@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
@@ -14,32 +15,62 @@ namespace GitHubReadmeWebTrends.Functions
         const string _runEveryHour = "0 0 * * * *";
 
         readonly HttpClient _httpClient;
-        readonly GitHubRestApiService _gitHubRestApiService;
         readonly CloudQueueClient _cloudQueueClient;
+        readonly GitHubRestApiService _gitHubRestApiService;
+        readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
+        readonly GitHubApiExceptionService _gitHubApiExceptionService;
 
-        public GetReadmeFunction(GitHubRestApiService gitHubApiService, IHttpClientFactory httpClientFactory, CloudQueueClient cloudQueueClient)
+        public GetReadmeFunction(CloudQueueClient cloudQueueClient,
+                                    IHttpClientFactory httpClientFactory,
+                                    GitHubRestApiService gitHubApiService,
+                                    GitHubGraphQLApiService gitHubGraphQLApiService,
+                                    GitHubApiExceptionService gitHubApiExceptionService)
         {
             _httpClient = httpClientFactory.CreateClient();
-            _gitHubRestApiService = gitHubApiService;
+
             _cloudQueueClient = cloudQueueClient;
+            _gitHubRestApiService = gitHubApiService;
+            _gitHubGraphQLApiService = gitHubGraphQLApiService;
+            _gitHubApiExceptionService = gitHubApiExceptionService;
         }
+
         [FunctionName(nameof(GetReadmeQueueTriggerFunction))]
         public async Task GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
                                 [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> remainingRepositoriesData,
                                 [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
         {
+            const int minimumApiRequests = 2000;
+
+            int gitHubRestApiRequestsRemaining, gitHubGraphQLApiRequestsRemaining;
+
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
             var (repository, gitHubUser) = data;
 
             try
             {
-                var response = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
+                var restApiResponse = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
+                var graphQLApiResponse = await _gitHubGraphQLApiService.GetViewerInformation().ConfigureAwait(false);
 
-                // The GitHub API Limits requests to 5,0000 per hour https://developer.github.com/v3/#rate-limiting
+                gitHubRestApiRequestsRemaining = _gitHubApiExceptionService.GetRemainingRequestCount(restApiResponse.Headers);
+                gitHubGraphQLApiRequestsRemaining = _gitHubApiExceptionService.GetRemainingRequestCount(graphQLApiResponse.Headers);
+            }
+            catch (Exception e) when (_gitHubApiExceptionService.HasReachedMaximimApiCallLimit(e))
+            {
+                gitHubRestApiRequestsRemaining = gitHubGraphQLApiRequestsRemaining = 0;
+            }
+
+            log.LogInformation($"{nameof(gitHubRestApiRequestsRemaining)}: {gitHubRestApiRequestsRemaining}");
+            log.LogInformation($"{nameof(gitHubGraphQLApiRequestsRemaining)}: {gitHubGraphQLApiRequestsRemaining}");
+
+            try
+            {
+
+                // The GitHub API Limits requests to 5,0000 per hour https://docs.github.com/en/free-pro-team@latest/rest#rate-limiting
                 // If the API Limit is approaching, output to RemainingRepositoriesQueue, where it will be handled by GetReadmeTimerTriggerFunction which runs once an hour
                 // Otherwise, process the data and place it on VerifyWebTrendsQueue
-                if (GitHubApiService.GetNumberOfApiRequestsRemaining(response.Headers) < 2000)
+                if (gitHubRestApiRequestsRemaining < minimumApiRequests
+                    || gitHubGraphQLApiRequestsRemaining < minimumApiRequests)
                 {
                     log.LogInformation($"Maximum API Requests Reached");
 
@@ -87,7 +118,7 @@ namespace GitHubReadmeWebTrends.Functions
                     {
                         var response = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
 
-                        if (GitHubApiService.GetNumberOfApiRequestsRemaining(response.Headers) >= 2000)
+                        if (GitHubApiExceptionService.GetNumberOfApiRequestsRemaining(response.Headers) >= 2000)
                         {
                             await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
                             await remainingRepositoriesQueue.DeleteMessageAsync(queueMessage).ConfigureAwait(false);
