@@ -18,20 +18,20 @@ namespace GitHubReadmeWebTrends.Functions
         readonly CloudQueueClient _cloudQueueClient;
         readonly GitHubRestApiService _gitHubRestApiService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
-        readonly GitHubApiExceptionService _gitHubApiExceptionService;
+        readonly GitHubApiStatusService _gitHubApiStatusService;
 
         public GetReadmeFunction(CloudQueueClient cloudQueueClient,
                                     IHttpClientFactory httpClientFactory,
                                     GitHubRestApiService gitHubApiService,
-                                    GitHubGraphQLApiService gitHubGraphQLApiService,
-                                    GitHubApiExceptionService gitHubApiExceptionService)
+                                    GitHubApiStatusService gitHubApiStatusService,
+                                    GitHubGraphQLApiService gitHubGraphQLApiService)
         {
             _httpClient = httpClientFactory.CreateClient();
 
             _cloudQueueClient = cloudQueueClient;
             _gitHubRestApiService = gitHubApiService;
+            _gitHubApiStatusService = gitHubApiStatusService;
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
-            _gitHubApiExceptionService = gitHubApiExceptionService;
         }
 
         [FunctionName(nameof(GetReadmeQueueTriggerFunction))]
@@ -41,51 +41,38 @@ namespace GitHubReadmeWebTrends.Functions
         {
             const int minimumApiRequests = 2000;
 
-            int gitHubRestApiRequestsRemaining, gitHubGraphQLApiRequestsRemaining;
-
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
             var (repository, gitHubUser) = data;
 
-            try
-            {
-                var restApiResponse = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
-                var graphQLApiResponse = await _gitHubGraphQLApiService.GetViewerInformation().ConfigureAwait(false);
-
-                gitHubRestApiRequestsRemaining = _gitHubApiExceptionService.GetRemainingRequestCount(restApiResponse.Headers);
-                gitHubGraphQLApiRequestsRemaining = _gitHubApiExceptionService.GetRemainingRequestCount(graphQLApiResponse.Headers);
-            }
-            catch (Exception e) when (_gitHubApiExceptionService.HasReachedMaximimApiCallLimit(e))
-            {
-                gitHubRestApiRequestsRemaining = gitHubGraphQLApiRequestsRemaining = 0;
-            }
+            var (gitHubRestApiRequestsRemaining, gitHubGraphQLApiRequestsRemaining) = await _gitHubApiStatusService.GetRemaininRequestCount().ConfigureAwait(false);
 
             log.LogInformation($"{nameof(gitHubRestApiRequestsRemaining)}: {gitHubRestApiRequestsRemaining}");
             log.LogInformation($"{nameof(gitHubGraphQLApiRequestsRemaining)}: {gitHubGraphQLApiRequestsRemaining}");
 
-            try
+
+            // The GitHub API Limits requests to 5,0000 per hour https://docs.github.com/en/free-pro-team@latest/rest#rate-limiting
+            // If the API Limit is approaching, output to RemainingRepositoriesQueue, where it will be handled by GetReadmeTimerTriggerFunction which runs once an hour
+            // Otherwise, process the data and place it on VerifyWebTrendsQueue
+            if (gitHubRestApiRequestsRemaining < minimumApiRequests
+                || gitHubGraphQLApiRequestsRemaining < minimumApiRequests)
             {
+                log.LogInformation($"Maximum API Requests Reached");
 
-                // The GitHub API Limits requests to 5,0000 per hour https://docs.github.com/en/free-pro-team@latest/rest#rate-limiting
-                // If the API Limit is approaching, output to RemainingRepositoriesQueue, where it will be handled by GetReadmeTimerTriggerFunction which runs once an hour
-                // Otherwise, process the data and place it on VerifyWebTrendsQueue
-                if (gitHubRestApiRequestsRemaining < minimumApiRequests
-                    || gitHubGraphQLApiRequestsRemaining < minimumApiRequests)
-                {
-                    log.LogInformation($"Maximum API Requests Reached");
+                remainingRepositoriesData.Add(data);
 
-                    remainingRepositoriesData.Add(data);
-
-                    log.LogInformation($"Added Data to RemainingRepositoriesQueue");
-                }
-                else
+                log.LogInformation($"Added Data to RemainingRepositoriesQueue");
+            }
+            else
+            {
+                try
                 {
                     await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
                 }
-            }
-            catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
-            {
-                //If a Readme doesn't exist, GitHubApiService.GetReadme will return a 404 Not Found response
+                catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
+                {
+                    //If a Readme doesn't exist, GitHubApiService.GetReadme will return a 404 Not Found response
+                }
             }
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
@@ -116,9 +103,10 @@ namespace GitHubReadmeWebTrends.Functions
 
                     try
                     {
-                        var response = await _gitHubRestApiService.GetResponseMessage().ConfigureAwait(false);
+                        var (gitHubRestApiRequestsRemaining, gitHubGraphQLApiRequestsRemaining) = await _gitHubApiStatusService.GetRemaininRequestCount().ConfigureAwait(false);
 
-                        if (GitHubApiExceptionService.GetNumberOfApiRequestsRemaining(response.Headers) >= 2000)
+                        if (gitHubRestApiRequestsRemaining > 2000
+                            && gitHubGraphQLApiRequestsRemaining > 2000)
                         {
                             await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
                             await remainingRepositoriesQueue.DeleteMessageAsync(queueMessage).ConfigureAwait(false);
