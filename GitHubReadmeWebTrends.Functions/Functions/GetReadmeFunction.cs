@@ -44,17 +44,13 @@ namespace GitHubReadmeWebTrends.Functions
 
             var (repository, gitHubUser) = data;
 
-            var (gitHubRestApiRequestsRemaining, gitHubGraphQLApiRequestsRemaining) = await _gitHubApiStatusService.GetRemaininRequestCount().ConfigureAwait(false);
-
-            log.LogInformation($"{nameof(gitHubRestApiRequestsRemaining)}: {gitHubRestApiRequestsRemaining}");
-            log.LogInformation($"{nameof(gitHubGraphQLApiRequestsRemaining)}: {gitHubGraphQLApiRequestsRemaining}");
-
+            var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits().ConfigureAwait(false);
 
             // The GitHub API Limits requests to 5,0000 per hour https://docs.github.com/en/free-pro-team@latest/rest#rate-limiting
             // If the API Limit is approaching, output to RemainingRepositoriesQueue, where it will be handled by GetReadmeTimerTriggerFunction which runs once an hour
             // Otherwise, process the data and place it on VerifyWebTrendsQueue
-            if (gitHubRestApiRequestsRemaining < _minimumApiRequests
-                || gitHubGraphQLApiRequestsRemaining < _minimumApiRequests)
+            if (getHubApiRateLimits.RestApi.RemainingRequestCount < _minimumApiRequests
+                || getHubApiRateLimits.GraphQLApi.RemainingRequestCount < _minimumApiRequests)
             {
                 log.LogInformation($"Maximum API Requests Reached");
 
@@ -100,10 +96,10 @@ namespace GitHubReadmeWebTrends.Functions
                     var dequeuedData = JsonConvert.DeserializeObject<(Repository, CloudAdvocateGitHubUserModel)>(queueMessage.AsString);
                     var (repository, gitHubUser) = dequeuedData;
 
-                    var (gitHubRestApiRequestsRemaining, gitHubGraphQLApiRequestsRemaining) = await _gitHubApiStatusService.GetRemaininRequestCount().ConfigureAwait(false);
+                    var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits().ConfigureAwait(false);
 
-                    if (gitHubRestApiRequestsRemaining < _minimumApiRequests
-                        || gitHubGraphQLApiRequestsRemaining < _minimumApiRequests)
+                    if (getHubApiRateLimits.RestApi.RemainingRequestCount < _minimumApiRequests
+                        || getHubApiRateLimits.GraphQLApi.RemainingRequestCount < _minimumApiRequests)
                     {
                         log.LogInformation($"Maximum API Requests Reached");
 
