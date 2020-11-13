@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
+using Polly.Extensions.Http;
 using Refit;
 
 namespace GitHubReadmeWebTrends.Common
@@ -23,7 +24,8 @@ namespace GitHubReadmeWebTrends.Common
                   client.DefaultRequestHeaders.Authorization = getBearerToken();
               })
               .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-              .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
+              .AddPolicyHandler(getPolicyHandler());
+
 
             services.AddRefitClient<IGitHubRestApiClient>()
               .ConfigureHttpClient(client =>
@@ -32,7 +34,7 @@ namespace GitHubReadmeWebTrends.Common
                   client.DefaultRequestHeaders.Authorization = getBearerToken();
               })
               .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-              .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
+              .AddPolicyHandler(getPolicyHandler());
 
             services.AddSingleton<YamlService>();
             services.AddSingleton<OptOutDatabase>();
@@ -41,10 +43,9 @@ namespace GitHubReadmeWebTrends.Common
             services.AddSingleton<CloudAdvocateService>();
             services.AddSingleton<GitHubApiStatusService>();
 
-            static TimeSpan sleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
-
             static AuthenticationHeaderValue getBearerToken() => new AuthenticationHeaderValue("bearer", _token);
             static DecompressionMethods getDecompressionMethods() => DecompressionMethods.Deflate | DecompressionMethods.GZip;
+            static IAsyncPolicy<HttpResponseMessage> getPolicyHandler() => HttpPolicyExtensions.HandleTransientHttpError().OrResult(msg => msg.StatusCode is HttpStatusCode.Forbidden).WaitAndRetryAsync(10, count => TimeSpan.FromSeconds(60));
         }
     }
 }
