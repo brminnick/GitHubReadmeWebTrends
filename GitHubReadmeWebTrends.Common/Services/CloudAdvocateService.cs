@@ -57,7 +57,7 @@ namespace GitHubReadmeWebTrends.Common
 
         public async Task<IReadOnlyList<CloudAdvocateGitHubUserModel>> GetFriendsOfAdvocates()
         {
-            var json = await _httpClient.GetStringAsync("https://gist.githubusercontent.com/jamesmontemagno/f4d3986c91867449153c389cc31d0abc/raw/81f116d492fc09f1124810dc440e7facb4386869/team.json");
+            var json = await _httpClient.GetStringAsync("https://raw.githubusercontent.com/jamesmontemagno/team/main/team.json");
 
             return JsonConvert.DeserializeObject<CloudAdvocateGitHubUserModel[]>(json);
         }
