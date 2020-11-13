@@ -20,9 +20,9 @@ How do I opt-out from the tool?
 - You may opt-out (or opt back in) any time at https://optout-githubreadmelinks.azurewebsites.net
 
 The tool is using the wrong value for Area/Team - How do I fix it?
-- Edit `team` in your [YAML File](https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates)
-- E.g. [Brandon Minnick's team is `mobile`](https://github.com/MicrosoftDocs/cloud-developer-advocates/blob/ade2e92a8edf3f017ec1bfbde077137a49328297/advocates/brandon-minnick.yml#L8)
+- In your [YAML File](https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates), edit `team` 
+  - E.g. [Brandon Minnick's team is `mobile`](https://github.com/MicrosoftDocs/cloud-developer-advocates/blob/ade2e92a8edf3f017ec1bfbde077137a49328297/advocates/brandon-minnick.yml#L8)
 
 The tool is using the wrong GitHub Username - How do I fix it?
-- Edit the GitHub `url` in your [YAML File](https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates)
-- E.g. [Brandon Minnick's GitHub URL is `https://github.com/brminnick`](https://github.com/MicrosoftDocs/cloud-developer-advocates/blob/ade2e92a8edf3f017ec1bfbde077137a49328297/advocates/brandon-minnick.yml#L39)
+- In your [YAML File](https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates), edit the GitHub `url`
+  - E.g. [Brandon Minnick's GitHub URL is `https://github.com/brminnick`](https://github.com/MicrosoftDocs/cloud-developer-advocates/blob/ade2e92a8edf3f017ec1bfbde077137a49328297/advocates/brandon-minnick.yml#L39)
