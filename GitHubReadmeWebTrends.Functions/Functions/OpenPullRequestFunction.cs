@@ -29,9 +29,16 @@ namespace GitHubReadmeWebTrends.Functions
 
             log.LogInformation($"Forked Repository for {repository.Owner} {repository.Name}");
 
-            await CreateNewBranch(forkedRepository, branchName).ConfigureAwait(false);
+            try
+            {
+                await CreateNewBranch(forkedRepository, branchName).ConfigureAwait(false);
 
-            log.LogInformation($"Create New Branch for {forkedRepository.Owner} {forkedRepository.Name}");
+                log.LogInformation($"Creates New Branch for {forkedRepository.Owner} {forkedRepository.Name}");
+            }
+            catch (GraphQLException e) when (e.Errors.Any(x => x.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase)))
+            {
+                log.LogInformation($"Existing Branch Found for {forkedRepository.Owner} {forkedRepository.Name}");
+            }
 
             await CommitUpdatedReadme(forkedRepository, branchName).ConfigureAwait(false);
 
@@ -45,11 +52,11 @@ namespace GitHubReadmeWebTrends.Functions
             }
             catch (ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.Conflict)
             {
-                //If a Pull Request with the same name is already open, GitHubGraphQLApiService.CreatePullRequest may return a 409 Conflict
+                log.LogInformation($"Existing Pull Request Found for {forkedRepository.Owner} {forkedRepository.Name}");
             }
-            catch (Exception e) when (e.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+            catch (GraphQLException e) when (e.Errors.Any(x => x.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase)))
             {
-                //If a Pull Request with the same name is already open, GitHubGraphQLApiService.CreatePullRequest may return "A pull request already exists..."
+                log.LogInformation($"Existing Pull Request Found for {forkedRepository.Owner} {forkedRepository.Name}");
             }
         }
 
