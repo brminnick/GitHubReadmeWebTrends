@@ -33,7 +33,7 @@ namespace GitHubReadmeWebTrends.Functions
             {
                 await CreateNewBranch(forkedRepository, branchName).ConfigureAwait(false);
 
-                log.LogInformation($"Creates New Branch for {forkedRepository.Owner} {forkedRepository.Name}");
+                log.LogInformation($"Created New Branch for {forkedRepository.Owner} {forkedRepository.Name}");
             }
             catch (GraphQLException e) when (e.Errors.Any(x => x.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase)))
             {
