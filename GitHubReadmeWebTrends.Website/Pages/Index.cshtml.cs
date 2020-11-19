@@ -59,7 +59,7 @@ namespace GitHubReadmeWebTrends.Website.Pages
 
             if (matchingAzureAdvocate is null)
             {
-                OutputText = "Error: Alias not Found\nEnsure `alias` field in your YAML file exists on cloud-developer-advocates: https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates";
+                OutputText = $"Error: Alias not Found\nEnsure your login, {microsoftAlias}, matches the `alias` field in your YAML file on the cloud-developer-advocates repo: https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates";
 
                 UpdateButtonText(null);
                 UpdateCurrentPreferenceText(null);
