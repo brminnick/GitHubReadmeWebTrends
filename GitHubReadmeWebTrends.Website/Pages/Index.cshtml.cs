@@ -93,7 +93,7 @@ namespace GitHubReadmeWebTrends.Website.Pages
         {
             var user = await _graphServiceClient.Me.Request().GetAsync().ConfigureAwait(false);
 
-            var email = user.Mail;
+            var email = user.UserPrincipalName;
             return email?.Split('@')[0] ?? throw new NullReferenceException();
         }
 
