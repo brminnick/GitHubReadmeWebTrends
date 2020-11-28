@@ -1,7 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Storage.Queue;
 using Microsoft.Azure.WebJobs;
@@ -19,12 +20,12 @@ namespace GitHubReadmeWebTrends.Functions
         readonly CloudQueueClient _cloudQueueClient;
         readonly GitHubRestApiService _gitHubRestApiService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
-        readonly GitHubApiStatusService _gitHubApiStatusService;
+        readonly IGitHubApiStatusService _gitHubApiStatusService;
 
         public GetReadmeFunction(CloudQueueClient cloudQueueClient,
                                     IHttpClientFactory httpClientFactory,
                                     GitHubRestApiService gitHubApiService,
-                                    GitHubApiStatusService gitHubApiStatusService,
+                                    IGitHubApiStatusService gitHubApiStatusService,
                                     GitHubGraphQLApiService gitHubGraphQLApiService)
         {
             _httpClient = httpClientFactory.CreateClient();
@@ -44,7 +45,7 @@ namespace GitHubReadmeWebTrends.Functions
 
             var (repository, gitHubUser) = data;
 
-            var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits().ConfigureAwait(false);
+            var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits(CancellationToken.None).ConfigureAwait(false);
 
             // The GitHub API Limits requests to 5,0000 per hour https://docs.github.com/en/free-pro-team@latest/rest#rate-limiting
             // If the API Limit is approaching, output to RemainingRepositoriesQueue, where it will be handled by GetReadmeTimerTriggerFunction which runs once an hour
@@ -96,7 +97,7 @@ namespace GitHubReadmeWebTrends.Functions
                     var dequeuedData = JsonConvert.DeserializeObject<(Repository, CloudAdvocateGitHubUserModel)>(queueMessage.AsString);
                     var (repository, gitHubUser) = dequeuedData;
 
-                    var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits().ConfigureAwait(false);
+                    var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits(CancellationToken.None).ConfigureAwait(false);
 
                     if (getHubApiRateLimits.RestApi.RemainingRequestCount < _minimumApiRequests
                         || getHubApiRateLimits.GraphQLApi.RemainingRequestCount < _minimumApiRequests)

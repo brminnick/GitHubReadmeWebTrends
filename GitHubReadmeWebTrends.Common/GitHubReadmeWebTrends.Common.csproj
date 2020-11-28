@@ -8,11 +8,10 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.9" />
-        <PackageReference Include="YamlDotNet" Version="8.1.2" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.9" />
+        <PackageReference Include="YamlDotNet" Version="9.1.0" />
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="3.1.9" />
-        <PackageReference Include="Refit.HttpClientFactory" Version="5.2.1" />
-        <PackageReference Include="GitHubApiStatus" Version="1.0.1" />
+        <PackageReference Include="Refit.HttpClientFactory" Version="5.2.4" />
+        <PackageReference Include="GitHubApiStatus.Extensions" Version="2.0.0-pre4" />
     </ItemGroup>
     <ItemGroup>
       <Folder Include="Constants\" />
