@@ -23,6 +23,18 @@ namespace GitHubReadmeWebTrends.Common
 
         [Post("")]
         Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> ViewerLoginQuery([Body] ViewerLoginQueryContent request);
+
+        [Post("")]
+        Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> ContributionsQuery([Body] ContributionsQueryContent request);
+    }
+
+    public class ContributionsQueryContent : GraphQLRequest
+    {
+        public ContributionsQueryContent(string gitHubLogin, string organizationId, DateTimeOffset from, DateTimeOffset to)
+            : base("query { user(login: \"" + gitHubLogin + "\") { contributionsCollection(organizationID: \"" + organizationId + "\", from: \"" + from.ToString() + "\", to: \"" + to + "\") { totalIssueContributions, totalCommitContributions, totalRepositoryContributions, totalPullRequestContributions, totalPullRequestReviewContributions commitContributionsByRepository(maxRepositories: 100) { repository { name }, }, issueContributionsByRepository(maxRepositories: 100) { repository { name }, }, pullRequestContributionsByRepository(maxRepositories:100) { repository { name } }, pullRequestReviewContributionsByRepository(maxRepositories: 100) { repository { name }}}}}")
+        {
+
+        }
     }
 
     public class CreatePullRequestMutationContent : GraphQLRequest

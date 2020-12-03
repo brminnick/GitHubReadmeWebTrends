@@ -12,6 +12,11 @@ namespace GitHubReadmeWebTrends.Common
 
         public GitHubGraphQLApiService(IGitHubGraphQLApiClient gitHubGraphQLApiClient) => _gitHubGraphQLApiClient = gitHubGraphQLApiClient;
 
+        public async Task<ContributionsCollectionModel> GetMicrosoftDocsContributionsCollection(string gitHubUserName, DateTimeOffset from, DateTimeOffset to)
+        {
+            var response = await GetContributionsCollection(gitHubUserName, "MDEyOk9yZ2FuaXphdGlvbjIyNDc5NDQ5", from, to).ConfigureAwait(false);
+            return response.Content.Data.User.ContributionsCollection;
+        }
 
         public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
             GetGraphQLResponseData(CreateBranchResponse(repositoryId, repositoryName, branchOid, guid));
@@ -24,6 +29,9 @@ namespace GitHubReadmeWebTrends.Common
 
         public Task<GitHubViewerResponse> GetViewerInformation() =>
             GetGraphQLResponseData(GetViewerInformationResponse());
+
+        public Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> GetContributionsCollection(string gitHubUserName, string organizationId, DateTimeOffset from, DateTimeOffset to)=>
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.ContributionsQuery(new ContributionsQueryContent(gitHubUserName, organizationId, from, to)));
 
         public Task<ApiResponse<GraphQLResponse<CreateBranchResponseModel>>> CreateBranchResponse(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
             ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranchMutation(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
