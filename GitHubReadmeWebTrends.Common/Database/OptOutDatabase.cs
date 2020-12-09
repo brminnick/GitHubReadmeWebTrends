@@ -15,20 +15,20 @@ namespace GitHubReadmeWebTrends.Common
 
         public OptOutDatabase(ILogger<OptOutDatabase> logger) => _logger = logger;
 
-        public IReadOnlyList<OptOutModel> GetAllOptOutModels()
+        public async Task<IReadOnlyList<OptOutModel>> GetAllOptOutModels()
         {
             using var connection = new DatabaseContext();
 
-            var optOutDatabaseModelList = connection.OptOutDatabaseModel?.ToList() ?? Enumerable.Empty<OptOutDatabaseModel>();
+            var optOutDatabaseModelList = await connection.OptOutDatabaseModel.ToListAsync().ConfigureAwait(false);
 
             return optOutDatabaseModelList.Select(x => OptOutDatabaseModel.ToOptOutModel(x)).ToList();
         }
 
-        public OptOutModel? GetOptOutModel(string alias)
+        public async Task<OptOutModel?> GetOptOutModel(string alias)
         {
             using var connection = new DatabaseContext();
 
-            var optOutDatabaseModel = connection.OptOutDatabaseModel?.SingleOrDefault(x => x.Alias == alias);
+            var optOutDatabaseModel = await connection.OptOutDatabaseModel.SingleOrDefaultAsync(x => x.Alias == alias).ConfigureAwait(false);
 
             if (optOutDatabaseModel is null)
                 return null;

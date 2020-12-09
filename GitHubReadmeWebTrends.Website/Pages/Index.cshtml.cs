@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -36,7 +35,7 @@ namespace GitHubReadmeWebTrends.Website.Pages
         public async Task OnGet()
         {
             var microsoftAlias = await GetCurrentUserAlias().ConfigureAwait(false);
-            var userOptOutModel = GetOptOutModel(microsoftAlias);
+            var userOptOutModel = await _optOutDatabase.GetOptOutModel(microsoftAlias).ConfigureAwait(false);
 
             UpdateButtonText(userOptOutModel);
             UpdateLoggedInLabelText(microsoftAlias);
@@ -66,7 +65,7 @@ namespace GitHubReadmeWebTrends.Website.Pages
             }
             else
             {
-                var userOptOutModel = GetOptOutModel(microsoftAlias);
+                var userOptOutModel = await _optOutDatabase.GetOptOutModel(microsoftAlias).ConfigureAwait(false);
                 var updatedOptOutModel = userOptOutModel?.HasOptedOut switch
                 {
                     true => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, false, userOptOutModel.CreatedAt, DateTimeOffset.UtcNow),
@@ -96,8 +95,6 @@ namespace GitHubReadmeWebTrends.Website.Pages
             var email = user.UserPrincipalName;
             return email?.Split('@')[0] ?? throw new NullReferenceException();
         }
-
-        OptOutModel GetOptOutModel(string microsoftAlias) => _optOutDatabase.GetAllOptOutModels().FirstOrDefault(x => x.Alias.Equals(microsoftAlias, StringComparison.OrdinalIgnoreCase));
 
         void UpdateLoggedInLabelText(in string microsoftAlias) => LoggedInLabelText = $"Logged in as {microsoftAlias}@microsoft.com";
 
