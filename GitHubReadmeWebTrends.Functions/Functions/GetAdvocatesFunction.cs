@@ -15,7 +15,7 @@ namespace GitHubReadmeWebTrends.Functions
 
         const bool _shouldRunOnStartup = false;
 
-        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin", "shboyer", "sicotin", "jopapa", "masoucou", "jamont", "v-gmohapi", "judubois", "ropreddy", "sakriema", "juyoo", "mijam", "ninarasi" };
+        readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin" };
 
         readonly YamlService _yamlService;
         readonly OptOutDatabase _optOutDatabase;
@@ -34,7 +34,7 @@ namespace GitHubReadmeWebTrends.Functions
         {
             log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Started");
 
-            var optOutList = _optOutDatabase.GetAllOptOutModels();
+            var optOutList = await _optOutDatabase.GetAllOptOutModels().ConfigureAwait(false);
 
             await foreach (var gitHubUser in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
             {
@@ -56,7 +56,7 @@ namespace GitHubReadmeWebTrends.Functions
         {
             log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Started");
 
-            var optOutList = _optOutDatabase.GetAllOptOutModels();
+            var optOutList = await _optOutDatabase.GetAllOptOutModels().ConfigureAwait(false);
 
             await foreach (var gitHubUser in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
             {
