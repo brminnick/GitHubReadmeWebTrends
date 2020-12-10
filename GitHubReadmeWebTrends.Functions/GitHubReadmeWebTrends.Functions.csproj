@@ -23,6 +23,7 @@
   <ItemGroup>
     <Folder Include="Functions\" />
     <Folder Include="Constants\" />
+    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GitHubReadmeWebTrends.Common\GitHubReadmeWebTrends.Common.csproj">

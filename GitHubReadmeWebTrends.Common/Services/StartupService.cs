@@ -24,8 +24,8 @@ namespace GitHubReadmeWebTrends.Common
                     client.BaseAddress = new Uri(GitHubConstants.GitHubGraphQLApi);
                     client.DefaultRequestHeaders.Authorization = getBearerTokenHeader();
                 })
-                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-                .AddPolicyHandler(getPolicyHandler());
+                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
+                .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
 
             services.AddRefitClient<IGitHubRestApiClient>()
@@ -34,12 +34,12 @@ namespace GitHubReadmeWebTrends.Common
                     client.BaseAddress = new Uri(GitHubConstants.GitHubRestApiUrl);
                     client.DefaultRequestHeaders.Authorization = getBearerTokenHeader();
                 })
-                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-                .AddPolicyHandler(getPolicyHandler());
+                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
+                .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
             services.AddGitHubApiStatusService(getBearerTokenHeader(), new ProductHeaderValue(nameof(GitHubReadmeWebTrends)))
-                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-                .AddPolicyHandler(getPolicyHandler());
+                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
+                .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
             services.AddSingleton<YamlService>();
             services.AddSingleton<OptOutDatabase>();
@@ -47,9 +47,7 @@ namespace GitHubReadmeWebTrends.Common
             services.AddSingleton<GitHubGraphQLApiService>();
             services.AddSingleton<CloudAdvocateService>();
 
-            static AuthenticationHeaderValue getBearerTokenHeader() => new AuthenticationHeaderValue("bearer", _token);
-            static DecompressionMethods getDecompressionMethods() => DecompressionMethods.Deflate | DecompressionMethods.GZip;
-            static IAsyncPolicy<HttpResponseMessage> getPolicyHandler() => HttpPolicyExtensions.HandleTransientHttpError().OrResult(msg => msg.StatusCode is HttpStatusCode.Forbidden).WaitAndRetryAsync(10, count => TimeSpan.FromSeconds(60));
+            static AuthenticationHeaderValue getBearerTokenHeader() => new("bearer", _token);
         }
     }
 }

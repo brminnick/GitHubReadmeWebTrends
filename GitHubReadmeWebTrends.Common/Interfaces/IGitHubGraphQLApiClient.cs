@@ -26,6 +26,9 @@ namespace GitHubReadmeWebTrends.Common
 
         [Post("")]
         Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> ContributionsQuery([Body] ContributionsQueryContent request);
+
+        [Post("")]
+        Task<ApiResponse<GraphQLResponse<RepositoryPullRequestResponse>>> RepositoryPullRequestQuery([Body] RepositoryPullRequestQueryContent request);
     }
 
     public class ContributionsQueryContent : GraphQLRequest
@@ -123,6 +126,15 @@ namespace GitHubReadmeWebTrends.Common
 
             [JsonProperty("clientMutationId")]
             public string ClientMutationId { get; }
+        }
+    }
+
+    public class RepositoryPullRequestQueryContent : GraphQLRequest
+    {
+        public RepositoryPullRequestQueryContent(in string repositoryName, in string repositoryOwner, in string endCursorString, in int numberOfPullRewuestsPerRequest = 100)
+            : base("query { repository(name: \"" + repositoryName + "\", owner: \"" + repositoryOwner + "\")  { defaultBranchRef { name } pullRequests(first: " + numberOfPullRewuestsPerRequest + endCursorString + ") { nodes { createdAt, merged, mergedAt, baseRefName, author { login } } pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
+        {
+
         }
     }
 

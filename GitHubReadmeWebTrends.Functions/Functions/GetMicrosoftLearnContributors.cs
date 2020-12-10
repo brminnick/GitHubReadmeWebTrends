@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
 using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Mvc;
@@ -14,25 +14,25 @@ using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    class GetMicrosoftDocsContributors
+    class GetMicrosoftLearnContributors
     {
         readonly CloudAdvocateService _cloudAdvocateService;
         readonly IGitHubApiStatusService _gitHubApiStatusService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
 
-        public GetMicrosoftDocsContributors(CloudAdvocateService cloudAdvocateService,
+        public GetMicrosoftLearnContributors(CloudAdvocateService cloudAdvocateService,
                                                 IGitHubApiStatusService gitHubApiStatusService,
-                                                GitHubGraphQLApiService gitHubGraphQLApiService)
+                                                GitHubGraphQLApiService_PrivateRepoAccess gitHubGraphQLApiService)
         {
             _cloudAdvocateService = cloudAdvocateService;
             _gitHubApiStatusService = gitHubApiStatusService;
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
         }
 
-        [FunctionName(nameof(GetMicrosoftDocsContributors))]
-        public async Task<IActionResult> RunHttpTrigger([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftDocsContributors) + "/{from:datetime}/{to:datetime}")] HttpRequestMessage req, DateTime from, DateTime to, ILogger log)
+        [FunctionName(nameof(GetMicrosoftLearnContributors))]
+        public async Task<IActionResult> RunHttpTrigger([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributors) + "/{from:datetime}/{to:datetime}/{team:string}")] HttpRequestMessage req, DateTime from, DateTime to, ILogger log, string team = "")
         {
-            log.LogInformation($"{nameof(GetMicrosoftDocsContributors)} Started");
+            log.LogInformation($"{nameof(GetMicrosoftLearnContributors)} Started");
 
             var timeSpan = to - from;
             if (timeSpan.TotalDays > 365)
@@ -51,8 +51,11 @@ namespace GitHubReadmeWebTrends.Functions
             var gitHubContributionsList = new List<GitHubContributorModel>();
             await foreach (var cloudAdvocateGitHubUserModel in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
             {
-                var contributions = await _gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection(cloudAdvocateGitHubUserModel.GitHubUserName, from, to).ConfigureAwait(false);
-                gitHubContributionsList.Add(new GitHubContributorModel(contributions, cloudAdvocateGitHubUserModel));
+                if (cloudAdvocateGitHubUserModel.MicrosoftTeam.Equals(team, StringComparison.OrdinalIgnoreCase))
+                {
+                    var contributions = await _gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection(cloudAdvocateGitHubUserModel.GitHubUserName, from, to).ConfigureAwait(false);
+                    gitHubContributionsList.Add(new GitHubContributorModel(contributions, cloudAdvocateGitHubUserModel));
+                }
             }
 
             return new OkObjectResult(gitHubContributionsList);

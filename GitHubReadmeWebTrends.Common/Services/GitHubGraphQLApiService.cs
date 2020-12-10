@@ -8,6 +8,16 @@ namespace GitHubReadmeWebTrends.Common
 {
     public class GitHubGraphQLApiService
     {
+        readonly static IReadOnlyList<(string Owner, string Repository)> _microsoftLearnRepositories = new[]
+        {
+           ("microsoftdocs", "learn-bizapps-pr"),
+           ("microsoftdocs", "learn-certs-pr"),
+           ("microsoftdocs", "learn-dynamics-pr"),
+           ("microsoftdocs", "learn-m365-pr"),
+           ("microsoftdocs", "learn-pr"),
+           ("microsoftdocs", "learnshared")
+        };
+
         readonly IGitHubGraphQLApiClient _gitHubGraphQLApiClient;
 
         public GitHubGraphQLApiService(IGitHubGraphQLApiClient gitHubGraphQLApiClient) => _gitHubGraphQLApiClient = gitHubGraphQLApiClient;
@@ -58,6 +68,29 @@ namespace GitHubReadmeWebTrends.Common
             while (repositoryConnection?.PageInfo?.HasNextPage is true);
         }
 
+        public async IAsyncEnumerable<IEnumerable<PullRequest>> GetDefaultBranchPullRequests(string repositoryName, string repositoryOwner)
+        {
+            RepositoryPullRequestResponse? repositoryPullRequestResponse = null;
+            do
+            {
+                repositoryPullRequestResponse = await GetRepositoryPullRequestResponse(repositoryName, repositoryOwner, repositoryPullRequestResponse?.PullRequests?.PageInfo?.EndCursor).ConfigureAwait(false);
+                yield return repositoryPullRequestResponse?.PullRequests?.PullRequests.Where(x => x.BaseRefName == repositoryPullRequestResponse.DefaultBranchRef.Name) ?? Enumerable.Empty<PullRequest>();
+            }
+            while (repositoryPullRequestResponse?.PullRequests?.PageInfo?.HasNextPage is true);
+        }
+
+        async Task<RepositoryPullRequestResponse?> GetRepositoryPullRequestResponse(string repositoryName, string repositoryOwner, string? endCursor, int numberOfPullRequestsPerRequest = 100)
+        {
+            var response = await ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryPullRequestQuery(new RepositoryPullRequestQueryContent(repositoryName, repositoryOwner, GetEndCursorString(endCursor), numberOfPullRequestsPerRequest))).ConfigureAwait(false);
+            return response.Content.Data;
+        }
+
+        async Task<RepositoriesConnectionResponse> GetRepositoryConnectionResponse(string repositoryOwner, string? endCursor, int numberOfRepositoriesPerRequest = 100)
+        {
+            var apiResponse = await ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoriesConnectionQuery(new RepositoriesConnectionQueryContent(repositoryOwner, GetEndCursorString(endCursor), numberOfRepositoriesPerRequest))).ConfigureAwait(false);
+            return apiResponse.Content.Data;
+        }
+
         async Task<T> GetGraphQLResponseData<T>(Task<ApiResponse<GraphQLResponse<T>>> graphQLRequestTask)
         {
             var response = await ExecuteGraphQLRequest(graphQLRequestTask).ConfigureAwait(false);
@@ -76,12 +109,6 @@ namespace GitHubReadmeWebTrends.Common
             return response;
         }
 
-        async Task<RepositoriesConnectionResponse> GetRepositoryConnectionResponse(string repositoryOwner, string? endCursor, int numberOfRepositoriesPerRequest = 100)
-        {
-            var apiResponse = await ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoriesConnectionQuery(new RepositoriesConnectionQueryContent(repositoryOwner, getEndCursorString(endCursor), numberOfRepositoriesPerRequest))).ConfigureAwait(false);
-            return apiResponse.Content.Data;
-
-            static string getEndCursorString(string? endCursor) => string.IsNullOrWhiteSpace(endCursor) ? string.Empty : "after: \"" + endCursor + "\"";
-        }
+        static string GetEndCursorString(string? endCursor) => string.IsNullOrWhiteSpace(endCursor) ? string.Empty : "after: \"" + endCursor + "\"";
     }
 }
