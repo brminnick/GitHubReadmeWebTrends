@@ -132,7 +132,7 @@ namespace GitHubReadmeWebTrends.Common
     public class RepositoryPullRequestQueryContent : GraphQLRequest
     {
         public RepositoryPullRequestQueryContent(in string repositoryName, in string repositoryOwner, in string endCursorString, in int numberOfPullRewuestsPerRequest = 100)
-            : base("query { repository(name: \"" + repositoryName + "\", owner: \"" + repositoryOwner + "\")  { defaultBranchRef { name } pullRequests(first: " + numberOfPullRewuestsPerRequest + endCursorString + ") { nodes { createdAt, merged, mergedAt, baseRefName, author { login } } pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
+            : base("query { repository(name: \"" + repositoryName + "\", owner: \"" + repositoryOwner + "\")  { defaultBranchRef { name } pullRequests(first: " + numberOfPullRewuestsPerRequest + endCursorString + ") { nodes { url, id, createdAt, merged, mergedAt, baseRefName, author { login } } pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
         {
 
         }

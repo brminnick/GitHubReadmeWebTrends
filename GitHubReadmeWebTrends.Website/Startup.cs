@@ -15,6 +15,8 @@ namespace GitHubReadmeWebTrends.Website
 {
     public class Startup
     {
+        readonly static string _token = Environment.GetEnvironmentVariable("Token") ?? string.Empty;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -41,7 +43,7 @@ namespace GitHubReadmeWebTrends.Website
 
             services.AddRazorPages().AddMicrosoftIdentityUI();
 
-            StartupService.ConfigureServices(services);
+            StartupService.ConfigureServices(services, _token);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

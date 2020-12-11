@@ -3,7 +3,9 @@ using System.Linq;
 
 namespace GitHubReadmeWebTrends.Common
 {
-    public record RepositoryPullRequestResponse(DefaultBranchRef_RepositoryPullRequestResponse DefaultBranchRef, PullRequestResponse PullRequests);
+    public record RepositoryPullRequestResponse(Repository_RepositoryPullRequestResponse Repository);
+
+    public record Repository_RepositoryPullRequestResponse(DefaultBranchRef_RepositoryPullRequestResponse DefaultBranchRef, PullRequestResponse PullRequests);
 
     public record DefaultBranchRef_RepositoryPullRequestResponse(string Name);
 
@@ -16,5 +18,5 @@ namespace GitHubReadmeWebTrends.Common
         public PageInfo PageInfo { get; }
     }
 
-    public record Author(string Login);
+    public record Author(string? Login);
 }

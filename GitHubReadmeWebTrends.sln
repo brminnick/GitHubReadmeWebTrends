@@ -8,7 +8,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Commo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Website", "GitHubReadmeWebTrends.Website\GitHubReadmeWebTrends.Website.csproj", "{67710356-35FB-48E8-BF21-073F2796589F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Console", "GitHubReadmeWebTrends.Console\GitHubReadmeWebTrends.Console.csproj", "{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Console", "GitHubReadmeWebTrends.Console\GitHubReadmeWebTrends.Console.csproj", "{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAdvocates.Functions", "AzureAdvocates.Functions\AzureAdvocates.Functions.csproj", "{EC05E3F1-3A22-42ED-9862-D1A0724FBC3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC05E3F1-3A22-42ED-9862-D1A0724FBC3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC05E3F1-3A22-42ED-9862-D1A0724FBC3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC05E3F1-3A22-42ED-9862-D1A0724FBC3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC05E3F1-3A22-42ED-9862-D1A0724FBC3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
