@@ -18,11 +18,11 @@ namespace GitHubReadmeWebTrends.Functions
     {
         readonly CloudAdvocateService _cloudAdvocateService;
         readonly IGitHubApiStatusService _gitHubApiStatusService;
-        readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
+        readonly GitHubGraphQLApiPrivateRepoService _gitHubGraphQLApiService;
 
         public GetMicrosoftLearnContributors(CloudAdvocateService cloudAdvocateService,
                                                 IGitHubApiStatusService gitHubApiStatusService,
-                                                GitHubGraphQLApiService_PrivateRepoAccess gitHubGraphQLApiService)
+                                                GitHubGraphQLApiPrivateRepoService gitHubGraphQLApiService)
         {
             _cloudAdvocateService = cloudAdvocateService;
             _gitHubApiStatusService = gitHubApiStatusService;
@@ -40,7 +40,7 @@ namespace GitHubReadmeWebTrends.Functions
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             var gitHubApiStatus = await _gitHubApiStatusService.GetApiRateLimits(cancellationTokenSource.Token).ConfigureAwait(false);
-            if (gitHubApiStatus.GraphQLApi.RemainingRequestCount < 2000)
+            if (gitHubApiStatus.GraphQLApi.RemainingRequestCount < 4000)
             {
                 return new ObjectResult($"Maximum GitHub API Limit Reached. GitHub API Limit will reset in {gitHubApiStatus.GraphQLApi.RateLimitReset_TimeRemaining}. Try again at {gitHubApiStatus.GraphQLApi.RateLimitReset_DateTime}")
                 {
