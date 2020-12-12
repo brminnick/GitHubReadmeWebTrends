@@ -56,6 +56,7 @@ namespace GitHubReadmeWebTrends.Functions
             {
                 if (team is null || advocate.MicrosoftTeam.Equals(team, StringComparison.OrdinalIgnoreCase))
                 {
+                    log.LogInformation($"Found Advocate: {advocate.FullName}");
                     cloudAdvocateList.Add(advocate);
                 }
             }
@@ -64,13 +65,17 @@ namespace GitHubReadmeWebTrends.Functions
             await foreach (var pullRequestList in _gitHubGraphQLApiService.GetMicrosoftLearnPullRequests().ConfigureAwait(false))
             {
                 microsoftLearnPullRequests.AddRange(pullRequestList);
+                log.LogInformation($"Added {pullRequestList.Count} Pull Requests from {pullRequestList.FirstOrDefault()?.RepositoryName}");
             }
 
             var cloudAdvocateContributions = new List<GitHubContributorModel>();
             foreach (var cloudAdvocate in cloudAdvocateList)
             {
                 var cloudAdvocateContributorModel = new GitHubContributorModel(microsoftLearnPullRequests.Where(x => x.Author.Equals(cloudAdvocate.GitHubUserName, StringComparison.OrdinalIgnoreCase)), cloudAdvocate);
+
                 cloudAdvocateContributions.Add(cloudAdvocateContributorModel);
+
+                log.LogInformation($"Added {cloudAdvocateContributorModel.PullRequests.Count} Pull Requests for {cloudAdvocate.FullName}");
             }
 
             return new OkObjectResult(cloudAdvocateContributions);

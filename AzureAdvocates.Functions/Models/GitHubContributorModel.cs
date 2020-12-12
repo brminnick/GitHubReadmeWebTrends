@@ -15,9 +15,9 @@ namespace GitHubReadmeWebTrends.Functions
         public GitHubContributorModel(in IEnumerable<RepositoryPullRequest> pullReuests, in string fullName, in string gitHubUserName, in string microsoftAlias, in string microsoftTeam)
             : base(fullName, gitHubUserName, microsoftAlias, microsoftTeam)
         {
-            PullReuests = pullReuests.ToList();
+            PullRequests = pullReuests.ToList();
         }
 
-        public IReadOnlyList<RepositoryPullRequest> PullReuests { get; }
+        public IReadOnlyList<RepositoryPullRequest> PullRequests { get; }
     }
 }
