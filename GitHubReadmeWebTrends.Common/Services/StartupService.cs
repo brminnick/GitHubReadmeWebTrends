@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using GitHubApiStatus.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using Polly.Extensions.Http;
 using Refit;
 
 namespace GitHubReadmeWebTrends.Common
