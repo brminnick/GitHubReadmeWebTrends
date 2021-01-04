@@ -11,13 +11,14 @@ namespace GitHubReadmeWebTrends.Functions
 {
     public class Startup : FunctionsStartup
     {
+        readonly static string _token = Environment.GetEnvironmentVariable("Token") ?? string.Empty;
         static readonly string _storageConnectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage") ?? string.Empty;
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services.AddSingleton<CloudQueueClient>(CloudStorageAccount.Parse(_storageConnectionString).CreateCloudQueueClient());
 
-            StartupService.ConfigureServices(builder.Services);
+            StartupService.ConfigureServices(builder.Services, _token);
         }
     }
 }

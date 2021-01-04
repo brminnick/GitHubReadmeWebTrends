@@ -23,6 +23,21 @@ namespace GitHubReadmeWebTrends.Common
 
         [Post("")]
         Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> ViewerLoginQuery([Body] ViewerLoginQueryContent request);
+
+        [Post("")]
+        Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> ContributionsQuery([Body] ContributionsQueryContent request);
+
+        [Post("")]
+        Task<ApiResponse<GraphQLResponse<RepositoryPullRequestResponse>>> RepositoryPullRequestQuery([Body] RepositoryPullRequestQueryContent request);
+    }
+
+    public class ContributionsQueryContent : GraphQLRequest
+    {
+        public ContributionsQueryContent(string gitHubLogin, string organizationId, DateTimeOffset from, DateTimeOffset to)
+            : base("query { user(login: \"" + gitHubLogin + "\") { contributionsCollection(organizationID: \"" + organizationId + "\", from: " + JsonConvert.SerializeObject(from) + ", to: " + JsonConvert.SerializeObject(to) + ") { totalIssueContributions, totalCommitContributions, totalRepositoryContributions, totalPullRequestContributions, totalPullRequestReviewContributions commitContributionsByRepository(maxRepositories: 100) { repository { name }, }, issueContributionsByRepository(maxRepositories: 100) { repository { name }, }, pullRequestContributionsByRepository(maxRepositories:100) { repository { name } }, pullRequestReviewContributionsByRepository(maxRepositories: 100) { repository { name }}}}}")
+        {
+
+        }
     }
 
     public class CreatePullRequestMutationContent : GraphQLRequest
@@ -111,6 +126,15 @@ namespace GitHubReadmeWebTrends.Common
 
             [JsonProperty("clientMutationId")]
             public string ClientMutationId { get; }
+        }
+    }
+
+    public class RepositoryPullRequestQueryContent : GraphQLRequest
+    {
+        public RepositoryPullRequestQueryContent(in string repositoryName, in string repositoryOwner, in string endCursorString, in int numberOfPullRewuestsPerRequest = 100)
+            : base("query { repository(name: \"" + repositoryName + "\", owner: \"" + repositoryOwner + "\")  { defaultBranchRef { name } pullRequests(first: " + numberOfPullRewuestsPerRequest + endCursorString + ") { nodes { url, id, createdAt, merged, mergedAt, baseRefName, author { login } } pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
+        {
+
         }
     }
 

@@ -13,12 +13,7 @@ namespace GitHubReadmeWebTrends.Functions
     {
         const string _runOncePerMonth = "0 0 0 5 * *";
 
-        const bool _shouldRunOnStartup =
-#if DEBUG
-            true;
-#else
-            false;
-#endif
+        const bool _shouldRunOnStartup = false;
 
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin" };
 

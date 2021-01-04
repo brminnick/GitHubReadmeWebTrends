@@ -12,9 +12,7 @@ namespace GitHubReadmeWebTrends.Common
 {
     public static class StartupService
     {
-        readonly static string _token = Environment.GetEnvironmentVariable("Token") ?? string.Empty;
-
-        public static void ConfigureServices(in IServiceCollection services)
+        public static void ConfigureServices(in IServiceCollection services, string token)
         {
             services.AddLogging();
 
@@ -22,24 +20,24 @@ namespace GitHubReadmeWebTrends.Common
                 .ConfigureHttpClient(client =>
                 {
                     client.BaseAddress = new Uri(GitHubConstants.GitHubGraphQLApi);
-                    client.DefaultRequestHeaders.Authorization = getBearerTokenHeader();
+                    client.DefaultRequestHeaders.Authorization = getBearerTokenHeader(token);
                 })
-                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-                .AddPolicyHandler(getPolicyHandler());
+                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
+                .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
 
             services.AddRefitClient<IGitHubRestApiClient>()
                 .ConfigureHttpClient(client =>
                 {
                     client.BaseAddress = new Uri(GitHubConstants.GitHubRestApiUrl);
-                    client.DefaultRequestHeaders.Authorization = getBearerTokenHeader();
+                    client.DefaultRequestHeaders.Authorization = getBearerTokenHeader(token);
                 })
-                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-                .AddPolicyHandler(getPolicyHandler());
+                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
+                .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
-            services.AddGitHubApiStatusService(getBearerTokenHeader(), new ProductHeaderValue(nameof(GitHubReadmeWebTrends)))
-                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = getDecompressionMethods() })
-                .AddPolicyHandler(getPolicyHandler());
+            services.AddGitHubApiStatusService(getBearerTokenHeader(token), new ProductHeaderValue(nameof(GitHubReadmeWebTrends)))
+                .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
+                .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
             services.AddSingleton<YamlService>();
             services.AddSingleton<OptOutDatabase>();
@@ -47,9 +45,7 @@ namespace GitHubReadmeWebTrends.Common
             services.AddSingleton<GitHubGraphQLApiService>();
             services.AddSingleton<CloudAdvocateService>();
 
-            static AuthenticationHeaderValue getBearerTokenHeader() => new AuthenticationHeaderValue("bearer", _token);
-            static DecompressionMethods getDecompressionMethods() => DecompressionMethods.Deflate | DecompressionMethods.GZip;
-            static IAsyncPolicy<HttpResponseMessage> getPolicyHandler() => HttpPolicyExtensions.HandleTransientHttpError().OrResult(msg => msg.StatusCode is HttpStatusCode.Forbidden).WaitAndRetryAsync(10, count => TimeSpan.FromSeconds(60));
+            static AuthenticationHeaderValue getBearerTokenHeader(in string token) => new("bearer", token);
         }
     }
 }
