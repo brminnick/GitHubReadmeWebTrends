@@ -64,7 +64,7 @@ namespace AzureAdvocates.Functions
                 log.LogInformation($"Added {cloudAdvocateContributorModel.PullRequests.Count} Pull Requests for {cloudAdvocate.FullName}");
             }
 
-            var blobName = $"ContributionsAsOf{DateTime.UtcNow:o}.json";
+            var blobName = $"Contributions_{DateTime.UtcNow:o}.json";
             await _blobStorageService.UploadCloudAdvocateMicrosoftLearnContributions(cloudAdvocateContributions, blobName).ConfigureAwait(false);
         }
     }
