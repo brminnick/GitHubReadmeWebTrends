@@ -37,10 +37,6 @@ namespace GitHubReadmeWebTrends.Functions
         {
             log.LogInformation($"{nameof(GetMicrosoftLearnContributors)} Started");
 
-            var timeSpan = to - from;
-            if (timeSpan.TotalDays > 365)
-                return new BadRequestObjectResult($"Invalid Timespan: {timeSpan.TotalDays} days. Timespan must be less than 365 days");
-
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             var gitHubApiStatus = await _gitHubApiStatusService.GetApiRateLimits(cancellationTokenSource.Token).ConfigureAwait(false);
             if (gitHubApiStatus.GraphQLApi.RemainingRequestCount < 4000)
@@ -71,7 +67,7 @@ namespace GitHubReadmeWebTrends.Functions
             var cloudAdvocateContributions = new List<GitHubContributorModel>();
             foreach (var cloudAdvocate in cloudAdvocateList)
             {
-                var cloudAdvocateContributorModel = new GitHubContributorModel(microsoftLearnPullRequests.Where(x => x.Author.Equals(cloudAdvocate.GitHubUserName, StringComparison.OrdinalIgnoreCase)), cloudAdvocate);
+                var cloudAdvocateContributorModel = new GitHubContributorModel(microsoftLearnPullRequests.Where(x => x.Author.Equals(cloudAdvocate.GitHubUserName, StringComparison.OrdinalIgnoreCase) && x.CreatedAt.IsWithinRange(from, to)), cloudAdvocate);
 
                 cloudAdvocateContributions.Add(cloudAdvocateContributorModel);
 
@@ -80,5 +76,10 @@ namespace GitHubReadmeWebTrends.Functions
 
             return new OkObjectResult(cloudAdvocateContributions);
         }
+    }
+
+    static class DateTimeExtensions
+    {
+        public static bool IsWithinRange(this DateTimeOffset dateTimeOffset, DateTimeOffset start, DateTimeOffset end) => dateTimeOffset >= start && dateTimeOffset <= end;
     }
 }

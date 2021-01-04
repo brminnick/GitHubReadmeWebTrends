@@ -10,12 +10,12 @@ namespace GitHubReadmeWebTrends.Common
     {
         readonly static IReadOnlyList<(string Owner, string Repository)> _microsoftLearnRepositories = new[]
         {
-           ("microsoftdocs", "learn-bizapps-pr"),
+           ("microsoftdocs", "learnshared"),
            ("microsoftdocs", "learn-certs-pr"),
-           ("microsoftdocs", "learn-dynamics-pr"),
            ("microsoftdocs", "learn-m365-pr"),
+           ("microsoftdocs", "learn-bizapps-pr"),
+           ("microsoftdocs", "learn-dynamics-pr"),
            ("microsoftdocs", "learn-pr"),
-           ("microsoftdocs", "learnshared")
         };
 
         readonly IGitHubGraphQLApiClient _gitHubGraphQLApiClient;
