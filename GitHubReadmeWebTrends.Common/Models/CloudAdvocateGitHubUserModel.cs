@@ -1,4 +1,6 @@
-﻿namespace GitHubReadmeWebTrends.Common
+﻿using Newtonsoft.Json;
+
+namespace GitHubReadmeWebTrends.Common
 {
     public class CloudAdvocateGitHubUserModel
     {
@@ -10,9 +12,16 @@
             MicrosoftTeam = microsoftTeam;
         }
 
+        [JsonProperty("fullName")]
         public string FullName { get; }
+
+        [JsonProperty("gitHubUserName")]
         public string GitHubUserName { get; }
+
+        [JsonProperty("microsoftAlias")]
         public string MicrosoftAlias { get; }
+
+        [JsonProperty("microsoftTeam")]
         public string MicrosoftTeam { get; }
     }
 }
