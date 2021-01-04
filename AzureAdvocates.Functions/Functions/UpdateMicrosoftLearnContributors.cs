@@ -29,7 +29,7 @@ namespace AzureAdvocates.Functions
         }
 
         [FunctionName(nameof(UpdateMicrosoftLearnContributors))]
-        public async Task Run([TimerTrigger("0 0 /6 * * *")] TimerInfo timer, ILogger log)
+        public async Task Run([TimerTrigger("0 0 */6 * * *")] TimerInfo timer, ILogger log)
         {
             log.LogInformation($"{nameof(UpdateMicrosoftLearnContributors)} Started");
 
