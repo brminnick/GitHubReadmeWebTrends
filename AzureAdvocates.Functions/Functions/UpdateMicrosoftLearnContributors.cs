@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
