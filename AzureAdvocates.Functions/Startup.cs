@@ -2,6 +2,7 @@
 using AzureAdvocates.Functions;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace AzureAdvocates.Functions
@@ -10,6 +11,10 @@ namespace AzureAdvocates.Functions
     {
         readonly static string _token = Environment.GetEnvironmentVariable("Token") ?? string.Empty;
 
-        public override void Configure(IFunctionsHostBuilder builder) => StartupService.ConfigureServices(builder.Services, _token);
+        public override void Configure(IFunctionsHostBuilder builder)
+        {
+            builder.Services.AddSingleton<BlobStorageService>();
+            StartupService.ConfigureServices(builder.Services, _token);
+        }
     }
 }
