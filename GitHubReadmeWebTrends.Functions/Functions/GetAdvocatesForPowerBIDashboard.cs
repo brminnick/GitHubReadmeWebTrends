@@ -29,9 +29,9 @@ namespace GitHubReadmeWebTrends.Functions
                 if (advocate is null)
                     continue;
 
-                var gitHubUri = advocate.Connect.SingleOrDefault(x => x.Title.Contains("GitHub", StringComparison.OrdinalIgnoreCase))?.Url ?? throw new Exception($"Missing GitHub Uri for {advocate.Name}");
-                var twitterUri = advocate.Connect.SingleOrDefault(x => x.Title.Contains("Twitter", StringComparison.OrdinalIgnoreCase))?.Url ?? throw new Exception($"Missing Twitter Uri for {advocate.Name}");
-                var linkedInUri = advocate.Connect.SingleOrDefault(x => x.Title.Contains("LinkedIn", StringComparison.OrdinalIgnoreCase))?.Url ?? throw new Exception($"Missing LinkedIn Uri for {advocate.Name}");
+                var gitHubUri = advocate.Connect.SingleOrDefault(x => x.Title.Contains("GitHub", StringComparison.OrdinalIgnoreCase))?.Url;
+                var twitterUri = advocate.Connect.SingleOrDefault(x => x.Title.Contains("Twitter", StringComparison.OrdinalIgnoreCase))?.Url;
+                var linkedInUri = advocate.Connect.SingleOrDefault(x => x.Title.Contains("LinkedIn", StringComparison.OrdinalIgnoreCase))?.Url;
 
                 yield return new CloudAdvocatePowerBIModel(advocate.Name, advocate.Metadata.Alias, gitHubUri, twitterUri, linkedInUri);
             }
