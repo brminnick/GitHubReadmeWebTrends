@@ -49,12 +49,16 @@ namespace AzureAdvocates.Functions
                 if (team is not null && advocate.MicrosoftTeam != team)
                     continue;
 
+                log.LogInformation($"Found {advocate.FullName}");
                 advocateCount++;
 
                 var microsoftDocsContributions = await _gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection(advocate.GitHubUserName, from, to).ConfigureAwait(false);
 
                 if (microsoftDocsContributions.TotalContributions > 0)
+                {
+                    log.LogInformation($"Total Contributions: {microsoftDocsContributions.TotalContributions}");
                     advocateContributorCount++;
+                }
             }
 
             return new OkObjectResult(new AdovocatesTotalContributionsModel(advocateContributorCount, advocateCount));
