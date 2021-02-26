@@ -26,6 +26,8 @@ namespace GitHubReadmeWebTrends.Common
             PullRequestReviewContributionsRepositories = pullRequestReviewContributionsByRepository.Select(x => x.Repository.Name).ToList();
         }
 
+        public int TotalContributions => TotalIssueContributions + TotalCommitContributions + TotalRepositoryContributions + TotalPullRequestContributions + TotalPullRequestReviewContributions;
+
         public int TotalIssueContributions { get; }
         public int TotalCommitContributions { get; }
         public int TotalRepositoryContributions { get; }
