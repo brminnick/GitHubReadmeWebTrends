@@ -75,16 +75,16 @@ namespace AzureAdvocates.Functions
 
                 var microsoftDocsContributions = await gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection(advocate.GitHubUserName, from, to).ConfigureAwait(false);
 
+                if (!teamContributionCount.ContainsKey(advocate.MicrosoftTeam))
+                    teamContributionCount.Add(advocate.MicrosoftTeam, 0);
+
                 if (microsoftDocsContributions.TotalPullRequestContributions
                     + microsoftDocsContributions.TotalPullRequestReviewContributions
                     + microsoftDocsContributions.TotalCommitContributions > 0)
                 {
                     log.LogInformation($"Team: {advocate.MicrosoftTeam}");
 
-                    if (teamContributionCount.ContainsKey(advocate.MicrosoftTeam))
-                        teamContributionCount[advocate.MicrosoftTeam]++;
-                    else
-                        teamContributionCount.Add(advocate.MicrosoftTeam, 1);
+                    teamContributionCount[advocate.MicrosoftTeam]++;
 
                     log.LogInformation($"Total Contributions: {microsoftDocsContributions.TotalContributions}");
                     advocateContributorCount++;
