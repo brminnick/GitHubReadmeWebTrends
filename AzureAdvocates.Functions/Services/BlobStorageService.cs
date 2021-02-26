@@ -55,7 +55,6 @@ namespace AzureAdvocates.Functions
                 }
 
             } while (continuationToken != null);
-
         }
 
         CloudBlobContainer GetBlobContainer(string containerName) => _blobClient.GetContainerReference(containerName);
