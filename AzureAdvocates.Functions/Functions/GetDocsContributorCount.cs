@@ -13,16 +13,19 @@ using Microsoft.Extensions.Logging;
 
 namespace AzureAdvocates.Functions
 {
-    public class GetDocsContributorCount
+    class GetDocsContributorCount
     {
+        readonly BlobStorageService _blobStorageService;
         readonly CloudAdvocateService _cloudAdvocateService;
         readonly IGitHubApiStatusService _gitHubApiStatusService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
 
-        public GetDocsContributorCount(CloudAdvocateService cloudAdvocateService,
+        public GetDocsContributorCount(BlobStorageService blobStorageService,
+                                        CloudAdvocateService cloudAdvocateService,
                                         IGitHubApiStatusService gitHubApiStatusService,
                                         GitHubGraphQLApiService gitHubGraphQLApiService)
         {
+            _blobStorageService = blobStorageService;
             _cloudAdvocateService = cloudAdvocateService;
             _gitHubApiStatusService = gitHubApiStatusService;
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
@@ -33,35 +36,60 @@ namespace AzureAdvocates.Functions
         {
             log.LogInformation($"{nameof(GetDocsContributorCount)} Started");
 
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            var gitHubApiStatus = await _gitHubApiStatusService.GetApiRateLimits(cancellationTokenSource.Token).ConfigureAwait(false);
-            if (gitHubApiStatus.GraphQLApi.RemainingRequestCount < 4000)
+            var requestedTimeSpan = to - from;
+            if (requestedTimeSpan.TotalDays > 366)
+                return new BadRequestObjectResult("Date Range Must Be Less Than A Year");
+
+            var gitHubGraphQLApiStatus = await GetGraphQLRateLimitStatus(_gitHubApiStatusService).ConfigureAwait(false);
+            if (gitHubGraphQLApiStatus.RemainingRequestCount < 4000)
             {
-                return new ObjectResult($"Maximum GitHub API Limit Reached. GitHub API Limit will reset in {gitHubApiStatus.GraphQLApi.RateLimitReset_TimeRemaining.Minutes + 1} minute(s). Try again at {gitHubApiStatus.GraphQLApi.RateLimitReset_DateTime.UtcDateTime} UTC")
+                return new ObjectResult($"Maximum GitHub API Limit Reached. GitHub API Limit will reset in {gitHubGraphQLApiStatus.RateLimitReset_TimeRemaining.Minutes + 1} minute(s). Try again at {gitHubGraphQLApiStatus.RateLimitReset_DateTime.UtcDateTime} UTC")
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError
                 };
             }
 
+            var advocatesContributionModel = await GetTotalContributions(_cloudAdvocateService, _gitHubGraphQLApiService, log, from, to, team).ConfigureAwait(false);
+            return new OkObjectResult(advocatesContributionModel);
+        }
+
+        static async Task<IRateLimitStatus> GetGraphQLRateLimitStatus(IGitHubApiStatusService gitHubApiStatusService)
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            var gitHubApiStatus = await gitHubApiStatusService.GetApiRateLimits(cancellationTokenSource.Token).ConfigureAwait(false);
+
+            return gitHubApiStatus.GraphQLApi;
+        }
+
+        static async Task<AdovocatesTotalContributionsModel> GetTotalContributions(CloudAdvocateService cloudAdvocateService, GitHubGraphQLApiService gitHubGraphQLApiService, ILogger log, DateTime from, DateTime to, string? requestedTeam)
+        {
             int advocateCount = 0, advocateContributorCount = 0;
-            await foreach (var advocate in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
+            var teamContributionCount = new SortedDictionary<string, int>();
+            await foreach (var advocate in cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
             {
-                if (team is not null && advocate.MicrosoftTeam != team)
+                if (requestedTeam is not null && advocate.MicrosoftTeam != requestedTeam)
                     continue;
 
                 log.LogInformation($"Found {advocate.FullName}");
                 advocateCount++;
 
-                var microsoftDocsContributions = await _gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection(advocate.GitHubUserName, from, to).ConfigureAwait(false);
+                var microsoftDocsContributions = await gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection(advocate.GitHubUserName, from, to).ConfigureAwait(false);
 
                 if (microsoftDocsContributions.TotalContributions > 0)
                 {
+                    log.LogInformation($"Team: {advocate.MicrosoftTeam}");
+
+                    if (teamContributionCount.ContainsKey(advocate.MicrosoftTeam))
+                        teamContributionCount[advocate.MicrosoftTeam]++;
+                    else
+                        teamContributionCount.Add(advocate.MicrosoftTeam, 1);
+
                     log.LogInformation($"Total Contributions: {microsoftDocsContributions.TotalContributions}");
                     advocateContributorCount++;
                 }
             }
 
-            return new OkObjectResult(new AdovocatesTotalContributionsModel(advocateContributorCount, advocateCount));
+            return new AdovocatesTotalContributionsModel(advocateCount, advocateContributorCount, teamContributionCount);
         }
     }
 }

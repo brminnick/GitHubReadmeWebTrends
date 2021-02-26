@@ -4,12 +4,12 @@ namespace GitHubReadmeWebTrends.Common
 {
     public class CloudAdvocateGitHubUserModel
     {
-        public CloudAdvocateGitHubUserModel(in string fullName, in string gitHubUserName, in string microsoftAlias, in string microsoftTeam)
+        public CloudAdvocateGitHubUserModel(string fullName, string gitHubUserName, string microsoftAlias, string team)
         {
             FullName = fullName;
             GitHubUserName = gitHubUserName;
             MicrosoftAlias = microsoftAlias;
-            MicrosoftTeam = microsoftTeam;
+            MicrosoftTeam = team;
         }
 
         [JsonProperty("fullName")]
@@ -21,7 +21,7 @@ namespace GitHubReadmeWebTrends.Common
         [JsonProperty("microsoftAlias")]
         public string MicrosoftAlias { get; }
 
-        [JsonProperty("microsoftTeam")]
+        [JsonProperty("team")]
         public string MicrosoftTeam { get; }
     }
 }

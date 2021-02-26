@@ -2,11 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30509.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Functions", "GitHubReadmeWebTrends.Functions\GitHubReadmeWebTrends.Functions.csproj", "{184DF224-07A7-4D1C-92F7-54F44C5034FC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Functions", "GitHubReadmeWebTrends.Functions\GitHubReadmeWebTrends.Functions.csproj", "{184DF224-07A7-4D1C-92F7-54F44C5034FC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Common", "GitHubReadmeWebTrends.Common\GitHubReadmeWebTrends.Common.csproj", "{54892DEC-6E98-4A2E-AA3E-104B00758242}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Common", "GitHubReadmeWebTrends.Common\GitHubReadmeWebTrends.Common.csproj", "{54892DEC-6E98-4A2E-AA3E-104B00758242}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Website", "GitHubReadmeWebTrends.Website\GitHubReadmeWebTrends.Website.csproj", "{67710356-35FB-48E8-BF21-073F2796589F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Website", "GitHubReadmeWebTrends.Website\GitHubReadmeWebTrends.Website.csproj", "{67710356-35FB-48E8-BF21-073F2796589F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Console", "GitHubReadmeWebTrends.Console\GitHubReadmeWebTrends.Console.csproj", "{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}"
 EndProject

@@ -1,11 +1,21 @@
-﻿namespace AzureAdvocates.Functions
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace AzureAdvocates.Functions
 {
     class AdovocatesTotalContributionsModel
     {
-        public AdovocatesTotalContributionsModel(int totalAdvocatesWithContributions, int totalAdvocates) =>
-            (TotalAdvocatesWithContributions, TotalAdvocates) = (totalAdvocatesWithContributions, totalAdvocates);
+        public AdovocatesTotalContributionsModel(int totalAdvocates,
+                                                    int totalAdvocatesWithContributions,
+                                                    IDictionary<string, int> totalTeamContributions)
+        {
+            TotalAdvocates = totalAdvocates;
+            TotalAdvocatesWithContributions = totalAdvocatesWithContributions;
+            TotalTeamContributions = new Dictionary<string, int>(totalTeamContributions);
+        }
 
-        public int TotalAdvocatesWithContributions { get; }
         public int TotalAdvocates { get; }
+        public int TotalAdvocatesWithContributions { get; }
+        public IReadOnlyDictionary<string, int> TotalTeamContributions { get; }
     }
 }
