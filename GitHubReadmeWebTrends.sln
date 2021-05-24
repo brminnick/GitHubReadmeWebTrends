@@ -8,9 +8,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Commo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Website", "GitHubReadmeWebTrends.Website\GitHubReadmeWebTrends.Website.csproj", "{67710356-35FB-48E8-BF21-073F2796589F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReadmeWebTrends.Console", "GitHubReadmeWebTrends.Console\GitHubReadmeWebTrends.Console.csproj", "{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReadmeWebTrends.Console", "GitHubReadmeWebTrends.Console\GitHubReadmeWebTrends.Console.csproj", "{0FCD9913-E1D5-4843-B258-E2FAE2C4E9B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAdvocates.Functions", "AzureAdvocates.Functions\AzureAdvocates.Functions.csproj", "{EC05E3F1-3A22-42ED-9862-D1A0724FBC3C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{86563F32-BC36-491E-8F24-AAFC2415EB35}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

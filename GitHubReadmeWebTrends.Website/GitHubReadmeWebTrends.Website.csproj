@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <UserSecretsId>32158e12-23ab-4f8f-aef5-a61c0a785020</UserSecretsId>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +11,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.6.0" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.6.0" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.11.0" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.11.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Microsoft.Extensions.DependencyInjection" />
+    <None Remove="Microsoft.Extensions.Logging.Abstractions" />
+    <None Remove="Microsoft.Extensions.Http" />
   </ItemGroup>
 </Project>

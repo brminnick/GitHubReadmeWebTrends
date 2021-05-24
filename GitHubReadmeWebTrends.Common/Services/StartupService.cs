@@ -13,7 +13,7 @@ namespace GitHubReadmeWebTrends.Common
         {
             services.AddLogging();
 
-            services.AddRefitClient<IGitHubGraphQLApiClient>()
+            services.AddRefitClient<IGitHubGraphQLApiClient>(RefitExtensions.GetNewtonsoftJsonRefitSettings())
                 .ConfigureHttpClient(client =>
                 {
                     client.BaseAddress = new Uri(GitHubConstants.GitHubGraphQLApi);
@@ -23,7 +23,7 @@ namespace GitHubReadmeWebTrends.Common
                 .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
 
-            services.AddRefitClient<IGitHubRestApiClient>()
+            services.AddRefitClient<IGitHubRestApiClient>(RefitExtensions.GetNewtonsoftJsonRefitSettings())
                 .ConfigureHttpClient(client =>
                 {
                     client.BaseAddress = new Uri(GitHubConstants.GitHubRestApiUrl);
