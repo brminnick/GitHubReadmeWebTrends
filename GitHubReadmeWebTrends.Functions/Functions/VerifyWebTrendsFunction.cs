@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
@@ -29,13 +29,15 @@ namespace GitHubReadmeWebTrends.Functions
 
         public VerifyWebTrendsFunction(OptOutDatabase optOutDatabase) => _optOutDatabase = optOutDatabase;
 
-        [FunctionName(nameof(VerifyWebTrendsFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, AdvocateModel) data, ILogger log,
-                                 [Queue(QueueConstants.OpenPullRequestQueue)] ICollector<Repository> openPullRequestCollector)
+        [Function(nameof(VerifyWebTrendsFunction)), QueueOutput(QueueConstants.OpenPullRequestQueue)]
+        public async Task<IReadOnlyList<Repository>> Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, AdvocateModel) data, FunctionContext context)
         {
+            var log = context.GetLogger<VerifyWebTrendsFunction>();
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Started");
 
             var (repository, gitHubUser) = data;
+
+            var openPullRequestList = new List<Repository>();
 
             var updatedReadme = _urlRegex.Replace(repository.ReadmeText,
                                                     x => x.Groups[2].Success
@@ -53,11 +55,13 @@ namespace GitHubReadmeWebTrends.Functions
                 else
                 {
                     log.LogInformation($"Updated Readme for {repository.Owner} {repository.Name}");
-                    openPullRequestCollector.Add(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, updatedReadme));
+                    openPullRequestList.Add(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, updatedReadme));
                 }
             }
 
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Completed");
+
+            return openPullRequestList;
         }
 
         static string UpdateUrl(in string url, in string eventName, in string channel, in string alias)
@@ -114,7 +118,7 @@ namespace GitHubReadmeWebTrends.Functions
                 var webTrendsQuerySections = webTrendsQuery.Split("-");
 
                 //Ensure middle (second) category of the WebTrends Query is numberic
-                return webTrendsQuerySections.Count() is 3
+                return webTrendsQuerySections.Length is 3
                         && long.TryParse(webTrendsQuerySections[1], out _);
             }
 

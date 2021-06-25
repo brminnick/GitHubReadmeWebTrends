@@ -5,9 +5,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 namespace AzureAdvocates.Functions
@@ -30,9 +29,10 @@ namespace AzureAdvocates.Functions
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
         }
 
-        [FunctionName(nameof(GetMicrosoftLearnContributorCount))]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributorCount) + "/{from:datetime}/{to:datetime}/{team?}")] HttpRequestMessage req, DateTime from, DateTime to, string? team, ILogger log)
+        [Function(nameof(GetMicrosoftLearnContributorCount))]
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributorCount) + "/{from:datetime}/{to:datetime}/{team?}")] HttpRequestData req, DateTime from, DateTime to, string? team, FunctionContext context)
         {
+            var log = context.GetLogger<GetMicrosoftLearnContributorCount>();
             log.LogInformation($"{nameof(GetMicrosoftLearnContributorCount)} Started");
 
             var microsoftLearnContributionsList = await _blobStorageService.GetCloudAdvocateMicrosoftLearnContributors().ConfigureAwait(false) ?? Array.Empty<CloudAdvocateGitHubContributorModel>();
@@ -62,7 +62,10 @@ namespace AzureAdvocates.Functions
                 }
             }
 
-            return new OkObjectResult(new AdovocatesTotalContributionsModel(advocateCount, advocateContributorCount, teamContributionCount));
+            var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(new AdovocatesTotalContributionsModel(advocateCount, advocateContributorCount, teamContributionCount)).ConfigureAwait(false);
+
+            return response;
         }
     }
 }

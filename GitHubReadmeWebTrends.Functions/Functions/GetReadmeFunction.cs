@@ -1,11 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Storage.Queue;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -36,12 +39,14 @@ namespace GitHubReadmeWebTrends.Functions
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
         }
 
-        [FunctionName(nameof(GetReadmeQueueTriggerFunction))]
-        public async Task GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, AdvocateModel) data, ILogger log,
-                                [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, AdvocateModel)> remainingRepositoriesData,
-                                [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, AdvocateModel)> completedRepositoriesData)
+        [Function(nameof(GetReadmeQueueTriggerFunction))]
+        public async Task<GetReadmeFunctionQueueOutputModel> GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, AdvocateModel) data, FunctionContext context)
         {
-            log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
+            var log = context.GetLogger<GetReadmeFunction>();
+            log.LogInformation($"{nameof(GetReadmeQueueTriggerFunction)} Stared");
+
+            var remainingRepositoriesData = new List<(Repository, AdvocateModel)>();
+            var completedRepositoriesData = new List<(Repository, AdvocateModel)>();
 
             var (repository, gitHubUser) = data;
 
@@ -72,15 +77,24 @@ namespace GitHubReadmeWebTrends.Functions
             }
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
+
+            return new GetReadmeFunctionQueueOutputModel
+            {
+                CompletedRepositoriesData = completedRepositoriesData,
+                RemainingRepositoriesData = remainingRepositoriesData
+            };
         }
 
 
-        [FunctionName(nameof(GetReadmeTimerTriggerFunction))]
-        public async Task GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour, RunOnStartup = true)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, AdvocateModel)> remainingRepositoriesData,
-                                [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, AdvocateModel)> completedRepositoriesData)
+        [Function(nameof(GetReadmeTimerTriggerFunction))]
+        public async Task<GetReadmeFunctionQueueOutputModel> GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour, RunOnStartup = true)] TimerInfo myTimer, FunctionContext context)
         {
             const int getMessageCount = 32;
+
+            var log = context.GetLogger<GetReadmeFunction>();
+
+            var remainingRepositoriesData = new List<(Repository, AdvocateModel)>();
+            var completedRepositoriesData = new List<(Repository, AdvocateModel)>();
 
             var remainingRepositoriesQueue = _cloudQueueClient.GetQueueReference(QueueConstants.RemainingRepositoriesQueue.ToLower());
 
@@ -126,9 +140,15 @@ namespace GitHubReadmeWebTrends.Functions
             }
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
+
+            return new GetReadmeFunctionQueueOutputModel
+            {
+                CompletedRepositoriesData = completedRepositoriesData,
+                RemainingRepositoriesData = remainingRepositoriesData
+            };
         }
 
-        async Task RetrieveReadme(Repository repository, AdvocateModel advocateModel, ILogger log, ICollector<(Repository, AdvocateModel)> completedRepositoriesData)
+        async Task RetrieveReadme(Repository repository, AdvocateModel advocateModel, ILogger log, IList<(Repository, AdvocateModel)> completedRepositoriesData)
         {
             var readmeFile = await _gitHubRestApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
             var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
@@ -136,6 +156,15 @@ namespace GitHubReadmeWebTrends.Functions
             completedRepositoriesData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, readmeText), advocateModel));
 
             log.LogInformation($"Found Readme for {repository.Owner} {repository.Name}");
+        }
+
+        public class GetReadmeFunctionQueueOutputModel
+        {
+            [QueueOutput(QueueConstants.RemainingRepositoriesQueue)]
+            public IReadOnlyList<(Repository, AdvocateModel)> RemainingRepositoriesData { get; init; } = Array.Empty<(Repository, AdvocateModel)>();
+
+            [QueueOutput(QueueConstants.VerifyWebTrendsQueue)]
+            public IReadOnlyList<(Repository, AdvocateModel)> CompletedRepositoriesData { get; init; } = Array.Empty<(Repository, AdvocateModel)>();
         }
     }
 }

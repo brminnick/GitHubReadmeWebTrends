@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace AzureAdvocates.Functions
@@ -28,9 +28,10 @@ namespace AzureAdvocates.Functions
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
         }
 
-        [FunctionName(nameof(UpdateMicrosoftLearnContributors))]
-        public async Task Run([TimerTrigger("0 0 */6 * * *")] TimerInfo timer, ILogger log)
+        [Function(nameof(UpdateMicrosoftLearnContributors))]
+        public async Task Run([TimerTrigger("0 0 */6 * * *")] TimerInfo timer, FunctionContext context)
         {
+            var log = context.GetLogger<UpdateMicrosoftLearnContributors>();
             log.LogInformation($"{nameof(UpdateMicrosoftLearnContributors)} Started");
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));

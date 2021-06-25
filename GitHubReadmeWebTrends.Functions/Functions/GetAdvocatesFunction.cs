@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +15,12 @@ namespace GitHubReadmeWebTrends.Functions
     {
         const string _runOncePerMonth = "0 0 0 5 * *";
 
-        const bool _shouldRunOnStartup = false;
+        const bool _shouldRunOnStartup =
+#if DEBUG
+            true;
+#else
+            false;
+#endif
 
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin" };
 
@@ -27,12 +33,13 @@ namespace GitHubReadmeWebTrends.Functions
             _advocateService = advocateService;
         }
 
-        [FunctionName(nameof(GetAzureAdvocatesBetaTestersTimerTrigger))]
-        public async Task GetAzureAdvocatesBetaTestersTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
-                        [Queue(QueueConstants.AdvocatesQueue)] ICollector<AdvocateModel> advocateModels)
+        [Function(nameof(GetAzureAdvocatesBetaTestersTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
+        public async Task<IReadOnlyList<AdvocateModel>> GetAzureAdvocatesBetaTestersTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, FunctionContext context)
         {
+            var log = context.GetLogger<GetAdvocatesFunction>();
             log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Started");
 
+            var advocateModels = new List<AdvocateModel>();
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
             var optOutList = await _optOutDatabase.GetAllOptOutModels().ConfigureAwait(false);
@@ -52,6 +59,8 @@ namespace GitHubReadmeWebTrends.Functions
             }
 
             log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Completed");
+
+            return advocateModels;
         }
 
         [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]

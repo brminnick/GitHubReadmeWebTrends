@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
@@ -11,11 +12,14 @@ namespace GitHubReadmeWebTrends.Functions
 
         public GetGitHubReposFunction(GitHubGraphQLApiService gitHubGraphQLApiService) => _gitHubGraphQLApiService = gitHubGraphQLApiService;
 
-        [FunctionName(nameof(GetGitHubReposFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.AdvocatesQueue)] AdvocateModel gitHubUser, ILogger log,
-                                [Queue(QueueConstants.RepositoriesQueue)] ICollector<(Repository, AdvocateModel)> outputData)
+        [Function(nameof(GetGitHubReposFunction)), QueueOutput(QueueConstants.RepositoriesQueue)]
+        public async Task<IReadOnlyList<(Repository, AdvocateModel)>> Run([QueueTrigger(QueueConstants.AdvocatesQueue)] AdvocateModel gitHubUser, FunctionContext context)
         {
+            var log = context.GetLogger<GetGitHubReposFunction>();
+
             log.LogInformation($"{nameof(GetGitHubReposFunction)} Started");
+
+            var outputData = new List<(Repository, AdvocateModel)>();
 
             await foreach (var repositoryList in _gitHubGraphQLApiService.GetRepositories(gitHubUser.GitHubUsername).ConfigureAwait(false))
             {
@@ -26,6 +30,8 @@ namespace GitHubReadmeWebTrends.Functions
             }
 
             log.LogInformation($"{nameof(GetGitHubReposFunction)} Completed");
+
+            return outputData;
         }
     }
 }

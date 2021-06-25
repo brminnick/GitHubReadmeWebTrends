@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 namespace AzureAdvocates.Functions
@@ -16,9 +14,10 @@ namespace AzureAdvocates.Functions
 
         public GetMicrosoftLearnContributors(BlobStorageService blobStorageService) => _blobStorageService = blobStorageService;
 
-        [FunctionName(nameof(GetMicrosoftLearnContributors))]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributors) + "/{from:datetime}/{to:datetime}/{team?}")] HttpRequestMessage req, DateTime from, DateTime to, string? team, ILogger log)
+        [Function(nameof(GetMicrosoftLearnContributors))]
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributors) + "/{from:datetime}/{to:datetime}/{team?}")] HttpRequestData req, DateTime from, DateTime to, string? team, FunctionContext context)
         {
+            var log = context.GetLogger<GetMicrosoftLearnContributors>();
             log.LogInformation($"{nameof(GetMicrosoftLearnContributors)} Started");
 
             var microsoftLearnContributionsList = await _blobStorageService.GetCloudAdvocateMicrosoftLearnContributors().ConfigureAwait(false);
@@ -37,7 +36,10 @@ namespace AzureAdvocates.Functions
                 }
             }
 
-            return new OkObjectResult(filteredCloudAdvocateContributions);
+            var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(filteredCloudAdvocateContributions).ConfigureAwait(false);
+
+            return response;
         }
     }
 

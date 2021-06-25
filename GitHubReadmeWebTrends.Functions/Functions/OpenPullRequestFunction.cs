@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Refit;
 
@@ -18,9 +18,11 @@ namespace GitHubReadmeWebTrends.Functions
         public OpenPullRequestFunction(GitHubRestApiService gitHubApiService, GitHubGraphQLApiService gitHubGraphQLApiService) =>
             (_gitHubRestApiService, _gitHubGraphQLApiService) = (gitHubApiService, gitHubGraphQLApiService);
 
-        [FunctionName(nameof(OpenPullRequestFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
+        [Function(nameof(OpenPullRequestFunction))]
+        public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, FunctionContext context)
         {
+            var log = context.GetLogger<OpenPullRequestFunction>();
+
             var branchName = $"AddWebTrends-{DateTimeOffset.UtcNow:yyyy-MM}";
 
             var forkedRepository = await ForkRepository(repository).ConfigureAwait(false);
