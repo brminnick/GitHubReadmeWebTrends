@@ -5,17 +5,17 @@ using Newtonsoft.Json;
 
 namespace AzureAdvocates.Functions
 {
-    class CloudAdvocateGitHubContributorModel : CloudAdvocateGitHubUserModel
+    record CloudAdvocateGitHubContributorModel : AdvocateModel
     {
-        public CloudAdvocateGitHubContributorModel(IEnumerable<RepositoryPullRequest> pullRequests, CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel)
-            : this(pullRequests, cloudAdvocateGitHubUserModel.FullName, cloudAdvocateGitHubUserModel.GitHubUserName, cloudAdvocateGitHubUserModel.MicrosoftAlias, cloudAdvocateGitHubUserModel.MicrosoftTeam)
+        public CloudAdvocateGitHubContributorModel(IEnumerable<RepositoryPullRequest> pullRequests, AdvocateModel advocateModel)
+            : this(pullRequests, advocateModel.Name, advocateModel.GitHubUsername, advocateModel.MicrosoftAlias, advocateModel.Team, advocateModel.RedditUserName)
         {
 
         }
 
         [JsonConstructor]
-        public CloudAdvocateGitHubContributorModel(IEnumerable<RepositoryPullRequest> pullRequests, string fullName, string gitHubUserName, string microsoftAlias, string microsoftTeam)
-            : base(fullName, gitHubUserName, microsoftAlias, microsoftTeam)
+        public CloudAdvocateGitHubContributorModel(IEnumerable<RepositoryPullRequest> pullRequests, string fullName, string gitHubUserName, string microsoftAlias, string microsoftTeam, string redditUserName)
+            : base(gitHubUserName, microsoftAlias, redditUserName, microsoftTeam, fullName)
         {
             PullRequests = pullRequests.ToList(); ;
         }

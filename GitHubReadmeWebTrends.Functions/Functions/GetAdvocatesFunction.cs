@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.WebJobs;
@@ -17,34 +18,37 @@ namespace GitHubReadmeWebTrends.Functions
 
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin" };
 
-        readonly YamlService _yamlService;
         readonly OptOutDatabase _optOutDatabase;
-        readonly CloudAdvocateService _cloudAdvocateService;
+        readonly AdvocateService _advocateService;
 
-        public GetAdvocatesFunction(YamlService yamlService, CloudAdvocateService cloudAdvocateService, OptOutDatabase optOutDatabase)
+        public GetAdvocatesFunction(AdvocateService advocateService, OptOutDatabase optOutDatabase)
         {
-            _yamlService = yamlService;
             _optOutDatabase = optOutDatabase;
-            _cloudAdvocateService = cloudAdvocateService;
+            _advocateService = advocateService;
         }
 
         [FunctionName(nameof(GetAzureAdvocatesBetaTestersTimerTrigger))]
         public async Task GetAzureAdvocatesBetaTestersTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, ILogger log,
-                        [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
+                        [Queue(QueueConstants.AdvocatesQueue)] ICollector<AdvocateModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Started");
 
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
             var optOutList = await _optOutDatabase.GetAllOptOutModels().ConfigureAwait(false);
 
-            await foreach (var gitHubUser in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
+            var currentAdvocateList = await _advocateService.GetCurrentAdvocates(cancellationTokenSource.Token).ConfigureAwait(false);
+
+            foreach (var advocate in currentAdvocateList)
             {
-                if (!IsBetaTester(gitHubUser))
+
+                if (!IsBetaTester(advocate))
                     continue;
 
-                log.LogInformation($"Beta Tester Found: {gitHubUser.MicrosoftAlias}");
+                log.LogInformation($"Beta Tester Found: {advocate.MicrosoftAlias}");
 
-                if (!HasUserOptedOut(gitHubUser, optOutList))
-                    advocateModels.Add(gitHubUser);
+                if (!HasUserOptedOut(advocate, optOutList))
+                    advocateModels.Add(advocate);
             }
 
             log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Completed");
@@ -52,16 +56,20 @@ namespace GitHubReadmeWebTrends.Functions
 
         [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]
         public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
+                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<AdvocateModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Started");
 
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
             var optOutList = await _optOutDatabase.GetAllOptOutModels().ConfigureAwait(false);
 
-            await foreach (var gitHubUser in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
+            var currentAdvocateList = await _advocateService.GetCurrentAdvocates(cancellationTokenSource.Token).ConfigureAwait(false);
+
+            foreach (var advocate in currentAdvocateList)
             {
-                if (!HasUserOptedOut(gitHubUser, optOutList))
-                    advocateModels.Add(gitHubUser);
+                if (!HasUserOptedOut(advocate, optOutList))
+                    advocateModels.Add(advocate);
             }
 
             log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Completed");
@@ -69,11 +77,13 @@ namespace GitHubReadmeWebTrends.Functions
 
         [FunctionName(nameof(GetFriendsTimerTrigger))]
         public async Task GetFriendsTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<CloudAdvocateGitHubUserModel> advocateModels)
+                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<AdvocateModel> advocateModels)
         {
             log.LogInformation($"{nameof(GetFriendsTimerTrigger)} Started");
 
-            var friendsOfAzureList = await _cloudAdvocateService.GetFriendsOfAdvocates().ConfigureAwait(false);
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            var friendsOfAzureList = await _advocateService.GetFriendsOfAdvocates().ConfigureAwait(false);
 
             foreach (var gitHubUser in friendsOfAzureList)
             {
@@ -83,11 +93,11 @@ namespace GitHubReadmeWebTrends.Functions
             log.LogInformation($"{nameof(GetFriendsTimerTrigger)} Completed");
         }
 
-        bool IsBetaTester(CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel) => _betaTesterAliases.Contains(cloudAdvocateGitHubUserModel.MicrosoftAlias);
+        bool IsBetaTester(AdvocateModel cloudAdvocateGitHubUserModel) => _betaTesterAliases.Contains(cloudAdvocateGitHubUserModel.MicrosoftAlias);
 
-        bool HasUserOptedOut(CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel, IReadOnlyList<OptOutModel> optOutUserModels)
+        bool HasUserOptedOut(AdvocateModel advocateModel, IReadOnlyList<OptOutModel> optOutUserModels)
         {
-            var matchingOptOutModel = optOutUserModels.SingleOrDefault(x => x.Alias == cloudAdvocateGitHubUserModel.MicrosoftAlias);
+            var matchingOptOutModel = optOutUserModels.SingleOrDefault(x => x.Alias == advocateModel.MicrosoftAlias);
 
             // `null` indicates that the user has never opted out by using the GitHubReadmeWebTrends.Website 
             return matchingOptOutModel?.HasOptedOut ?? false;

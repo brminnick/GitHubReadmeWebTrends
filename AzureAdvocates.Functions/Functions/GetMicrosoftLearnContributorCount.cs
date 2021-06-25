@@ -15,17 +15,17 @@ namespace AzureAdvocates.Functions
     class GetMicrosoftLearnContributorCount
     {
         readonly BlobStorageService _blobStorageService;
-        readonly CloudAdvocateService _cloudAdvocateService;
+        readonly AdvocateService _advocateService;
         readonly IGitHubApiStatusService _gitHubApiStatusService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
 
-        public GetMicrosoftLearnContributorCount(BlobStorageService blobStorageService,
-                                        CloudAdvocateService cloudAdvocateService,
-                                        IGitHubApiStatusService gitHubApiStatusService,
-                                        GitHubGraphQLApiService gitHubGraphQLApiService)
+        public GetMicrosoftLearnContributorCount(AdvocateService advocateService,
+                                                    BlobStorageService blobStorageService,
+                                                    IGitHubApiStatusService gitHubApiStatusService,
+                                                    GitHubGraphQLApiService gitHubGraphQLApiService)
         {
+            _advocateService = advocateService;
             _blobStorageService = blobStorageService;
-            _cloudAdvocateService = cloudAdvocateService;
             _gitHubApiStatusService = gitHubApiStatusService;
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
         }
@@ -41,20 +41,20 @@ namespace AzureAdvocates.Functions
             var teamContributionCount = new SortedDictionary<string, int>();
             foreach (var advocateContribution in microsoftLearnContributionsList)
             {
-                if (team is null || advocateContribution.MicrosoftTeam.Equals(team, StringComparison.OrdinalIgnoreCase))
+                if (team is null || advocateContribution.Team.Equals(team, StringComparison.OrdinalIgnoreCase))
                 {
-                    log.LogInformation($"Adding Advocate: {advocateContribution.FullName}");
+                    log.LogInformation($"Adding Advocate: {advocateContribution.Name}");
                     advocateCount++;
 
                     var filteredPullRequests = advocateContribution.PullRequests.Where(x => x.CreatedAt.IsWithinRange(from, to)).ToList();
                     if (filteredPullRequests.Any())
                     {
-                        log.LogInformation($"Team: {advocateContribution.MicrosoftTeam}");
+                        log.LogInformation($"Team: {advocateContribution.Team}");
 
-                        if (teamContributionCount.ContainsKey(advocateContribution.MicrosoftTeam))
-                            teamContributionCount[advocateContribution.MicrosoftTeam]++;
+                        if (teamContributionCount.ContainsKey(advocateContribution.Team))
+                            teamContributionCount[advocateContribution.Team]++;
                         else
-                            teamContributionCount.Add(advocateContribution.MicrosoftTeam, 1);
+                            teamContributionCount.Add(advocateContribution.Team, 1);
 
                         log.LogInformation($"Total Contributions: {filteredPullRequests.Count}");
                         advocateContributorCount++;

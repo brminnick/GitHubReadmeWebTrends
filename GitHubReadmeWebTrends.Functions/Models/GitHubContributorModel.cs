@@ -2,16 +2,16 @@
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    class GitHubContributorModel : CloudAdvocateGitHubUserModel
+    record GitHubContributorModel : AdvocateModel
     {
-        public GitHubContributorModel(in ContributionsCollectionModel contributionsCollection, CloudAdvocateGitHubUserModel cloudAdvocateGitHubUserModel)
-            : this(contributionsCollection, cloudAdvocateGitHubUserModel.FullName, cloudAdvocateGitHubUserModel.GitHubUserName, cloudAdvocateGitHubUserModel.MicrosoftAlias, cloudAdvocateGitHubUserModel.MicrosoftTeam)
+        public GitHubContributorModel(in ContributionsCollectionModel contributionsCollection, AdvocateModel advocateModel)
+            : this(contributionsCollection, advocateModel.Name, advocateModel.GitHubUsername, advocateModel.MicrosoftAlias, advocateModel.Team, advocateModel.RedditUserName)
         {
 
         }
 
-        public GitHubContributorModel(in ContributionsCollectionModel contributionsCollection, in string fullName, in string gitHubUserName, in string microsoftAlias, in string microsoftTeam)
-            : base(fullName, gitHubUserName, microsoftAlias, microsoftTeam)
+        public GitHubContributorModel(in ContributionsCollectionModel contributionsCollection, in string fullName, in string gitHubUserName, in string microsoftAlias, in string microsoftTeam, in string redditUserName)
+            : base(gitHubUserName, microsoftAlias, redditUserName ?? string.Empty, microsoftTeam, fullName)
         {
             Contributions = contributionsCollection;
         }

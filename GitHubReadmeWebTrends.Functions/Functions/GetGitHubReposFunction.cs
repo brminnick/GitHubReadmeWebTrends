@@ -12,12 +12,12 @@ namespace GitHubReadmeWebTrends.Functions
         public GetGitHubReposFunction(GitHubGraphQLApiService gitHubGraphQLApiService) => _gitHubGraphQLApiService = gitHubGraphQLApiService;
 
         [FunctionName(nameof(GetGitHubReposFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.AdvocatesQueue)] CloudAdvocateGitHubUserModel gitHubUser, ILogger log,
-                                [Queue(QueueConstants.RepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> outputData)
+        public async Task Run([QueueTrigger(QueueConstants.AdvocatesQueue)] AdvocateModel gitHubUser, ILogger log,
+                                [Queue(QueueConstants.RepositoriesQueue)] ICollector<(Repository, AdvocateModel)> outputData)
         {
             log.LogInformation($"{nameof(GetGitHubReposFunction)} Started");
 
-            await foreach (var repositoryList in _gitHubGraphQLApiService.GetRepositories(gitHubUser.GitHubUserName).ConfigureAwait(false))
+            await foreach (var repositoryList in _gitHubGraphQLApiService.GetRepositories(gitHubUser.GitHubUsername).ConfigureAwait(false))
             {
                 foreach (var repository in repositoryList)
                 {

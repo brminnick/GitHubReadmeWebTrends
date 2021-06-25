@@ -17,10 +17,7 @@ namespace GitHubReadmeWebTrends.Website
     {
         readonly static string _token = Environment.GetEnvironmentVariable("Token") ?? string.Empty;
 
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => Configuration = configuration;
 
         public IConfiguration Configuration { get; }
 

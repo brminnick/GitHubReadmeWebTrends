@@ -26,12 +26,12 @@ namespace AzureAdvocates.Functions
             var filteredCloudAdvocateContributions = new List<CloudAdvocateGitHubContributorModel>();
             foreach (var advocateContribution in microsoftLearnContributionsList)
             {
-                if (team is null || advocateContribution.MicrosoftTeam.Equals(team, StringComparison.OrdinalIgnoreCase))
+                if (team is null || advocateContribution.Team.Equals(team, StringComparison.OrdinalIgnoreCase))
                 {
-                    log.LogInformation($"Adding Advocate: {advocateContribution.FullName}");
+                    log.LogInformation($"Adding Advocate: {advocateContribution.Name}");
 
                     var filteredPullRequests = advocateContribution.PullRequests.Where(x => x.CreatedAt.IsWithinRange(from, to)).ToList();
-                    var filteredCloudAdvocateContribution = new CloudAdvocateGitHubContributorModel(filteredPullRequests, advocateContribution.FullName, advocateContribution.GitHubUserName, advocateContribution.MicrosoftAlias, advocateContribution.MicrosoftTeam);
+                    var filteredCloudAdvocateContribution = new CloudAdvocateGitHubContributorModel(filteredPullRequests, advocateContribution.Name, advocateContribution.GitHubUsername, advocateContribution.MicrosoftAlias, advocateContribution.Team, advocateContribution.RedditUserName);
 
                     filteredCloudAdvocateContributions.Add(filteredCloudAdvocateContribution);
                 }

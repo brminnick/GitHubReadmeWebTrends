@@ -37,9 +37,9 @@ namespace GitHubReadmeWebTrends.Functions
         }
 
         [FunctionName(nameof(GetReadmeQueueTriggerFunction))]
-        public async Task GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
-                                [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> remainingRepositoriesData,
-                                [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
+        public async Task GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, AdvocateModel) data, ILogger log,
+                                [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, AdvocateModel)> remainingRepositoriesData,
+                                [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, AdvocateModel)> completedRepositoriesData)
         {
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
@@ -77,8 +77,8 @@ namespace GitHubReadmeWebTrends.Functions
 
         [FunctionName(nameof(GetReadmeTimerTriggerFunction))]
         public async Task GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour, RunOnStartup = true)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> remainingRepositoriesData,
-                                [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
+                                [Queue(QueueConstants.RemainingRepositoriesQueue)] ICollector<(Repository, AdvocateModel)> remainingRepositoriesData,
+                                [Queue(QueueConstants.VerifyWebTrendsQueue)] ICollector<(Repository, AdvocateModel)> completedRepositoriesData)
         {
             const int getMessageCount = 32;
 
@@ -94,7 +94,7 @@ namespace GitHubReadmeWebTrends.Functions
                 {
                     log.LogInformation($"Queue Message Id: {queueMessage.Id}");
 
-                    var dequeuedData = JsonConvert.DeserializeObject<(Repository, CloudAdvocateGitHubUserModel)>(queueMessage.AsString);
+                    var dequeuedData = JsonConvert.DeserializeObject<(Repository, AdvocateModel)>(queueMessage.AsString);
                     var (repository, gitHubUser) = dequeuedData;
 
                     var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits(CancellationToken.None).ConfigureAwait(false);
@@ -128,12 +128,12 @@ namespace GitHubReadmeWebTrends.Functions
             log.LogInformation($"{nameof(GetReadmeFunction)} Completed");
         }
 
-        async Task RetrieveReadme(Repository repository, CloudAdvocateGitHubUserModel gitHubUser, ILogger log, ICollector<(Repository, CloudAdvocateGitHubUserModel)> completedRepositoriesData)
+        async Task RetrieveReadme(Repository repository, AdvocateModel advocateModel, ILogger log, ICollector<(Repository, AdvocateModel)> completedRepositoriesData)
         {
             var readmeFile = await _gitHubRestApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
             var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
 
-            completedRepositoriesData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, readmeText), gitHubUser));
+            completedRepositoriesData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, readmeText), advocateModel));
 
             log.LogInformation($"Found Readme for {repository.Owner} {repository.Name}");
         }

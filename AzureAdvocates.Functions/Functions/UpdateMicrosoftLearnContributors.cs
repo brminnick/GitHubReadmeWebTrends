@@ -13,17 +13,17 @@ namespace AzureAdvocates.Functions
     class UpdateMicrosoftLearnContributors
     {
         readonly BlobStorageService _blobStorageService;
-        readonly CloudAdvocateService _cloudAdvocateService;
+        readonly AdvocateService _advocateService;
         readonly IGitHubApiStatusService _gitHubApiStatusService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
 
-        public UpdateMicrosoftLearnContributors(BlobStorageService blobStorageService,
-                                                CloudAdvocateService cloudAdvocateService,
+        public UpdateMicrosoftLearnContributors(AdvocateService advocateService,
+                                                BlobStorageService blobStorageService,
                                                 IGitHubApiStatusService gitHubApiStatusService,
                                                 GitHubGraphQLApiService gitHubGraphQLApiService)
         {
+            _advocateService = advocateService;
             _blobStorageService = blobStorageService;
-            _cloudAdvocateService = cloudAdvocateService;
             _gitHubApiStatusService = gitHubApiStatusService;
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
         }
@@ -33,7 +33,7 @@ namespace AzureAdvocates.Functions
         {
             log.LogInformation($"{nameof(UpdateMicrosoftLearnContributors)} Started");
 
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var gitHubApiStatus = await _gitHubApiStatusService.GetApiRateLimits(cancellationTokenSource.Token).ConfigureAwait(false);
             if (gitHubApiStatus.GraphQLApi.RemainingRequestCount < 4000)
             {
@@ -41,11 +41,7 @@ namespace AzureAdvocates.Functions
                 return;
             }
 
-            var cloudAdvocateList = new List<CloudAdvocateGitHubUserModel>();
-            await foreach (var advocate in _cloudAdvocateService.GetAzureAdvocates().ConfigureAwait(false))
-            {
-                cloudAdvocateList.Add(advocate);
-            }
+            var advocateList = await _advocateService.GetCurrentAdvocates(cancellationTokenSource.Token).ConfigureAwait(false);
 
             var microsoftLearnPullRequests = new List<RepositoryPullRequest>();
             await foreach (var pullRequestList in _gitHubGraphQLApiService.GetMicrosoftLearnPullRequests().ConfigureAwait(false))
@@ -55,13 +51,13 @@ namespace AzureAdvocates.Functions
             }
 
             var cloudAdvocateContributions = new List<CloudAdvocateGitHubContributorModel>();
-            foreach (var cloudAdvocate in cloudAdvocateList)
+            foreach (var cloudAdvocate in advocateList)
             {
-                var cloudAdvocateContributorModel = new CloudAdvocateGitHubContributorModel(microsoftLearnPullRequests.Where(x => x.Author.Equals(cloudAdvocate.GitHubUserName, StringComparison.OrdinalIgnoreCase)), cloudAdvocate);
+                var cloudAdvocateContributorModel = new CloudAdvocateGitHubContributorModel(microsoftLearnPullRequests.Where(x => x.Author.Equals(cloudAdvocate.GitHubUsername, StringComparison.OrdinalIgnoreCase)), cloudAdvocate);
 
                 cloudAdvocateContributions.Add(cloudAdvocateContributorModel);
 
-                log.LogInformation($"Added {cloudAdvocateContributorModel.PullRequests.Count} Pull Requests for {cloudAdvocate.FullName}");
+                log.LogInformation($"Added {cloudAdvocateContributorModel.PullRequests.Count} Pull Requests for {cloudAdvocate.Name}");
             }
 
             var blobName = $"Contributions_{DateTime.UtcNow:o}.json";

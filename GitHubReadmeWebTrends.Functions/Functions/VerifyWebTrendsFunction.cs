@@ -30,7 +30,7 @@ namespace GitHubReadmeWebTrends.Functions
         public VerifyWebTrendsFunction(OptOutDatabase optOutDatabase) => _optOutDatabase = optOutDatabase;
 
         [FunctionName(nameof(VerifyWebTrendsFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, CloudAdvocateGitHubUserModel) data, ILogger log,
+        public async Task Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, AdvocateModel) data, ILogger log,
                                  [Queue(QueueConstants.OpenPullRequestQueue)] ICollector<Repository> openPullRequestCollector)
         {
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Started");
@@ -39,7 +39,7 @@ namespace GitHubReadmeWebTrends.Functions
 
             var updatedReadme = _urlRegex.Replace(repository.ReadmeText,
                                                     x => x.Groups[2].Success
-                                                        ? UpdateUrl(x.Groups[0].Value, gitHubUser.MicrosoftTeam, "0000", gitHubUser.MicrosoftAlias)
+                                                        ? UpdateUrl(x.Groups[0].Value, gitHubUser.Team, "0000", gitHubUser.MicrosoftAlias)
                                                         : x.Value);
 
             if (!updatedReadme.Equals(repository.ReadmeText))
@@ -48,7 +48,7 @@ namespace GitHubReadmeWebTrends.Functions
 
                 if (optOutModel?.HasOptedOut is true)
                 {
-                    log.LogInformation($"Ignoring Readme Because {gitHubUser.FullName} has opted out");
+                    log.LogInformation($"Ignoring Readme Because {gitHubUser.Name} has opted out");
                 }
                 else
                 {

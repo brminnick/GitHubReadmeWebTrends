@@ -32,15 +32,19 @@ namespace GitHubReadmeWebTrends.Common
                 .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
                 .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
+            services.AddRefitClient<IAdvocateApi>()
+                        .ConfigureHttpClient(client => client.BaseAddress = new Uri(AdvocateConstants.BaseAdvocateApi))
+                        .ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
+                        .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
+
             services.AddGitHubApiStatusService(getBearerTokenHeader(token), new ProductHeaderValue(nameof(GitHubReadmeWebTrends)))
                 .ConfigurePrimaryHttpMessageHandler(config => new HttpClientHandler { AutomaticDecompression = HttpConfigurationService.GetDecompressionMethods() })
                 .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
-            services.AddSingleton<YamlService>();
             services.AddSingleton<OptOutDatabase>();
+            services.AddSingleton<AdvocateService>();
             services.AddSingleton<GitHubRestApiService>();
             services.AddSingleton<GitHubGraphQLApiService>();
-            services.AddSingleton<CloudAdvocateService>();
 
             static AuthenticationHeaderValue getBearerTokenHeader(in string token) => new("bearer", token);
         }

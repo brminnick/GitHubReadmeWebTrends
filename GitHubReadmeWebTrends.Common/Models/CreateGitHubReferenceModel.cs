@@ -4,8 +4,7 @@ namespace GitHubReadmeWebTrends.Common
 {
     class CreateGitHubReferenceModel
     {
-        public CreateGitHubReferenceModel(string reference, string sha) =>
-        (Reference, Sha) = (reference, sha);
+        public CreateGitHubReferenceModel(string reference, string sha) => (Reference, Sha) = (reference, sha);
 
         [JsonProperty("ref")]
         public string Reference { get; }
