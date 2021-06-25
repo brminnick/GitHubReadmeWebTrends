@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
+using Microsoft.Azure.Storage.Blob;
 
 namespace AzureAdvocates.Functions
 {
