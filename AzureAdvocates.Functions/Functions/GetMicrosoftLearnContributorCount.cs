@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using GitHubApiStatus;
@@ -30,10 +31,21 @@ namespace AzureAdvocates.Functions
         }
 
         [Function(nameof(GetMicrosoftLearnContributorCount))]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributorCount) + "/{from:datetime}/{to:datetime}/{team?}")] HttpRequestData req, DateTime from, DateTime to, string? team, FunctionContext context)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributorCount) + "/{fromDateTime}/{toDateTime}/{team?}")] HttpRequestData req, string fromDateTime, string toDateTime, string? team, FunctionContext context)
         {
             var log = context.GetLogger<GetMicrosoftLearnContributorCount>();
             log.LogInformation($"{nameof(GetMicrosoftLearnContributorCount)} Started");
+
+            var isFromValid = DateTime.TryParse(fromDateTime, out var from);
+            var isToValid = DateTime.TryParse(toDateTime, out var to);
+
+            if (!isFromValid || !isToValid)
+            {
+                var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await badRequestResponse.WriteStringAsync("Invalid Dates Provided").ConfigureAwait(false);
+
+                return badRequestResponse;
+            }
 
             var microsoftLearnContributionsList = await _blobStorageService.GetCloudAdvocateMicrosoftLearnContributors().ConfigureAwait(false) ?? Array.Empty<CloudAdvocateGitHubContributorModel>();
 

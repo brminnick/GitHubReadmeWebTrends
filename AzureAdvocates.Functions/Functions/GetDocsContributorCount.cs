@@ -31,12 +31,23 @@ namespace AzureAdvocates.Functions
         }
 
         [Function(nameof(GetDocsContributorCount))]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetDocsContributorCount) + "/{from:datetime}/{to:datetime}/{team?}")] HttpRequestData req, DateTime from, DateTime to, string? team, FunctionContext context)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetDocsContributorCount) + "/{fromDateTime}/{toDateTime}/{team?}")] HttpRequestData req, string fromDateTime, string toDateTime, string? team, FunctionContext context)
         {
             var log = context.GetLogger<GetDocsContributorCount>();
             log.LogInformation($"{nameof(GetDocsContributorCount)} Started");
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            var isFromValid = DateTime.TryParse(fromDateTime, out var from);
+            var isToValid = DateTime.TryParse(toDateTime, out var to);
+
+            if(!isFromValid || !isToValid)
+            {
+                var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                await response.WriteStringAsync("Invalid Dates Provided").ConfigureAwait(false);
+
+                return response;
+            }
 
             var requestedTimeSpan = to - from;
             if (requestedTimeSpan.TotalDays > 366)
