@@ -14,7 +14,7 @@ namespace AzureAdvocates.Functions
         }
 
         [JsonConstructor]
-        public CloudAdvocateGitHubContributorModel(IEnumerable<RepositoryPullRequest> pullRequests, string fullName, string gitHubUserName, string microsoftAlias, string microsoftTeam, string redditUserName)
+        public CloudAdvocateGitHubContributorModel(IEnumerable<RepositoryPullRequest> pullRequests, string fullName, string gitHubUserName, string microsoftAlias, string microsoftTeam, string? redditUserName)
             : base(gitHubUserName, microsoftAlias, redditUserName, microsoftTeam, fullName)
         {
             PullRequests = pullRequests.ToList(); ;
