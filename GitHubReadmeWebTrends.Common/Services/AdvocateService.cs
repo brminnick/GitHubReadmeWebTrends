@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace GitHubReadmeWebTrends.Common
 {
@@ -30,11 +31,10 @@ namespace GitHubReadmeWebTrends.Common
             }
         }
 
-        public async Task<IReadOnlyList<AdvocateModel>> GetFriendsOfAdvocates()
+        public async Task<IReadOnlyList<AdvocateModel>> GetFriendsOfAdvocates(CancellationToken cancellationToken)
         {
-            var json = await _httpClient.GetStringAsync("https://raw.githubusercontent.com/jamesmontemagno/team/main/team.json");
-
-            return JsonConvert.DeserializeObject<AdvocateModel[]>(json);
+            return await _httpClient.GetFromJsonAsync<IReadOnlyList<AdvocateModel>>("https://raw.githubusercontent.com/jamesmontemagno/team/main/team.json", cancellationToken).ConfigureAwait(false) ?? throw new JsonException();
         }
     }
+
 }
