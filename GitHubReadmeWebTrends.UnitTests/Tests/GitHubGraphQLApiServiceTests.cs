@@ -32,6 +32,39 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
         }
 
         [Test]
+        public async Task GetMicrosoftLearnPullRequestsTest()
+        {
+            // Arrange
+            var microsoftLearnPullRequests = new List<RepositoryPullRequest>();
+            var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
+
+            // Act
+            await foreach (var pullRequests in gitHubGraphQLApiService.GetMicrosoftLearnPullRequests().ConfigureAwait(false))
+            {
+                microsoftLearnPullRequests.AddRange(pullRequests);
+            }
+
+            // Assert
+            Assert.IsNotEmpty(microsoftLearnPullRequests);
+
+            foreach (var pullRequest in microsoftLearnPullRequests)
+            {
+                Assert.IsNotNull(pullRequest);
+
+                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.Author));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.BaseRefName));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.Id));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.RepositoryName));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.RepositoryOwner));
+
+                Assert.AreNotEqual(default(DateTimeOffset), pullRequest.CreatedAt);
+                Assert.AreNotEqual(default(DateTimeOffset), pullRequest.MergedAt);
+
+                Assert.IsTrue(Uri.IsWellFormedUriString(pullRequest.Uri.ToString(), UriKind.Absolute));
+            }
+        }
+
+        [Test]
         public async Task GetRepositoriesTest()
         {
             // Arrange
@@ -46,6 +79,7 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
 
             // Assert
             Assert.IsNotEmpty(repositoryList);
+
             foreach (var repository in repositoryList)
             {
                 Assert.IsNotNull(repository);
