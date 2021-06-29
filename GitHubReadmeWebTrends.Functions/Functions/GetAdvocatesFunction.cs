@@ -14,8 +14,6 @@ namespace GitHubReadmeWebTrends.Functions
     {
         const string _runOncePerMonth = "0 0 0 5 * *";
 
-        const bool _shouldRunOnStartup = true;
-
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin" };
 
         readonly OptOutDatabase _optOutDatabase;
@@ -28,7 +26,7 @@ namespace GitHubReadmeWebTrends.Functions
         }
 
         [Function(nameof(GetAzureAdvocatesBetaTestersTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
-        public async Task<IReadOnlyList<AdvocateModel>> GetAzureAdvocatesBetaTestersTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = _shouldRunOnStartup)] TimerInfo myTimer, FunctionContext context)
+        public async Task<IReadOnlyList<AdvocateModel>> GetAzureAdvocatesBetaTestersTimerTrigger([TimerTrigger(_runOncePerMonth, RunOnStartup = true)] TimerInfo myTimer, FunctionContext context)
         {
             var log = context.GetLogger<GetAdvocatesFunction>();
             log.LogInformation($"{nameof(GetAzureAdvocatesBetaTestersTimerTrigger)} Started");
@@ -42,7 +40,6 @@ namespace GitHubReadmeWebTrends.Functions
 
             foreach (var advocate in currentAdvocateList)
             {
-
                 if (!IsBetaTester(advocate))
                     continue;
 
