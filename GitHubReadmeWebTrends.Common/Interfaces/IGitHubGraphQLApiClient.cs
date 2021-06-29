@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Refit;
 
 namespace GitHubReadmeWebTrends.Common
@@ -31,32 +32,32 @@ namespace GitHubReadmeWebTrends.Common
         Task<ApiResponse<GraphQLResponse<RepositoryPullRequestResponse>>> RepositoryPullRequestQuery([Body] RepositoryPullRequestQueryContent request);
     }
 
-    public class ContributionsQueryContent : GraphQLRequest
+    public record ContributionsQueryContent : GraphQLRequest
     {
-        public ContributionsQueryContent(in string gitHubLogin, in string organizationId, in DateTimeOffset from, in DateTimeOffset to)
-            : base("query { user(login: \"" + gitHubLogin + "\") { contributionsCollection(organizationID: \"" + organizationId + "\", from: " + JsonConvert.SerializeObject(from) + ", to: " + JsonConvert.SerializeObject(to) + ") { totalIssueContributions, totalCommitContributions, totalRepositoryContributions, totalPullRequestContributions, totalPullRequestReviewContributions commitContributionsByRepository(maxRepositories: 100) { repository { name }, }, issueContributionsByRepository(maxRepositories: 100) { repository { name }, }, pullRequestContributionsByRepository(maxRepositories:100) { repository { name } }, pullRequestReviewContributionsByRepository(maxRepositories: 100) { repository { name }}}}}")
+        public ContributionsQueryContent(string gitHubLogin, string organizationId, DateTimeOffset from, DateTimeOffset to)
+            : base("query { user(login: \"" + gitHubLogin + "\") { contributionsCollection(organizationID: \"" + organizationId + "\", from: " + JsonSerializer.Serialize(from) + ", to: " + JsonSerializer.Serialize(to) + ") { totalIssueContributions, totalCommitContributions, totalRepositoryContributions, totalPullRequestContributions, totalPullRequestReviewContributions commitContributionsByRepository(maxRepositories: 100) { repository { name }, }, issueContributionsByRepository(maxRepositories: 100) { repository { name }, }, pullRequestContributionsByRepository(maxRepositories:100) { repository { name } }, pullRequestReviewContributionsByRepository(maxRepositories: 100) { repository { name }}}}}")
         {
 
         }
     }
 
-    public class CreatePullRequestMutationContent : GraphQLRequest
+    public record CreatePullRequestMutationContent : GraphQLRequest
     {
         const string createPullRequest = "createPullRequest";
 
-        public CreatePullRequestMutationContent(in string repositoryId, in string baseRefName, in string headRefName,
-                                                    in string title, in string body, in Guid clientMutationId,
-                                                    in bool maintainerCanModify = true, in bool draft = false)
+        public CreatePullRequestMutationContent(string repositoryId, string baseRefName, string headRefName,
+                                                    string title, string body, Guid clientMutationId,
+                                                    bool maintainerCanModify = true, bool draft = false)
 
             : base("mutation($" + createPullRequest + ":CreatePullRequestInput!){" + createPullRequest + "(input:$" + createPullRequest + ") { clientMutationId } }",
                     new Dictionary<string, object> { { createPullRequest, new CreatePullRequestModel(repositoryId, baseRefName, headRefName, title, body, clientMutationId, maintainerCanModify, draft) } })
         {
         }
 
-        class CreatePullRequestModel
+        record CreatePullRequestModel
         {
-            public CreatePullRequestModel(in string repositoryId, in string baseRefName, in string headRefName, in string title,
-                                            in string body, in Guid clientMutationId, in bool maintainerCanModify, in bool draft)
+            public CreatePullRequestModel(string repositoryId, string baseRefName, string headRefName, string title,
+                                            string body, Guid clientMutationId, bool maintainerCanModify, bool draft)
             {
                 RepositoryId = repositoryId;
                 BaseRefName = baseRefName;
@@ -68,46 +69,46 @@ namespace GitHubReadmeWebTrends.Common
                 Draft = draft;
             }
 
-            [JsonProperty("repositoryId")]
+            [JsonPropertyName("repositoryId")]
             public string RepositoryId { get; }
 
-            [JsonProperty("baseRefName")]
+            [JsonPropertyName("baseRefName")]
             public string BaseRefName { get; }
 
-            [JsonProperty("headRefName")]
+            [JsonPropertyName("headRefName")]
             public string HeadRefName { get; }
 
-            [JsonProperty("title")]
+            [JsonPropertyName("title")]
             public string Title { get; }
 
-            [JsonProperty("body")]
+            [JsonPropertyName("body")]
             public string Body { get; }
 
-            [JsonProperty("clientMutationId")]
+            [JsonPropertyName("clientMutationId")]
             public Guid ClientMutationId { get; }
 
-            [JsonProperty("maintainerCanModify")]
+            [JsonPropertyName("maintainerCanModify")]
             public bool MaintainerCanModify { get; }
 
-            [JsonProperty("draft")]
+            [JsonPropertyName("draft")]
             public bool Draft { get; }
         }
     }
 
-    public class CreateBranchMutationContent : GraphQLRequest
+    public record CreateBranchMutationContent : GraphQLRequest
     {
         const string createRef = "createRef";
 
-        public CreateBranchMutationContent(in string repositoryId, in string branchName, in string branchOid, in Guid guid)
+        public CreateBranchMutationContent(string repositoryId, string branchName, string branchOid, Guid guid)
             : base("mutation($" + createRef + ":CreateRefInput!){" + createRef + "(input:$" + createRef + ") { clientMutationId } }",
                     new Dictionary<string, object> { { createRef, new CreateBranchRequestModel(repositoryId, branchName, branchOid, guid.ToString()) } })
         {
 
         }
 
-        class CreateBranchRequestModel
+        record CreateBranchRequestModel
         {
-            public CreateBranchRequestModel(in string repositoryId, in string name, in string oid, in string clientMutationId)
+            public CreateBranchRequestModel(string repositoryId, string name, string oid, string clientMutationId)
             {
                 Oid = oid;
                 BranchName = name;
@@ -115,48 +116,48 @@ namespace GitHubReadmeWebTrends.Common
                 ClientMutationId = clientMutationId;
             }
 
-            [JsonProperty("repositoryId")]
+            [JsonPropertyName("repositoryId")]
             public string RepositoryId { get; }
 
-            [JsonProperty("name")]
+            [JsonPropertyName("name")]
             public string BranchName { get; }
 
-            [JsonProperty("oid")]
+            [JsonPropertyName("oid")]
             public string Oid { get; }
 
-            [JsonProperty("clientMutationId")]
+            [JsonPropertyName("clientMutationId")]
             public string ClientMutationId { get; }
         }
     }
 
-    public class RepositoryPullRequestQueryContent : GraphQLRequest
+    public record RepositoryPullRequestQueryContent : GraphQLRequest
     {
-        public RepositoryPullRequestQueryContent(in string repositoryName, in string repositoryOwner, in string endCursorString, in int numberOfPullRewuestsPerRequest = 100)
+        public RepositoryPullRequestQueryContent(string repositoryName, string repositoryOwner, string endCursorString, int numberOfPullRewuestsPerRequest = 100)
             : base("query { repository(name: \"" + repositoryName + "\", owner: \"" + repositoryOwner + "\")  { defaultBranchRef { name } pullRequests(first: " + numberOfPullRewuestsPerRequest + endCursorString + ") { nodes { url, id, createdAt, merged, mergedAt, baseRefName, author { login } } pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
         {
 
         }
     }
 
-    public class RepositoriesConnectionQueryContent : GraphQLRequest
+    public record RepositoriesConnectionQueryContent : GraphQLRequest
     {
-        public RepositoriesConnectionQueryContent(in string repositoryOwner, in string endCursorString, in int numberOfRepositoriesPerRequest = 100)
+        public RepositoriesConnectionQueryContent(string repositoryOwner, string endCursorString, int numberOfRepositoriesPerRequest = 100)
             : base("query { user(login:\"" + repositoryOwner + "\")  { login, repositories(first:" + numberOfRepositoriesPerRequest + endCursorString + ") { nodes { id, name, isFork, owner { login }, defaultBranchRef { id, name, prefix, target { oid } } }, pageInfo { endCursor, hasNextPage, hasPreviousPage, startCursor } } } }")
         {
 
         }
     }
 
-    public class RepositoryConnectionQueryContent : GraphQLRequest
+    public record RepositoryConnectionQueryContent : GraphQLRequest
     {
-        public RepositoryConnectionQueryContent(in string repositoryOwner, in string repositoryName)
+        public RepositoryConnectionQueryContent(string repositoryOwner, string repositoryName)
             : base("query { user(login:\"" + repositoryOwner + "\") { login, repository(name:\"" + repositoryName + "\"){ id, name, isFork, defaultBranchRef { id, name, prefix, target { oid } } } } }")
         {
 
         }
     }
 
-    public class ViewerLoginQueryContent : GraphQLRequest
+    public record ViewerLoginQueryContent : GraphQLRequest
     {
         public ViewerLoginQueryContent() : base("query { viewer { name, login, email } }")
         {

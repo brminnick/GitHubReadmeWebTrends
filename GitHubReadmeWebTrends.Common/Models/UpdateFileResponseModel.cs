@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace GitHubReadmeWebTrends.Common
 {
@@ -7,10 +7,10 @@ namespace GitHubReadmeWebTrends.Common
         public UpdateFileResponseModel(RepositoryFile content, CommitModel commit) =>
             (File, Commit) = (content, commit);
 
-        [JsonProperty("content")]
+        [JsonPropertyName("content")]
         public RepositoryFile File { get; }
 
-        [JsonProperty("commit")]
+        [JsonPropertyName("commit")]
         public CommitModel Commit { get; }
     }
 }

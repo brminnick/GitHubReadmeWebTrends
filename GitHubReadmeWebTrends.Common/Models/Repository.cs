@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace GitHubReadmeWebTrends.Common
 {
     public class Repository
     {
         public Repository(string id, string owner, string name, DefaultBranchModel defaultBranch, bool isFork)
-            : this(id, owner, name, defaultBranch.BranchOid, defaultBranch.Prefix, defaultBranch.Name, isFork, string.Empty)
+            : this(id, owner, name, defaultBranch.Target.Oid, defaultBranch.Prefix, defaultBranch.Name, isFork, string.Empty)
         {
 
         }
@@ -23,28 +23,28 @@ namespace GitHubReadmeWebTrends.Common
             ReadmeText = readmeText;
         }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; }
 
-        [JsonProperty("owner")]
+        [JsonPropertyName("owner")]
         public string Owner { get; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; }
 
-        [JsonProperty("isFork")]
+        [JsonPropertyName("isFork")]
         public bool IsFork { get; }
 
-        [JsonProperty("defaultBranchOid")]
+        [JsonPropertyName("defaultBranchOid")]
         public string DefaultBranchOid { get; }
 
-        [JsonProperty("defaultBranchPrefix")]
+        [JsonPropertyName("defaultBranchPrefix")]
         public string DefaultBranchPrefix { get; }
 
-        [JsonProperty("defaultBranchName")]
+        [JsonPropertyName("defaultBranchName")]
         public string DefaultBranchName { get; }
 
-        [JsonProperty("readmeText")]
+        [JsonPropertyName("readmeText")]
         public string ReadmeText { get; }
     }
 }

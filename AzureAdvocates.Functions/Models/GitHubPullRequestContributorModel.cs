@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using GitHubReadmeWebTrends.Common;
-using Newtonsoft.Json;
 
 namespace AzureAdvocates.Functions
 {
@@ -20,7 +20,7 @@ namespace AzureAdvocates.Functions
             PullRequests = pullRequests.ToList(); ;
         }
 
-        [JsonProperty("pullRequests")]
+        [JsonPropertyName("pullRequests")]
         public IReadOnlyList<RepositoryPullRequest> PullRequests { get; }
     }
 }

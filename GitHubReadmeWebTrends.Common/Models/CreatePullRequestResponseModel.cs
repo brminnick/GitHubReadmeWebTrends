@@ -1,12 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace GitHubReadmeWebTrends.Common
 {
-    public class CreatePullRequestResponseModel
-    {
-        public CreatePullRequestResponseModel(MutationResultModel createPullRequest) => Result = createPullRequest;
-
-        [JsonProperty("createPullRequest")]
-        public MutationResultModel Result { get; }
-    }
+    public record CreatePullRequestResponseModel(MutationResultModel CreatePullRequest);
 }

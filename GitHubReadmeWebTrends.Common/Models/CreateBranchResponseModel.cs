@@ -1,12 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace GitHubReadmeWebTrends.Common
+﻿namespace GitHubReadmeWebTrends.Common
 {
-    public class CreateBranchResponseModel
-    {
-        public CreateBranchResponseModel(MutationResultModel createRef) => Result = createRef;
-
-        [JsonProperty("createRef")]
-        public MutationResultModel Result { get; }
-    }
+    public record CreateBranchResponseModel(MutationResultModel CreateRef);
 }

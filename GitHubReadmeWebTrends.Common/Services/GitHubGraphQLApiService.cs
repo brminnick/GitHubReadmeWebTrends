@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Refit;
 
 namespace GitHubReadmeWebTrends.Common
@@ -28,7 +28,7 @@ namespace GitHubReadmeWebTrends.Common
             var response = await GetContributionsCollection(gitHubUserName, "MDEyOk9yZ2FuaXphdGlvbjIyNDc5NDQ5", from, to).ConfigureAwait(false);
 
             if (response?.Content is null)
-                throw new JsonSerializationException();
+                throw new JsonException();
 
             return response.Content.Data.User.ContributionsCollection;
         }
@@ -117,42 +117,14 @@ namespace GitHubReadmeWebTrends.Common
             while (repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.HasNextPage is true);
         }
 
-        async Task<RepositoryPullRequestResponse?> GetRepositoryPullRequestResponse(string repositoryName, string repositoryOwner, string? endCursor, int numberOfPullRequestsPerRequest = 100)
-        {
-            var response = await ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryPullRequestQuery(new RepositoryPullRequestQueryContent(repositoryName, repositoryOwner, GetEndCursorString(endCursor), numberOfPullRequestsPerRequest))).ConfigureAwait(false);
+        static string GetEndCursorString(string? endCursor) => string.IsNullOrWhiteSpace(endCursor) ? string.Empty : "after: \"" + endCursor + "\"";
 
-            if (response?.Content is null)
-                throw new JsonSerializationException();
-
-            return response.Content.Data;
-        }
-
-        async Task<RepositoriesConnectionResponse> GetRepositoryConnectionResponse(string repositoryOwner, string? endCursor, int numberOfRepositoriesPerRequest = 100)
-        {
-            var response = await ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoriesConnectionQuery(new RepositoriesConnectionQueryContent(repositoryOwner, GetEndCursorString(endCursor), numberOfRepositoriesPerRequest))).ConfigureAwait(false);
-
-            if (response?.Content is null)
-                throw new JsonSerializationException();
-
-            return response.Content.Data;
-        }
-
-        async Task<T> GetGraphQLResponseData<T>(Task<ApiResponse<GraphQLResponse<T>>> graphQLRequestTask)
-        {
-            var response = await ExecuteGraphQLRequest(graphQLRequestTask).ConfigureAwait(false);
-
-            if (response?.Content is null)
-                throw new JsonSerializationException();
-
-            return response.Content.Data;
-        }
-
-        async Task<ApiResponse<GraphQLResponse<T>>> ExecuteGraphQLRequest<T>(Task<ApiResponse<GraphQLResponse<T>>> graphQLRequestTask)
+        static async Task<ApiResponse<GraphQLResponse<T>>> ExecuteGraphQLRequest<T>(Task<ApiResponse<GraphQLResponse<T>>> graphQLRequestTask)
         {
             var response = await graphQLRequestTask.ConfigureAwait(false);
 
             if (response?.Content is null)
-                throw new JsonSerializationException();
+                throw new JsonException();
 
             await response.EnsureSuccessStatusCodeAsync().ConfigureAwait(false);
 
@@ -162,6 +134,34 @@ namespace GitHubReadmeWebTrends.Common
             return response;
         }
 
-        static string GetEndCursorString(string? endCursor) => string.IsNullOrWhiteSpace(endCursor) ? string.Empty : "after: \"" + endCursor + "\"";
+        async Task<RepositoryPullRequestResponse?> GetRepositoryPullRequestResponse(string repositoryName, string repositoryOwner, string? endCursor, int numberOfPullRequestsPerRequest = 100)
+        {
+            var response = await ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryPullRequestQuery(new RepositoryPullRequestQueryContent(repositoryName, repositoryOwner, GetEndCursorString(endCursor), numberOfPullRequestsPerRequest))).ConfigureAwait(false);
+
+            if (response?.Content is null)
+                throw new JsonException();
+
+            return response.Content.Data;
+        }
+
+        async Task<RepositoriesConnectionResponse> GetRepositoryConnectionResponse(string repositoryOwner, string? endCursor, int numberOfRepositoriesPerRequest = 100)
+        {
+            var response = await ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoriesConnectionQuery(new RepositoriesConnectionQueryContent(repositoryOwner, GetEndCursorString(endCursor), numberOfRepositoriesPerRequest))).ConfigureAwait(false);
+
+            if (response?.Content is null)
+                throw new JsonException();
+
+            return response.Content.Data;
+        }
+
+        async Task<T> GetGraphQLResponseData<T>(Task<ApiResponse<GraphQLResponse<T>>> graphQLRequestTask)
+        {
+            var response = await ExecuteGraphQLRequest(graphQLRequestTask).ConfigureAwait(false);
+
+            if (response?.Content is null)
+                throw new JsonException();
+
+            return response.Content.Data;
+        }
     }
 }

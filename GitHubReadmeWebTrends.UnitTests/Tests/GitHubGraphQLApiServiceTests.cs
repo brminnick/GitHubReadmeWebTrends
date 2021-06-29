@@ -22,14 +22,13 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
             // Assert
             Assert.AreEqual(0, microsoftDocsContributions.TotalIssueContributions);
             Assert.AreEqual(133, microsoftDocsContributions.TotalCommitContributions);
-            Assert.AreEqual(0, microsoftDocsContributions.TotalRepositoryContributions);
             Assert.AreEqual(17, microsoftDocsContributions.TotalPullRequestContributions);
             Assert.AreEqual(10, microsoftDocsContributions.TotalPullRequestReviewContributions);
 
-            Assert.IsEmpty(microsoftDocsContributions.IssueContributionsRepositories);
-            Assert.IsNotEmpty(microsoftDocsContributions.CommitContributionsRepositories);
-            Assert.IsNotEmpty(microsoftDocsContributions.PullRequestContributionsRepositories);
-            Assert.IsNotEmpty(microsoftDocsContributions.PullRequestReviewContributionsRepositories);
+            Assert.IsEmpty(microsoftDocsContributions.IssueContributionsByRepository);
+            Assert.IsNotEmpty(microsoftDocsContributions.CommitContributionsByRepository);
+            Assert.IsNotEmpty(microsoftDocsContributions.PullRequestContributionsByRepository);
+            Assert.IsNotEmpty(microsoftDocsContributions.PullRequestReviewContributionsByRepository);
         }
 
         [Test]
@@ -57,7 +56,8 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
                 Assert.IsFalse(string.IsNullOrWhiteSpace(repository.Id));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(repository.Name));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(repository.Owner));
-                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.ReadmeText));
+
+                Assert.IsTrue(string.IsNullOrWhiteSpace(repository.ReadmeText));
             }
         }
     }

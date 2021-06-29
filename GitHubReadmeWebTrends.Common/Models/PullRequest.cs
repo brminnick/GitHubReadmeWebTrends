@@ -1,9 +1,9 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace GitHubReadmeWebTrends.Common
 {
-    public class PullRequest
+    public record PullRequest
     {
         [JsonConstructor]
         public PullRequest(string id, Uri url, DateTimeOffset createdAt, bool merged, DateTimeOffset? mergedAt, string baseRefName, Author author)
@@ -23,29 +23,29 @@ namespace GitHubReadmeWebTrends.Common
             Author = author;
         }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; }
 
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public Uri Uri { get; }
 
-        [JsonProperty("createdAt")]
+        [JsonPropertyName("createdAt")]
         public DateTimeOffset CreatedAt { get; }
 
-        [JsonProperty("merged")]
+        [JsonPropertyName("merged")]
         public bool IsMerged { get; }
 
-        [JsonProperty("mergedAt")]
+        [JsonPropertyName("mergedAt")]
         public DateTimeOffset? MergedAt { get; }
 
-        [JsonProperty("baseRefName")]
+        [JsonPropertyName("baseRefName")]
         public string BaseRefName { get; }
 
-        [JsonProperty("author")]
+        [JsonPropertyName("author")]
         public string Author { get; }
     }
 
-    public class RepositoryPullRequest : PullRequest
+    public record RepositoryPullRequest : PullRequest
     {
         public RepositoryPullRequest(string repositoryName, string repositoryOwner, PullRequest pullRequest)
             : this(repositoryName, repositoryOwner, pullRequest.Id, pullRequest.Uri, pullRequest.CreatedAt, pullRequest.IsMerged, pullRequest.MergedAt, pullRequest.BaseRefName, pullRequest.Author)
@@ -61,10 +61,10 @@ namespace GitHubReadmeWebTrends.Common
             RepositoryOwner = repositoryOwner;
         }
 
-        [JsonProperty("repositoryName")]
+        [JsonPropertyName("repositoryName")]
         public string RepositoryName { get; }
 
-        [JsonProperty("repositoryOwner")]
+        [JsonPropertyName("repositoryOwner")]
         public string RepositoryOwner { get; }
     }
 }

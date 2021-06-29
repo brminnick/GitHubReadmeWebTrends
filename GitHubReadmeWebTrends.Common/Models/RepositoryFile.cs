@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace GitHubReadmeWebTrends.Common
 {
@@ -13,16 +13,16 @@ namespace GitHubReadmeWebTrends.Common
             DownloadUrl = download_url;
         }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string FileName { get; }
 
-        [JsonProperty("sha")]
+        [JsonPropertyName("sha")]
         public string Sha { get; }
 
-        [JsonProperty("path")]
+        [JsonPropertyName("path")]
         public string Path { get; }
 
-        [JsonProperty("download_url")]
+        [JsonPropertyName("download_url")]
         public Uri? DownloadUrl { get; }
     }
 }

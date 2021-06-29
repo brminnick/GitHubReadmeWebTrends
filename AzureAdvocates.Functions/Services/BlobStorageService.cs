@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using Microsoft.Azure.Storage.Blob;
+using System.Text.Json;
 
 namespace AzureAdvocates.Functions
 {
@@ -19,7 +19,7 @@ namespace AzureAdvocates.Functions
             var container = GetBlobContainer(_microsoftLearnContributionsContainerName);
             var blob = container.GetBlockBlobReference(blobName);
 
-            return blob.UploadTextAsync(JsonConvert.SerializeObject(azureDataCenterIpRangeModel));
+            return blob.UploadTextAsync(JsonSerializer.Serialize(azureDataCenterIpRangeModel));
         }
 
         public async Task<IReadOnlyList<CloudAdvocateGitHubContributorModel>> GetCloudAdvocateMicrosoftLearnContributors()
@@ -33,7 +33,7 @@ namespace AzureAdvocates.Functions
             var gitHubContributorListBlob = blobList.OrderByDescending(x => x.Properties.Created).First();
             var serializedGitHubContributorList = await gitHubContributorListBlob.DownloadTextAsync().ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<IReadOnlyList<CloudAdvocateGitHubContributorModel>>(serializedGitHubContributorList) ?? throw new NullReferenceException();
+            return JsonSerializer.Deserialize<IReadOnlyList<CloudAdvocateGitHubContributorModel>>(serializedGitHubContributorList) ?? throw new NullReferenceException();
         }
 
         async IAsyncEnumerable<T> GetBlobs<T>(string containerName, string prefix = "", int? maxresultsPerQuery = null, BlobListingDetails blobListingDetails = BlobListingDetails.None) where T : ICloudBlob

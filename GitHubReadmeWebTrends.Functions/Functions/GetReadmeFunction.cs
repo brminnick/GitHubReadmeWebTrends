@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using GitHubApiStatus;
@@ -9,7 +10,6 @@ using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Storage.Queue;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace GitHubReadmeWebTrends.Functions
 {
@@ -107,7 +107,7 @@ namespace GitHubReadmeWebTrends.Functions
                 {
                     log.LogInformation($"Queue Message Id: {queueMessage.Id}");
 
-                    var dequeuedData = JsonConvert.DeserializeObject<(Repository, AdvocateModel)>(queueMessage.AsString);
+                    var dequeuedData = JsonSerializer.Deserialize<(Repository, AdvocateModel)>(queueMessage.AsString);
                     var (repository, gitHubUser) = dequeuedData;
 
                     var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits(CancellationToken.None).ConfigureAwait(false);

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace GitHubReadmeWebTrends.Common
 {
@@ -6,7 +6,7 @@ namespace GitHubReadmeWebTrends.Common
     {
         public RepositoryConnectionResponse(User_RepositoryConnectionResponse user) => Repository = user.Repository;
 
-        [JsonProperty("repository")]
+        [JsonPropertyName("repository")]
         public Repository? Repository { get; }
     }
 
@@ -18,7 +18,7 @@ namespace GitHubReadmeWebTrends.Common
                 Repository = new Repository(repository.Id, login, repository.Name, repository.DefaultBranch, repository.IsFork);
         }
 
-        [JsonProperty("repository")]
+        [JsonPropertyName("repository")]
         public Repository? Repository { get; }
     }
 
@@ -27,16 +27,16 @@ namespace GitHubReadmeWebTrends.Common
         public Repository_RepositoryConnectionResponse(string id, string name, bool isFork, DefaultBranchModel defaultBranchRef) =>
             (Id, Name, IsFork, DefaultBranch) = (id, name, isFork, defaultBranchRef);
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("isFork")]
+        [JsonPropertyName("isFork")]
         public bool IsFork { get; set; }
 
-        [JsonProperty("defaultBranchRef")]
+        [JsonPropertyName("defaultBranchRef")]
         public DefaultBranchModel DefaultBranch { get; set; }
     }
 }
