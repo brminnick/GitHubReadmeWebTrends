@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -12,18 +11,24 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
         public async Task GetMicrosoftDocsContributionsCollectionTest()
         {
             // Arrange
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
-            var advocateService = ServiceCollection.ServiceProvider.GetRequiredService<AdvocateService>();
             var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
 
             // Act
-            var johnPapaDocsContributionsCollection = await gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection("johnpapa",
-                                                                                                                            new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero),
-                                                                                                                            new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero)).ConfigureAwait(false);
+            var microsoftDocsContributions = await gitHubGraphQLApiService.GetMicrosoftDocsContributionsCollection("aaronpowell",
+                                                                                                                    new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                                                                                                                    new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero)).ConfigureAwait(false);
 
             // Assert
-            Assert.Greater(johnPapaDocsContributionsCollection.TotalCommitContributions, 0);
+            Assert.AreEqual(0, microsoftDocsContributions.TotalIssueContributions);
+            Assert.AreEqual(133, microsoftDocsContributions.TotalCommitContributions);
+            Assert.AreEqual(0, microsoftDocsContributions.TotalRepositoryContributions);
+            Assert.AreEqual(17, microsoftDocsContributions.TotalPullRequestContributions);
+            Assert.AreEqual(10, microsoftDocsContributions.TotalPullRequestReviewContributions);
+
+            Assert.IsEmpty(microsoftDocsContributions.IssueContributionsRepositories);
+            Assert.IsNotEmpty(microsoftDocsContributions.CommitContributionsRepositories);
+            Assert.IsNotEmpty(microsoftDocsContributions.PullRequestContributionsRepositories);
+            Assert.IsNotEmpty(microsoftDocsContributions.PullRequestReviewContributionsRepositories);
         }
     }
 }
