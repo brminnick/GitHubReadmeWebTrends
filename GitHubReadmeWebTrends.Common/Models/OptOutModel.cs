@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace GitHubReadmeWebTrends.Common
 {
@@ -17,6 +18,7 @@ namespace GitHubReadmeWebTrends.Common
             UpdatedAt = updatedAt;
         }
 
+        [Key]
         public string Alias { get; init; } = string.Empty;
         public bool HasOptedOut { get; init; }
         public DateTimeOffset CreatedAt { get; init; }
