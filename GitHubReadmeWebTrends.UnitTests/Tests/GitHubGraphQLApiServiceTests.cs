@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -29,6 +30,35 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
             Assert.IsNotEmpty(microsoftDocsContributions.CommitContributionsRepositories);
             Assert.IsNotEmpty(microsoftDocsContributions.PullRequestContributionsRepositories);
             Assert.IsNotEmpty(microsoftDocsContributions.PullRequestReviewContributionsRepositories);
+        }
+
+        [Test]
+        public async Task GetRepositoriesTest()
+        {
+            // Arrange
+            var repositoryList = new List<Repository>();
+            var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
+
+            // Act
+            await foreach (var repositories in gitHubGraphQLApiService.GetRepositories("brminnick").ConfigureAwait(false))
+            {
+                repositoryList.AddRange(repositories);
+            }
+
+            // Assert
+            Assert.IsNotEmpty(repositoryList);
+            foreach (var repository in repositoryList)
+            {
+                Assert.IsNotNull(repository);
+
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.DefaultBranchName));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.DefaultBranchOid));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.DefaultBranchPrefix));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.Id));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.Name));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.Owner));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(repository.ReadmeText));
+            }
         }
     }
 }
