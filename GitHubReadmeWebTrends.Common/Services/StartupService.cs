@@ -20,7 +20,7 @@ namespace GitHubReadmeWebTrends.Common
             services.AddScoped<OptOutDatabase>();
 
             // Refit
-            services.AddRefitClient<IGitHubGraphQLApiClient>(RefitExtensions.GetNewtonsoftJsonRefitSettings())
+            services.AddRefitClient<IGitHubGraphQLApiClient>()
                 .ConfigureHttpClient(client =>
                 {
                     client.BaseAddress = new Uri(GitHubConstants.GitHubGraphQLApi);
@@ -30,7 +30,7 @@ namespace GitHubReadmeWebTrends.Common
                 .AddPolicyHandler(HttpConfigurationService.GetPolicyHandler());
 
 
-            services.AddRefitClient<IGitHubRestApiClient>(RefitExtensions.GetNewtonsoftJsonRefitSettings())
+            services.AddRefitClient<IGitHubRestApiClient>()
                 .ConfigureHttpClient(client =>
                 {
                     client.BaseAddress = new Uri(GitHubConstants.GitHubRestApiUrl);
