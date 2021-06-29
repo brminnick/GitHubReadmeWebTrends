@@ -63,10 +63,10 @@ namespace GitHubReadmeWebTrends.Functions
             return advocateModels;
         }
 
-        [FunctionName(nameof(GetAzureAdvocatesTimerTrigger))]
-        public async Task GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<AdvocateModel> advocateModels)
+        [FunctionName(nameof(GetAzureAdvocatesTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
+        public async Task<IReadOnlyList<AdvocateModel>> GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, FunctionContext context)
         {
+            var log = context.GetLogger<GetAdvocatesFunction>();
             log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Started");
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -75,6 +75,7 @@ namespace GitHubReadmeWebTrends.Functions
 
             var currentAdvocateList = await _advocateService.GetCurrentAdvocates(cancellationTokenSource.Token).ConfigureAwait(false);
 
+            var advocateModels = new List<AdvocateModel>();
             foreach (var advocate in currentAdvocateList)
             {
                 if (!HasUserOptedOut(advocate, optOutList))
@@ -82,29 +83,34 @@ namespace GitHubReadmeWebTrends.Functions
             }
 
             log.LogInformation($"{nameof(GetAzureAdvocatesTimerTrigger)} Completed");
+
+            return advocateModels;
         }
 
-        [FunctionName(nameof(GetFriendsTimerTrigger))]
-        public async Task GetFriendsTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, ILogger log,
-                                [Queue(QueueConstants.AdvocatesQueue)] ICollector<AdvocateModel> advocateModels)
+        [FunctionName(nameof(GetFriendsTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
+        public async Task<IReadOnlyList<AdvocateModel>> GetFriendsTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, FunctionContext context)
         {
+            var log = context.GetLogger<GetAdvocatesFunction>();
             log.LogInformation($"{nameof(GetFriendsTimerTrigger)} Started");
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-            var friendsOfAzureList = await _advocateService.GetFriendsOfAdvocates().ConfigureAwait(false);
+            var friendsOfAzureList = await _advocateService.GetFriendsOfAdvocates(cancellationTokenSource.Token).ConfigureAwait(false);
 
+            var advocateModels = new List<AdvocateModel>();
             foreach (var gitHubUser in friendsOfAzureList)
             {
                 advocateModels.Add(gitHubUser);
             }
 
             log.LogInformation($"{nameof(GetFriendsTimerTrigger)} Completed");
+
+            return advocateModels;
         }
 
-        bool IsBetaTester(AdvocateModel cloudAdvocateGitHubUserModel) => _betaTesterAliases.Contains(cloudAdvocateGitHubUserModel.MicrosoftAlias);
+        static bool IsBetaTester(AdvocateModel cloudAdvocateGitHubUserModel) => _betaTesterAliases.Contains(cloudAdvocateGitHubUserModel.MicrosoftAlias);
 
-        bool HasUserOptedOut(AdvocateModel advocateModel, IReadOnlyList<OptOutModel> optOutUserModels)
+        static bool HasUserOptedOut(AdvocateModel advocateModel, IReadOnlyList<OptOutModel> optOutUserModels)
         {
             var matchingOptOutModel = optOutUserModels.SingleOrDefault(x => x.Alias == advocateModel.MicrosoftAlias);
 

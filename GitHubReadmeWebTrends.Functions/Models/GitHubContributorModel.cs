@@ -10,8 +10,8 @@ namespace GitHubReadmeWebTrends.Functions
 
         }
 
-        public GitHubContributorModel(in ContributionsCollectionModel contributionsCollection, in string fullName, in string gitHubUserName, in string microsoftAlias, in string microsoftTeam, in string redditUserName)
-            : base(gitHubUserName, microsoftAlias, redditUserName ?? string.Empty, microsoftTeam, fullName)
+        public GitHubContributorModel(in ContributionsCollectionModel contributionsCollection, in string fullName, in string gitHubUserName, in string microsoftAlias, in string microsoftTeam, in string? redditUserName)
+            : base(gitHubUserName, microsoftAlias, redditUserName, microsoftTeam, fullName)
         {
             Contributions = contributionsCollection;
         }
