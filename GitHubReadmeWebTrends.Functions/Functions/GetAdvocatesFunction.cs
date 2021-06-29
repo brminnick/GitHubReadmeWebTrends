@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
@@ -21,6 +20,12 @@ namespace GitHubReadmeWebTrends.Functions
 #else
             false;
 #endif
+        const bool _shouldRunOnStartup = true;
+//#if DEBUG
+//            true;
+//#else
+//            false;
+//#endif
 
         readonly static IReadOnlyList<string> _betaTesterAliases = new[] { "bramin" };
 
@@ -63,7 +68,7 @@ namespace GitHubReadmeWebTrends.Functions
             return advocateModels;
         }
 
-        [FunctionName(nameof(GetAzureAdvocatesTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
+        [Function(nameof(GetAzureAdvocatesTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
         public async Task<IReadOnlyList<AdvocateModel>> GetAzureAdvocatesTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, FunctionContext context)
         {
             var log = context.GetLogger<GetAdvocatesFunction>();
@@ -87,7 +92,7 @@ namespace GitHubReadmeWebTrends.Functions
             return advocateModels;
         }
 
-        [FunctionName(nameof(GetFriendsTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
+        [Function(nameof(GetFriendsTimerTrigger)), QueueOutput(QueueConstants.AdvocatesQueue)]
         public async Task<IReadOnlyList<AdvocateModel>> GetFriendsTimerTrigger([TimerTrigger(_runOncePerMonth)] TimerInfo myTimer, FunctionContext context)
         {
             var log = context.GetLogger<GetAdvocatesFunction>();

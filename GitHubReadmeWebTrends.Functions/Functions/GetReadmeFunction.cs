@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -87,7 +86,7 @@ namespace GitHubReadmeWebTrends.Functions
 
 
         [Function(nameof(GetReadmeTimerTriggerFunction))]
-        public async Task<GetReadmeFunctionQueueOutputModel> GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour, RunOnStartup = true)] TimerInfo myTimer, FunctionContext context)
+        public async Task<GetReadmeFunctionQueueOutputModel> GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour)] TimerInfo myTimer, FunctionContext context)
         {
             const int getMessageCount = 32;
 

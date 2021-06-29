@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +10,8 @@ namespace GitHubReadmeWebTrends.Console
 {
     class Program
     {
-        readonly static IServiceProvider _service = CreateDIContainer(Environment.GetEnvironmentVariable("Token") ?? string.Empty);
+        readonly static IServiceProvider _service = CreateDIContainer(Environment.GetEnvironmentVariable("Token") ?? string.Empty,
+                                                                        Environment.GetEnvironmentVariable("DatabaseConnectionString") ?? string.Empty);
 
         static async Task Main()
         {
@@ -29,11 +31,11 @@ namespace GitHubReadmeWebTrends.Console
             }
         }
 
-        static IServiceProvider CreateDIContainer(in string token)
+        static IServiceProvider CreateDIContainer(in string token, string connectionString)
         {
             //setup our DI
             var serviceCollection = new ServiceCollection();
-            StartupService.ConfigureServices(serviceCollection, token);
+            StartupService.ConfigureServices(serviceCollection, token, options => options.UseSqlServer(connectionString));
 
             //configure console logging
             var serviceProvider = serviceCollection.BuildServiceProvider();

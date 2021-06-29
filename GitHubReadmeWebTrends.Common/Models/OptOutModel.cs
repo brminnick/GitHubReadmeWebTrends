@@ -2,8 +2,13 @@
 
 namespace GitHubReadmeWebTrends.Common
 {
-    public class OptOutModel : IOptOutModel
+    public record OptOutModel
     {
+        public OptOutModel()
+        {
+
+        }
+
         public OptOutModel(string alias, bool hasOptedOut, DateTimeOffset createdAt, DateTimeOffset updatedAt)
         {
             Alias = alias;
@@ -12,17 +17,9 @@ namespace GitHubReadmeWebTrends.Common
             UpdatedAt = updatedAt;
         }
 
-        public string Alias { get; }
-        public bool HasOptedOut { get; }
-        public DateTimeOffset CreatedAt { get; }
-        public DateTimeOffset UpdatedAt { get; }
-    }
-
-    public interface IOptOutModel
-    {
-        string Alias { get; }
-        bool HasOptedOut { get; }
-        DateTimeOffset CreatedAt { get; }
-        DateTimeOffset UpdatedAt { get; }
+        public string Alias { get; init; } = string.Empty;
+        public bool HasOptedOut { get; init; }
+        public DateTimeOffset CreatedAt { get; init; }
+        public DateTimeOffset UpdatedAt { get; init; }
     }
 }

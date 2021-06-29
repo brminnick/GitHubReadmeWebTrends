@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GitHubReadmeWebTrends.Common.UnitTests
@@ -18,7 +19,7 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
         static IServiceProvider CreateContainer()
         {
             var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
-            StartupService.ConfigureServices(services, _token);
+            StartupService.ConfigureServices(services, _token, options => options.UseInMemoryDatabase("InMemoryDb"));
 
             return services.BuildServiceProvider();
         }
