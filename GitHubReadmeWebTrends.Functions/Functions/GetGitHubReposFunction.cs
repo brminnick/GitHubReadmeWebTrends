@@ -17,7 +17,7 @@ namespace GitHubReadmeWebTrends.Functions
         {
             var log = context.GetLogger<GetGitHubReposFunction>();
 
-            log.LogInformation($"{nameof(GetGitHubReposFunction)} Started");
+            log.LogInformation($"{nameof(GetGitHubReposFunction)} Started for {gitHubUser.GitHubUsername}");
 
             var outputData = new List<(Repository, AdvocateModel)>();
 
