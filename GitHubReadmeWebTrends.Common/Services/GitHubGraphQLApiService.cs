@@ -96,17 +96,6 @@ namespace GitHubReadmeWebTrends.Common
             while (repositoryConnection?.PageInfo?.HasNextPage is true);
         }
 
-        public async IAsyncEnumerable<IEnumerable<PullRequest>> GetDefaultBranchPullRequests(string repositoryName, string repositoryOwner)
-        {
-            RepositoryPullRequestResponse? repositoryPullRequestResponse = null;
-            do
-            {
-                repositoryPullRequestResponse = await GetRepositoryPullRequestResponse(repositoryName, repositoryOwner, repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.EndCursor).ConfigureAwait(false);
-                yield return repositoryPullRequestResponse?.Repository.PullRequests?.Nodes.Where(x => x.BaseRefName == repositoryPullRequestResponse.Repository.DefaultBranchRef.Name) ?? Enumerable.Empty<PullRequest>();
-            }
-            while (repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.HasNextPage is true);
-        }
-
         public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
             GetGraphQLResponseData(CreateBranchResponse(repositoryId, repositoryName, branchOid, guid));
 
@@ -115,7 +104,6 @@ namespace GitHubReadmeWebTrends.Common
         static async Task<ApiResponse<GraphQLResponse<T>>> ExecuteGraphQLRequest<T>(Task<ApiResponse<GraphQLResponse<T>>> graphQLRequestTask)
         {
             var response = await graphQLRequestTask.ConfigureAwait(false);
-
             if (response?.Content is null)
                 throw new JsonException();
 
@@ -141,6 +129,17 @@ namespace GitHubReadmeWebTrends.Common
 
         Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> GetViewerInformationResponse() =>
             ExecuteGraphQLRequest(_gitHubGraphQLApiClient.ViewerLoginQuery(new ViewerLoginQueryContent()));
+
+        async IAsyncEnumerable<IEnumerable<PullRequest>> GetDefaultBranchPullRequests(string repositoryName, string repositoryOwner)
+        {
+            RepositoryPullRequestResponse? repositoryPullRequestResponse = null;
+            do
+            {
+                repositoryPullRequestResponse = await GetRepositoryPullRequestResponse(repositoryName, repositoryOwner, repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.EndCursor).ConfigureAwait(false);
+                yield return repositoryPullRequestResponse?.Repository.PullRequests?.Nodes.Where(x => x.BaseRefName == repositoryPullRequestResponse.Repository.DefaultBranchRef.Name) ?? Enumerable.Empty<PullRequest>();
+            }
+            while (repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.HasNextPage is true);
+        }
 
         async Task<RepositoryPullRequestResponse?> GetRepositoryPullRequestResponse(string repositoryName, string repositoryOwner, string? endCursor, int numberOfPullRequestsPerRequest = 100)
         {
