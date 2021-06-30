@@ -51,7 +51,9 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
             {
                 Assert.IsNotNull(pullRequest);
 
-                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.Author));
+                if (pullRequest.Author is not null)
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.Author.Login));
+
                 Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.BaseRefName));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.Id));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.RepositoryName));
@@ -60,7 +62,7 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
                 Assert.AreNotEqual(default(DateTimeOffset), pullRequest.CreatedAt);
                 Assert.AreNotEqual(default(DateTimeOffset), pullRequest.MergedAt);
 
-                Assert.IsTrue(Uri.IsWellFormedUriString(pullRequest.Uri.ToString(), UriKind.Absolute));
+                Assert.IsTrue(Uri.IsWellFormedUriString(pullRequest.Url.ToString(), UriKind.Absolute));
             }
         }
 
@@ -93,6 +95,28 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
 
                 Assert.IsTrue(string.IsNullOrWhiteSpace(repository.ReadmeText));
             }
+        }
+
+        [Test]
+        public async Task GetRepositoryTest()
+        {
+            // Arrange
+            var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
+
+            // Act
+            var repository = await gitHubGraphQLApiService.GetRepository("brminnick", "gittrends").ConfigureAwait(false);
+
+            // Assert
+            Assert.IsNotNull(repository);
+
+            Assert.IsFalse(string.IsNullOrWhiteSpace(repository?.DefaultBranchName));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(repository?.DefaultBranchOid));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(repository?.DefaultBranchPrefix));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(repository?.Id));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(repository?.Name));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(repository?.Owner));
+
+            Assert.IsTrue(string.IsNullOrWhiteSpace(repository?.ReadmeText));
         }
     }
 }

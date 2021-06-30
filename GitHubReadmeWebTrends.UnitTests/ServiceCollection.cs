@@ -6,7 +6,7 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
 {
     public class ServiceCollection
     {
-        readonly static string _token = Environment.GetEnvironmentVariable("Token") ?? string.Empty;
+        readonly static string _token = "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";// Environment.GetEnvironmentVariable("Token") ?? string.Empty;
 
         readonly static Lazy<IServiceProvider> _serviceProviderHolder = new(() => CreateContainer());
 

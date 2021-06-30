@@ -9,14 +9,7 @@ namespace GitHubReadmeWebTrends.Common
 
     public record DefaultBranchRef_RepositoryPullRequestResponse(string Name);
 
-    public class PullRequestResponse
-    {
-        public PullRequestResponse(IEnumerable<PullRequest> nodes, PageInfo pageInfo) =>
-            (PullRequests, PageInfo) = (nodes.ToList(), pageInfo);
-
-        public IReadOnlyList<PullRequest> PullRequests { get; }
-        public PageInfo PageInfo { get; }
-    }
+    public record PullRequestResponse(IEnumerable<PullRequest> Nodes, PageInfo PageInfo);
 
     public record Author(string? Login);
 }

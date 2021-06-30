@@ -101,8 +101,8 @@ namespace GitHubReadmeWebTrends.Functions
 
             var createForkResponse = await _gitHubRestApiService.CreateFork(repository.Owner, repository.Name).ConfigureAwait(false);
 
-            var forkedRepositoryResponse = await _gitHubGraphQLApiService.GetRepository(createForkResponse.OwnerLogin, createForkResponse.Name).ConfigureAwait(false);
-            if (forkedRepositoryResponse.Repository is null)
+            var forkedRepositoryResponse = await _gitHubGraphQLApiService.GetRepository(createForkResponse.Owner.Login, createForkResponse.Name).ConfigureAwait(false);
+            if (forkedRepositoryResponse.User.Repository is null)
                 return null;
 
             return new Repository(forkedRepositoryResponse.Repository.Id,

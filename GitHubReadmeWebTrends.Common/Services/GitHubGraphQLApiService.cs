@@ -50,7 +50,7 @@ namespace GitHubReadmeWebTrends.Common
                     pullRequestList.AddRange(pullRequests);
                 }
 
-                repo.PullRequestsTCS.SetResult(pullRequestList.Select(x => new RepositoryPullRequest(repo.Repository, repo.Owner, x)));
+                repo.PullRequestsTCS.SetResult(pullRequestList.Select(x => new RepositoryPullRequest(repo.Repository, repo.Owner, x.Id, x.Url, x.CreatedAt, x.Merged, x.MergedAt, x.BaseRefName, x.Author)));
             });
 
             var remainingTaskList = microsoftLearnRepositoryTCSs.Select(x => x.PullRequestsTCS.Task).ToList();
@@ -66,11 +66,19 @@ namespace GitHubReadmeWebTrends.Common
             }
         }
 
+
+        public async Task<Repository?> GetRepository(string repositoryOwner, string repositoryName)
+        {
+            var response = await GetGraphQLResponseData(GetRepositoryResponse(repositoryOwner, repositoryName)).ConfigureAwait(false);
+            return response.User.Repository switch
+            {
+                null => null,
+                _ => new Repository(response.User.Repository.Id, response.User.Login, response.User.Repository.Name, response.User.Repository.DefaultBranchRef, response.User.Repository.IsFork)
+            };
+        }
+
         public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
             GetGraphQLResponseData(CreateBranchResponse(repositoryId, repositoryName, branchOid, guid));
-
-        public Task<RepositoryConnectionResponse> GetRepository(string repositoryOwner, string repositoryName) =>
-           GetGraphQLResponseData(GetRepositoryResponse(repositoryOwner, repositoryName));
 
         public Task<CreatePullRequestResponseModel> CreatePullRequest(in string repositoryId, in string baseRefName, in string headRefName, in string title, in string body, in Guid clientMutationId, in bool maintainerCanModify = true, in bool draft = false) =>
             GetGraphQLResponseData(CreatePullRequestResponse(repositoryId, baseRefName, headRefName, title, body, clientMutationId, maintainerCanModify, draft));
@@ -112,7 +120,7 @@ namespace GitHubReadmeWebTrends.Common
             do
             {
                 repositoryPullRequestResponse = await GetRepositoryPullRequestResponse(repositoryName, repositoryOwner, repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.EndCursor).ConfigureAwait(false);
-                yield return repositoryPullRequestResponse?.Repository.PullRequests?.PullRequests.Where(x => x.BaseRefName == repositoryPullRequestResponse.Repository.DefaultBranchRef.Name) ?? Enumerable.Empty<PullRequest>();
+                yield return repositoryPullRequestResponse?.Repository.PullRequests?.Nodes.Where(x => x.BaseRefName == repositoryPullRequestResponse.Repository.DefaultBranchRef.Name) ?? Enumerable.Empty<PullRequest>();
             }
             while (repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.HasNextPage is true);
         }
