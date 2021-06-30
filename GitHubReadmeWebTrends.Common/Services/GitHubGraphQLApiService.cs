@@ -77,29 +77,11 @@ namespace GitHubReadmeWebTrends.Common
             };
         }
 
-        public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
-            GetGraphQLResponseData(CreateBranchResponse(repositoryId, repositoryName, branchOid, guid));
-
         public Task<CreatePullRequestResponseModel> CreatePullRequest(in string repositoryId, in string baseRefName, in string headRefName, in string title, in string body, in Guid clientMutationId, in bool maintainerCanModify = true, in bool draft = false) =>
             GetGraphQLResponseData(CreatePullRequestResponse(repositoryId, baseRefName, headRefName, title, body, clientMutationId, maintainerCanModify, draft));
 
         public Task<GitHubViewerResponse> GetViewerInformation() =>
             GetGraphQLResponseData(GetViewerInformationResponse());
-
-        public Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> GetContributionsCollection(string gitHubUserName, string organizationId, DateTimeOffset from, DateTimeOffset to) =>
-            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.ContributionsQuery(new ContributionsQueryContent(gitHubUserName, organizationId, from, to)));
-
-        public Task<ApiResponse<GraphQLResponse<CreateBranchResponseModel>>> CreateBranchResponse(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
-            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranchMutation(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
-
-        public Task<ApiResponse<GraphQLResponse<RepositoryConnectionResponse>>> GetRepositoryResponse(string repositoryOwner, string repositoryName) =>
-            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryConnectionQuery(new RepositoryConnectionQueryContent(repositoryOwner, repositoryName)));
-
-        public Task<ApiResponse<GraphQLResponse<CreatePullRequestResponseModel>>> CreatePullRequestResponse(in string repositoryId, in string baseRefName, in string headRefName, in string title, in string body, in Guid clientMutationId, in bool maintainerCanModify = true, in bool draft = false) =>
-            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreatePullRequestMutation(new CreatePullRequestMutationContent(repositoryId, baseRefName, headRefName, title, body, clientMutationId, maintainerCanModify, draft)));
-
-        public Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> GetViewerInformationResponse() =>
-            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.ViewerLoginQuery(new ViewerLoginQueryContent()));
 
         public async IAsyncEnumerable<IEnumerable<Repository>> GetRepositories(string repositoryOwner, int numberOfRepositoriesPerRequest = 100)
         {
@@ -125,6 +107,9 @@ namespace GitHubReadmeWebTrends.Common
             while (repositoryPullRequestResponse?.Repository.PullRequests?.PageInfo?.HasNextPage is true);
         }
 
+        public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
+            GetGraphQLResponseData(CreateBranchResponse(repositoryId, repositoryName, branchOid, guid));
+
         static string GetEndCursorString(string? endCursor) => string.IsNullOrWhiteSpace(endCursor) ? string.Empty : "after: \"" + endCursor + "\"";
 
         static async Task<ApiResponse<GraphQLResponse<T>>> ExecuteGraphQLRequest<T>(Task<ApiResponse<GraphQLResponse<T>>> graphQLRequestTask)
@@ -141,6 +126,21 @@ namespace GitHubReadmeWebTrends.Common
 
             return response;
         }
+
+        Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> GetContributionsCollection(string gitHubUserName, string organizationId, DateTimeOffset from, DateTimeOffset to) =>
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.ContributionsQuery(new ContributionsQueryContent(gitHubUserName, organizationId, from, to)));
+
+        Task<ApiResponse<GraphQLResponse<CreateBranchResponseModel>>> CreateBranchResponse(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreateBranchMutation(new CreateBranchMutationContent(repositoryId, repositoryName, branchOid, guid)));
+
+        Task<ApiResponse<GraphQLResponse<RepositoryConnectionResponse>>> GetRepositoryResponse(string repositoryOwner, string repositoryName) =>
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.RepositoryConnectionQuery(new RepositoryConnectionQueryContent(repositoryOwner, repositoryName)));
+
+        Task<ApiResponse<GraphQLResponse<CreatePullRequestResponseModel>>> CreatePullRequestResponse(in string repositoryId, in string baseRefName, in string headRefName, in string title, in string body, in Guid clientMutationId, in bool maintainerCanModify = true, in bool draft = false) =>
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.CreatePullRequestMutation(new CreatePullRequestMutationContent(repositoryId, baseRefName, headRefName, title, body, clientMutationId, maintainerCanModify, draft)));
+
+        Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> GetViewerInformationResponse() =>
+            ExecuteGraphQLRequest(_gitHubGraphQLApiClient.ViewerLoginQuery(new ViewerLoginQueryContent()));
 
         async Task<RepositoryPullRequestResponse?> GetRepositoryPullRequestResponse(string repositoryName, string repositoryOwner, string? endCursor, int numberOfPullRequestsPerRequest = 100)
         {

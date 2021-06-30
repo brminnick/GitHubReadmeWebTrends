@@ -104,7 +104,7 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
             var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
 
             // Act
-            var repository = await gitHubGraphQLApiService.GetRepository("brminnick", "gittrends").ConfigureAwait(false);
+            var repository = await gitHubGraphQLApiService.GetRepository("brminnick", nameof(GitHubReadmeWebTrends)).ConfigureAwait(false);
 
             // Assert
             Assert.IsNotNull(repository);
@@ -117,6 +117,37 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(repository?.Owner));
 
             Assert.IsTrue(string.IsNullOrWhiteSpace(repository?.ReadmeText));
+        }
+
+        [Test]
+        public async Task GetDefaultBranchPullRequestsTest()
+        {
+            // Arrange
+            var pullRequests = new List<PullRequest>();
+            var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
+
+            // Act
+            await foreach (var pullRequestsResult in gitHubGraphQLApiService.GetDefaultBranchPullRequests(nameof(GitHubReadmeWebTrends), "brminnick").ConfigureAwait(false))
+            {
+                pullRequests.AddRange(pullRequestsResult);
+            }
+
+            // Assert
+            Assert.IsNotEmpty(pullRequests);
+
+            foreach (var pullRequest in pullRequests)
+            {
+                if (pullRequest.Author is not null)
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.Author.Login));
+
+                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.BaseRefName));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(pullRequest.Id));                
+
+                Assert.AreNotEqual(default(DateTimeOffset), pullRequest.CreatedAt);
+                Assert.AreNotEqual(default(DateTimeOffset), pullRequest.MergedAt);
+
+                Assert.IsTrue(Uri.IsWellFormedUriString(pullRequest.Url.ToString(), UriKind.Absolute));
+            }
         }
     }
 }
