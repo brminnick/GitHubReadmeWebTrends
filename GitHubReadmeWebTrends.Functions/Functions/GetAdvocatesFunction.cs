@@ -112,10 +112,10 @@ namespace GitHubReadmeWebTrends.Functions
         [Conditional("DEBUG")]
         static void PrintRepositoryUrls(in IEnumerable<RepositoryFile> repositoryFiles)
         {
-            foreach (var repository in repositoryFiles)
+            foreach (var repositoryFile in repositoryFiles)
             {
-                Debug.WriteLine($"File Name: {repository.FileName}");
-                Debug.WriteLine($"Download Url: {repository.DownloadUrl?.ToString() ?? "null"}");
+                Debug.WriteLine($"File Name: {repositoryFile.Name}");
+                Debug.WriteLine($"Download Url: {repositoryFile.Download_Url?.ToString() ?? "null"}");
                 Debug.WriteLine("");
             }
         }

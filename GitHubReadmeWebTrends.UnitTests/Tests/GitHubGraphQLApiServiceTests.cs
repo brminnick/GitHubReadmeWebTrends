@@ -118,5 +118,22 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
 
             Assert.IsTrue(string.IsNullOrWhiteSpace(repository?.ReadmeText));
         }
+
+        [Test]
+        public async Task GetViewerInformationTest()
+        {
+            // Arrange
+            var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
+
+            // Act
+            var viewerResponse = await gitHubGraphQLApiService.GetViewerInformation().ConfigureAwait(false);
+
+            // Assert
+            Assert.IsNotNull(viewerResponse);
+            Assert.IsNotNull(viewerResponse.Viewer);
+
+            Assert.AreEqual("brminnick", viewerResponse.Viewer.Login);
+            Assert.AreEqual("Brandon Minnick", viewerResponse.Viewer.Name);
+        }
     }
 }

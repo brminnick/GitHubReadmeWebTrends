@@ -150,7 +150,7 @@ namespace GitHubReadmeWebTrends.Functions
         async Task RetrieveReadme(Repository repository, AdvocateModel advocateModel, ILogger log, IList<(Repository, AdvocateModel)> completedRepositoriesData)
         {
             var readmeFile = await _gitHubRestApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
-            var readmeText = await _httpClient.GetStringAsync(readmeFile.DownloadUrl).ConfigureAwait(false);
+            var readmeText = await _httpClient.GetStringAsync(readmeFile.Download_Url).ConfigureAwait(false);
 
             completedRepositoriesData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, readmeText), advocateModel));
 

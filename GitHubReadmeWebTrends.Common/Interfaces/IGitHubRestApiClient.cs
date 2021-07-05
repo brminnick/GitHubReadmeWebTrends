@@ -18,7 +18,7 @@ namespace GitHubReadmeWebTrends.Common
         Task<RepositoryFile> GetFile([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName, [AliasAs("path")] string filePath, [AliasAs("ref")] string branchName);
 
         [Put("/repos/{owner}/{repo}/contents/{path}")]
-        Task<UpdateFileResponseModel> UpdateFile([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName, [AliasAs("path")] string filePath, [Body] UpdateFileContentModel updateFileContentModel);
+        Task<UpdateFileResponseModel> UpdateFile([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName, [AliasAs("path")] string filePath, [Body(true)] UpdateFileContentModel updateFileContentModel);
 
         [Post("/repos/{owner}/{repo}/pulls")]
         Task<RepositoryFile> OpenPullRequest([AliasAs("owner")] string gitHubUserName, [AliasAs("repo")] string repositoryName);

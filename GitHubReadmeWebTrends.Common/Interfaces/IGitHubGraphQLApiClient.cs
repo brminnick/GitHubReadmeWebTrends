@@ -11,25 +11,25 @@ namespace GitHubReadmeWebTrends.Common
     public interface IGitHubGraphQLApiClient
     {
         [Post("")]
-        Task<ApiResponse<GraphQLResponse<RepositoriesConnectionResponse>>> RepositoriesConnectionQuery([Body] RepositoriesConnectionQueryContent request);
+        Task<ApiResponse<GraphQLResponse<RepositoriesConnectionResponse>>> RepositoriesConnectionQuery([Body(true)] RepositoriesConnectionQueryContent request);
 
         [Post("")]
-        Task<ApiResponse<GraphQLResponse<RepositoryConnectionResponse>>> RepositoryConnectionQuery([Body] RepositoryConnectionQueryContent request);
+        Task<ApiResponse<GraphQLResponse<RepositoryConnectionResponse>>> RepositoryConnectionQuery([Body(true)] RepositoryConnectionQueryContent request);
 
         [Post("")]
-        Task<ApiResponse<GraphQLResponse<CreateBranchResponseModel>>> CreateBranchMutation([Body] CreateBranchMutationContent request);
+        Task<ApiResponse<GraphQLResponse<CreateBranchResponseModel>>> CreateBranchMutation([Body(true)] CreateBranchMutationContent request);
 
         [Post("")]
-        Task<ApiResponse<GraphQLResponse<CreatePullRequestResponseModel>>> CreatePullRequestMutation([Body] CreatePullRequestMutationContent request);
+        Task<ApiResponse<GraphQLResponse<CreatePullRequestResponseModel>>> CreatePullRequestMutation([Body(true)] CreatePullRequestMutationContent request);
 
         [Post("")]
-        Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> ViewerLoginQuery([Body] ViewerLoginQueryContent request);
+        Task<ApiResponse<GraphQLResponse<GitHubViewerResponse>>> ViewerLoginQuery([Body(true)] ViewerLoginQueryContent request);
 
         [Post("")]
-        Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> ContributionsQuery([Body] ContributionsQueryContent request);
+        Task<ApiResponse<GraphQLResponse<ContributionsResponse>>> ContributionsQuery([Body(true)] ContributionsQueryContent request);
 
         [Post("")]
-        Task<ApiResponse<GraphQLResponse<RepositoryPullRequestResponse>>> RepositoryPullRequestQuery([Body] RepositoryPullRequestQueryContent request);
+        Task<ApiResponse<GraphQLResponse<RepositoryPullRequestResponse>>> RepositoryPullRequestQuery([Body(true)] RepositoryPullRequestQueryContent request);
     }
 
     public record ContributionsQueryContent : GraphQLRequest
