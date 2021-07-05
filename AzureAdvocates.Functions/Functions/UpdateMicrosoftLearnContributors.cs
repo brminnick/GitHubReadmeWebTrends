@@ -54,7 +54,7 @@ namespace AzureAdvocates.Functions
             var cloudAdvocateContributions = new List<CloudAdvocateGitHubContributorModel>();
             foreach (var cloudAdvocate in advocateList)
             {
-                var cloudAdvocateContributorModel = new CloudAdvocateGitHubContributorModel(microsoftLearnPullRequests.Where(x => cloudAdvocate.GitHubUsername.Equals(x.Author?.Login, StringComparison.OrdinalIgnoreCase)), cloudAdvocate);
+                var cloudAdvocateContributorModel = new CloudAdvocateGitHubContributorModel(microsoftLearnPullRequests.Where(x => cloudAdvocate.GitHubUsername.Equals(x.Author?.Login, StringComparison.OrdinalIgnoreCase)).ToList(), cloudAdvocate.GitHubUsername, cloudAdvocate.MicrosoftAlias, cloudAdvocate.RedditUserName, cloudAdvocate.Team, cloudAdvocate.Name);
 
                 cloudAdvocateContributions.Add(cloudAdvocateContributorModel);
 

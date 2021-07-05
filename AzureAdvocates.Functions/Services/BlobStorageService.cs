@@ -4,22 +4,26 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Azure.Storage.Blob;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace AzureAdvocates.Functions
 {
     class BlobStorageService
     {
         const string _microsoftLearnContributionsContainerName = "cloudadvocatemicrosoftlearncontributions";
+
         readonly CloudBlobClient _blobClient;
+        readonly ILogger<BlobStorageService> _logger;
 
-        public BlobStorageService(CloudBlobClient cloudBlobClient) => _blobClient = cloudBlobClient;
+        public BlobStorageService(CloudBlobClient cloudBlobClient, ILogger<BlobStorageService> logger) =>
+            (_blobClient, _logger) = (cloudBlobClient, logger);
 
-        public Task UploadCloudAdvocateMicrosoftLearnContributions(IEnumerable<CloudAdvocateGitHubContributorModel> azureDataCenterIpRangeModel, string blobName)
+        public Task UploadCloudAdvocateMicrosoftLearnContributions(IEnumerable<CloudAdvocateGitHubContributorModel> cloudAdvocateGitHubContributorModel, string blobName)
         {
             var container = GetBlobContainer(_microsoftLearnContributionsContainerName);
             var blob = container.GetBlockBlobReference(blobName);
 
-            return blob.UploadTextAsync(JsonSerializer.Serialize(azureDataCenterIpRangeModel));
+            return blob.UploadTextAsync(JsonSerializer.Serialize(cloudAdvocateGitHubContributorModel));
         }
 
         public async Task<IReadOnlyList<CloudAdvocateGitHubContributorModel>> GetCloudAdvocateMicrosoftLearnContributors()
@@ -28,10 +32,13 @@ namespace AzureAdvocates.Functions
             await foreach (var blob in GetBlobs<CloudBlockBlob>(_microsoftLearnContributionsContainerName).ConfigureAwait(false))
             {
                 blobList.Add(blob);
+                _logger.LogInformation($"Found {blob.Name}");
             }
 
             var gitHubContributorListBlob = blobList.OrderByDescending(x => x.Properties.Created).First();
             var serializedGitHubContributorList = await gitHubContributorListBlob.DownloadTextAsync().ConfigureAwait(false);
+
+            _logger.LogInformation($"Most Recent Blob: {serializedGitHubContributorList}");
 
             return JsonSerializer.Deserialize<IReadOnlyList<CloudAdvocateGitHubContributorModel>>(serializedGitHubContributorList) ?? throw new NullReferenceException();
         }

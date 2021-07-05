@@ -42,7 +42,7 @@ namespace AzureAdvocates.Functions
                     log.LogInformation($"Adding Advocate: {advocateContribution.Name}");
 
                     var filteredPullRequests = advocateContribution.PullRequests.Where(x => x.CreatedAt.IsWithinRange(from, to)).ToList();
-                    var filteredCloudAdvocateContribution = new CloudAdvocateGitHubContributorModel(filteredPullRequests, advocateContribution.Name, advocateContribution.GitHubUsername, advocateContribution.MicrosoftAlias, advocateContribution.Team, advocateContribution.RedditUserName);
+                    var filteredCloudAdvocateContribution = new CloudAdvocateGitHubContributorModel(filteredPullRequests, advocateContribution.GitHubUsername, advocateContribution.MicrosoftAlias, advocateContribution.RedditUserName, advocateContribution.Team, advocateContribution.Name);
 
                     filteredCloudAdvocateContributions.Add(filteredCloudAdvocateContribution);
                 }
