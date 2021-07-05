@@ -9,6 +9,6 @@ namespace GitHubReadmeWebTrends.Common
             Database.EnsureCreated();
         }
 
-        public DbSet<OptOutModel>? OptOutDatabaseModel => Set<OptOutModel>();
+        public DbSet<OptOutModel> OptOutDatabaseModel => Set<OptOutModel>();
     }
 }
