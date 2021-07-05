@@ -135,5 +135,23 @@ namespace GitHubReadmeWebTrends.Common.UnitTests
             Assert.AreEqual("brminnick", viewerResponse.Viewer.Login);
             Assert.AreEqual("Brandon Minnick", viewerResponse.Viewer.Name);
         }
+
+        [Test]
+        public async Task CreateBranchTest()
+        {
+            // Arrange
+            var guid = Guid.NewGuid();
+            var gitHubGraphQLApiService = ServiceCollection.ServiceProvider.GetRequiredService<GitHubGraphQLApiService>();
+
+            // Act
+            var repository = await gitHubGraphQLApiService.GetRepository("brminnick", nameof(GitHubReadmeWebTrends)).ConfigureAwait(false) ?? throw new NullReferenceException();
+            var branchResponse = await gitHubGraphQLApiService.CreateBranch(repository.Id, repository.DefaultBranchPrefix + $"test{DateTimeOffset.UtcNow.Millisecond}", repository.DefaultBranchOid, guid).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsNotNull(branchResponse);
+            Assert.IsNotNull(branchResponse.CreateRef);
+
+            Assert.IsFalse(string.IsNullOrWhiteSpace(branchResponse.CreateRef.ClientMutationId));
+        }
     }
 }

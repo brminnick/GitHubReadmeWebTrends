@@ -96,8 +96,8 @@ namespace GitHubReadmeWebTrends.Common
             while (repositoryConnection?.PageInfo?.HasNextPage is true);
         }
 
-        public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryName, string branchOid, Guid guid) =>
-            GetGraphQLResponseData(CreateBranchResponse(repositoryId, repositoryName, branchOid, guid));
+        public Task<CreateBranchResponseModel> CreateBranch(string repositoryId, string repositoryRefBranchName, string branchOid, Guid guid) =>
+            GetGraphQLResponseData(CreateBranchResponse(repositoryId, repositoryRefBranchName, branchOid, guid));
 
         static string GetEndCursorString(string? endCursor) => string.IsNullOrWhiteSpace(endCursor) ? string.Empty : "after: \"" + endCursor + "\"";
 
