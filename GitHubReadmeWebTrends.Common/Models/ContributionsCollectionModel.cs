@@ -1,43 +1,18 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
 namespace GitHubReadmeWebTrends.Common
 {
-    public class ContributionsCollectionModel
+    public record ContributionsCollectionModel(int TotalIssueContributions,
+                                                int TotalCommitContributions,
+                                                int TotalPullRequestContributions,
+                                                int TotalPullRequestReviewContributions,
+                                                IEnumerable<ContributionsByRepository> CommitContributionsByRepository,
+                                                IEnumerable<ContributionsByRepository> IssueContributionsByRepository,
+                                                IEnumerable<ContributionsByRepository> PullRequestContributionsByRepository,
+                                                IEnumerable<ContributionsByRepository> PullRequestReviewContributionsByRepository)
     {
-        public ContributionsCollectionModel(int totalIssueContributions,
-                                            int totalCommitContributions,
-                                            int totalPullRequestContributions,
-                                            int totalPullRequestReviewContributions,
-                                            IEnumerable<ContributionsByRepository> commitContributionsByRepository,
-                                            IEnumerable<ContributionsByRepository> issueContributionsByRepository,
-                                            IEnumerable<ContributionsByRepository> pullRequestContributionsByRepository,
-                                            IEnumerable<ContributionsByRepository> pullRequestReviewContributionsByRepository)
-        {
-            TotalIssueContributions = totalIssueContributions;
-            TotalCommitContributions = totalCommitContributions;
-            TotalPullRequestContributions = totalPullRequestContributions;
-            TotalPullRequestReviewContributions = totalPullRequestReviewContributions;
 
-            CommitContributionsRepositories = commitContributionsByRepository.Select(x => x.Repository.Name).ToList();
-            IssueContributionsRepositories = issueContributionsByRepository.Select(x => x.Repository.Name).ToList();
-            PullRequestContributionsRepositories = pullRequestContributionsByRepository.Select(x => x.Repository.Name).ToList();
-            PullRequestReviewContributionsRepositories = pullRequestReviewContributionsByRepository.Select(x => x.Repository.Name).ToList();
-        }
-
-        public int TotalContributions => TotalIssueContributions + TotalCommitContributions + TotalRepositoryContributions + TotalPullRequestContributions + TotalPullRequestReviewContributions;
-
-        public int TotalIssueContributions { get; }
-        public int TotalCommitContributions { get; }
-        public int TotalRepositoryContributions { get; }
-        public int TotalPullRequestContributions { get; }
-        public int TotalPullRequestReviewContributions { get; }
-
-        public IReadOnlyList<string> CommitContributionsRepositories { get; }
-        public IReadOnlyList<string> IssueContributionsRepositories { get; }
-        public IReadOnlyList<string> PullRequestContributionsRepositories { get; }
-        public IReadOnlyList<string> PullRequestReviewContributionsRepositories { get; }
+        public int TotalContributions => TotalIssueContributions + TotalCommitContributions + TotalPullRequestContributions + TotalPullRequestReviewContributions;
     }
 
     public record ContributionsResponse(User_ContributionsResponse User);
@@ -47,10 +22,4 @@ namespace GitHubReadmeWebTrends.Common
     public record ContributionsByRepository(Repository_ContributionsResponse Repository);
 
     public record Repository_ContributionsResponse(string Name);
-}
-
-namespace System.Runtime.CompilerServices
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public class IsExternalInit { }
 }

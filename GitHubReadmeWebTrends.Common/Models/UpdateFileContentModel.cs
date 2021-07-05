@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace GitHubReadmeWebTrends.Common
 {
@@ -7,19 +7,19 @@ namespace GitHubReadmeWebTrends.Common
         public UpdateFileContentModel(string message, Committer committer, string content, string sha, string branch) =>
             (CommitMessage, Committer, ContentAsBase64String, Sha, Branch) = (message, committer, content, sha, branch);
 
-        [JsonProperty("branch")]
+        [JsonPropertyName("branch")]
         public string Branch { get; }
 
-        [JsonProperty("message")]
+        [JsonPropertyName("message")]
         public string CommitMessage { get; }
 
-        [JsonProperty("committer")]
+        [JsonPropertyName("committer")]
         public Committer Committer { get; }
 
-        [JsonProperty("content")]
+        [JsonPropertyName("content")]
         public string ContentAsBase64String { get; }
 
-        [JsonProperty("sha")]
+        [JsonPropertyName("sha")]
         public string Sha { get; }
     }
 
@@ -28,10 +28,10 @@ namespace GitHubReadmeWebTrends.Common
         public Committer(string name, string email) =>
             (Name, Email) = (name, email);
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; }
 
-        [JsonProperty("email")]
+        [JsonPropertyName("email")]
         public string Email { get; }
     }
 }

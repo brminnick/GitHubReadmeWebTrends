@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 namespace AzureAdvocates.Functions
@@ -15,25 +15,37 @@ namespace AzureAdvocates.Functions
     class GetMicrosoftLearnContributorCount
     {
         readonly BlobStorageService _blobStorageService;
-        readonly CloudAdvocateService _cloudAdvocateService;
+        readonly AdvocateService _advocateService;
         readonly IGitHubApiStatusService _gitHubApiStatusService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
 
-        public GetMicrosoftLearnContributorCount(BlobStorageService blobStorageService,
-                                        CloudAdvocateService cloudAdvocateService,
-                                        IGitHubApiStatusService gitHubApiStatusService,
-                                        GitHubGraphQLApiService gitHubGraphQLApiService)
+        public GetMicrosoftLearnContributorCount(AdvocateService advocateService,
+                                                    BlobStorageService blobStorageService,
+                                                    IGitHubApiStatusService gitHubApiStatusService,
+                                                    GitHubGraphQLApiService gitHubGraphQLApiService)
         {
+            _advocateService = advocateService;
             _blobStorageService = blobStorageService;
-            _cloudAdvocateService = cloudAdvocateService;
             _gitHubApiStatusService = gitHubApiStatusService;
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
         }
 
-        [FunctionName(nameof(GetMicrosoftLearnContributorCount))]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributorCount) + "/{from:datetime}/{to:datetime}/{team?}")] HttpRequestMessage req, DateTime from, DateTime to, string? team, ILogger log)
+        [Function(nameof(GetMicrosoftLearnContributorCount))]
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = nameof(GetMicrosoftLearnContributorCount) + "/{fromDateTime}/{toDateTime}/{team?}")] HttpRequestData req, string fromDateTime, string toDateTime, string? team, FunctionContext context)
         {
+            var log = context.GetLogger<GetMicrosoftLearnContributorCount>();
             log.LogInformation($"{nameof(GetMicrosoftLearnContributorCount)} Started");
+
+            var isFromValid = DateTime.TryParse(fromDateTime, out var from);
+            var isToValid = DateTime.TryParse(toDateTime, out var to);
+
+            if (!isFromValid || !isToValid)
+            {
+                var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await badRequestResponse.WriteStringAsync("Invalid Dates Provided").ConfigureAwait(false);
+
+                return badRequestResponse;
+            }
 
             var microsoftLearnContributionsList = await _blobStorageService.GetCloudAdvocateMicrosoftLearnContributors().ConfigureAwait(false) ?? Array.Empty<CloudAdvocateGitHubContributorModel>();
 
@@ -41,20 +53,20 @@ namespace AzureAdvocates.Functions
             var teamContributionCount = new SortedDictionary<string, int>();
             foreach (var advocateContribution in microsoftLearnContributionsList)
             {
-                if (team is null || advocateContribution.MicrosoftTeam.Equals(team, StringComparison.OrdinalIgnoreCase))
+                if (team is null || advocateContribution.Team.Equals(team, StringComparison.OrdinalIgnoreCase))
                 {
-                    log.LogInformation($"Adding Advocate: {advocateContribution.FullName}");
+                    log.LogInformation($"Adding Advocate: {advocateContribution.Name}");
                     advocateCount++;
 
                     var filteredPullRequests = advocateContribution.PullRequests.Where(x => x.CreatedAt.IsWithinRange(from, to)).ToList();
                     if (filteredPullRequests.Any())
                     {
-                        log.LogInformation($"Team: {advocateContribution.MicrosoftTeam}");
+                        log.LogInformation($"Team: {advocateContribution.Team}");
 
-                        if (teamContributionCount.ContainsKey(advocateContribution.MicrosoftTeam))
-                            teamContributionCount[advocateContribution.MicrosoftTeam]++;
+                        if (teamContributionCount.ContainsKey(advocateContribution.Team))
+                            teamContributionCount[advocateContribution.Team]++;
                         else
-                            teamContributionCount.Add(advocateContribution.MicrosoftTeam, 1);
+                            teamContributionCount.Add(advocateContribution.Team, 1);
 
                         log.LogInformation($"Total Contributions: {filteredPullRequests.Count}");
                         advocateContributorCount++;
@@ -62,7 +74,10 @@ namespace AzureAdvocates.Functions
                 }
             }
 
-            return new OkObjectResult(new AdovocatesTotalContributionsModel(advocateCount, advocateContributorCount, teamContributionCount));
+            var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(new AdovocatesTotalContributionsModel(advocateCount, advocateContributorCount, teamContributionCount)).ConfigureAwait(false);
+
+            return response;
         }
     }
 }

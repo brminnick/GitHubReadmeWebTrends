@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,15 +18,18 @@ namespace GitHubReadmeWebTrends.Website.Pages
 
         readonly ILogger<IndexModel> _logger;
         readonly OptOutDatabase _optOutDatabase;
+        readonly AdvocateService _advocateService;
         readonly GraphServiceClient _graphServiceClient;
-        readonly CloudAdvocateService _cloudAdvocateYamlService;
 
-        public IndexModel(OptOutDatabase optOutDatabase, CloudAdvocateService cloudAdvocateYamlService, GraphServiceClient graphServiceClient, ILogger<IndexModel> logger)
+        public IndexModel(ILogger<IndexModel> logger,
+                            OptOutDatabase optOutDatabase,
+                            AdvocateService advocateService,
+                            GraphServiceClient graphServiceClient)
         {
             _logger = logger;
             _optOutDatabase = optOutDatabase;
+            _advocateService = advocateService;
             _graphServiceClient = graphServiceClient;
-            _cloudAdvocateYamlService = cloudAdvocateYamlService;
         }
 
         public string LoggedInLabelText { get; private set; } = string.Empty;
@@ -44,19 +49,16 @@ namespace GitHubReadmeWebTrends.Website.Pages
 
         public async Task OnPostOptOutButtonClicked()
         {
-            CloudAdvocateGitHubUserModel? matchingAzureAdvocate = null;
+            _logger.LogInformation("Opt Out Button Clicked");
+
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
             var microsoftAlias = await GetCurrentUserAlias().ConfigureAwait(false);
 
-            await foreach (var advocate in _cloudAdvocateYamlService.GetAzureAdvocates().ConfigureAwait(false))
-            {
-                if (advocate.MicrosoftAlias.Equals(microsoftAlias, StringComparison.OrdinalIgnoreCase))
-                {
-                    matchingAzureAdvocate = advocate;
-                    break;
-                }
-            }
+            var currentAdvocates = await _advocateService.GetCurrentAdvocates(cancellationTokenSource.Token).ConfigureAwait(false);
+            var matchingAdvocate = currentAdvocates.SingleOrDefault(x => x.MicrosoftAlias == microsoftAlias);
 
-            if (matchingAzureAdvocate is null)
+            if (matchingAdvocate is null)
             {
                 OutputText = $"Error: Alias not Found\nEnsure your login, {microsoftAlias}, matches the `alias` field in your YAML file on the cloud-developer-advocates repo: https://github.com/MicrosoftDocs/cloud-developer-advocates/tree/live/advocates";
 
@@ -68,9 +70,9 @@ namespace GitHubReadmeWebTrends.Website.Pages
                 var userOptOutModel = await _optOutDatabase.GetOptOutModel(microsoftAlias).ConfigureAwait(false);
                 var updatedOptOutModel = userOptOutModel?.HasOptedOut switch
                 {
-                    true => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, false, userOptOutModel.CreatedAt, DateTimeOffset.UtcNow),
-                    false => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, true, userOptOutModel.CreatedAt, DateTimeOffset.UtcNow),
-                    _ => new OptOutModel(matchingAzureAdvocate.MicrosoftAlias, true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
+                    true => new OptOutModel(matchingAdvocate.MicrosoftAlias, false, userOptOutModel.CreatedAt, DateTimeOffset.UtcNow),
+                    false => new OptOutModel(matchingAdvocate.MicrosoftAlias, true, userOptOutModel.CreatedAt, DateTimeOffset.UtcNow),
+                    _ => new OptOutModel(matchingAdvocate.MicrosoftAlias, true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow),
                 };
 
                 var savedOptOutModel = userOptOutModel switch

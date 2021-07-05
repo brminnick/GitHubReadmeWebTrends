@@ -2,13 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Refit;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    public class OpenPullRequestFunction
+    class OpenPullRequestFunction
     {
         readonly static string _backupEmailAddress = Environment.GetEnvironmentVariable("BackupEmailAddress") ?? string.Empty;
 
@@ -18,9 +18,11 @@ namespace GitHubReadmeWebTrends.Functions
         public OpenPullRequestFunction(GitHubRestApiService gitHubApiService, GitHubGraphQLApiService gitHubGraphQLApiService) =>
             (_gitHubRestApiService, _gitHubGraphQLApiService) = (gitHubApiService, gitHubGraphQLApiService);
 
-        [FunctionName(nameof(OpenPullRequestFunction))]
-        public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, ILogger log)
+        [Function(nameof(OpenPullRequestFunction))]
+        public async Task Run([QueueTrigger(QueueConstants.OpenPullRequestQueue)] Repository repository, FunctionContext context)
         {
+            var log = context.GetLogger<OpenPullRequestFunction>();
+
             var branchName = $"AddWebTrends-{DateTimeOffset.UtcNow:yyyy-MM}";
 
             var forkedRepository = await ForkRepository(repository).ConfigureAwait(false);
@@ -85,7 +87,7 @@ namespace GitHubReadmeWebTrends.Functions
             var createPullRequestGuid = Guid.NewGuid();
 
             var createPullRequestResult = await _gitHubGraphQLApiService.CreatePullRequest(originalRepository.Id, originalRepository.DefaultBranchName, $"{forkedRepository.Owner}:{branchName}", branchName, PullRequestConstants.BodyText, createPullRequestGuid).ConfigureAwait(false);
-            if (createPullRequestResult.Result.ClientMutationId != createPullRequestGuid.ToString())
+            if (createPullRequestResult.CreatePullRequest.ClientMutationId != createPullRequestGuid.ToString())
                 throw new Exception($"Failed to Create New Pull Request for \"{forkedRepository.Name}\"");
         }
 
@@ -99,16 +101,16 @@ namespace GitHubReadmeWebTrends.Functions
 
             var createForkResponse = await _gitHubRestApiService.CreateFork(repository.Owner, repository.Name).ConfigureAwait(false);
 
-            var forkedRepositoryResponse = await _gitHubGraphQLApiService.GetRepository(createForkResponse.OwnerLogin, createForkResponse.Name).ConfigureAwait(false);
-            if (forkedRepositoryResponse.Repository is null)
+            var forkedRepository = await _gitHubGraphQLApiService.GetRepository(createForkResponse.Owner.Login, createForkResponse.Name).ConfigureAwait(false);
+            if (forkedRepository is null)
                 return null;
 
-            return new Repository(forkedRepositoryResponse.Repository.Id,
-                                    forkedRepositoryResponse.Repository.Owner,
-                                    forkedRepositoryResponse.Repository.Name,
-                                    forkedRepositoryResponse.Repository.DefaultBranchOid,
-                                    forkedRepositoryResponse.Repository.DefaultBranchPrefix,
-                                    forkedRepositoryResponse.Repository.DefaultBranchName,
+            return new Repository(forkedRepository.Id,
+                                    forkedRepository.Owner,
+                                    forkedRepository.Name,
+                                    forkedRepository.DefaultBranchOid,
+                                    forkedRepository.DefaultBranchPrefix,
+                                    forkedRepository.DefaultBranchName,
                                     repository.IsFork,
                                     repository.ReadmeText);
 
@@ -116,7 +118,7 @@ namespace GitHubReadmeWebTrends.Functions
             {
                 var repositoryResponse = await _gitHubGraphQLApiService.GetRepository(owner, repositoryName).ConfigureAwait(false);
 
-                return repositoryResponse.Repository != null && repositoryResponse.Repository.IsFork;
+                return repositoryResponse != null && repositoryResponse.IsFork;
             }
         }
 
@@ -129,7 +131,7 @@ namespace GitHubReadmeWebTrends.Functions
                 var createBranchGiud = Guid.NewGuid();
                 var createBranchResult = await _gitHubGraphQLApiService.CreateBranch(repository.Id, repository.DefaultBranchPrefix + branchName, repository.DefaultBranchOid, createBranchGiud).ConfigureAwait(false);
 
-                if (createBranchResult.Result.ClientMutationId != createBranchGiud.ToString())
+                if (createBranchResult.CreateRef.ClientMutationId != createBranchGiud.ToString())
                     throw new Exception($"Failed to Create New Branch for \"{repository.Name}\"");
             }
             catch (Exception e) when (e.Message.Contains(alreadyExistsExceptionMessage))

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,11 +17,9 @@ namespace GitHubReadmeWebTrends.Website
     public class Startup
     {
         readonly static string _token = Environment.GetEnvironmentVariable("Token") ?? string.Empty;
+        readonly static string _connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString") ?? string.Empty;
 
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => Configuration = configuration;
 
         public IConfiguration Configuration { get; }
 
@@ -43,7 +42,7 @@ namespace GitHubReadmeWebTrends.Website
 
             services.AddRazorPages().AddMicrosoftIdentityUI();
 
-            StartupService.ConfigureServices(services, _token);
+            StartupService.ConfigureServices(services, _token, options => options.UseSqlServer(_connectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
