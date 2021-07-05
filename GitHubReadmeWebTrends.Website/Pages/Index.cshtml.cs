@@ -51,10 +51,10 @@ namespace GitHubReadmeWebTrends.Website.Pages
         {
             _logger.LogInformation("Opt Out Button Clicked");
 
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
             var microsoftAlias = await GetCurrentUserAlias().ConfigureAwait(false);
 
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var currentAdvocates = await _advocateService.GetCurrentAdvocates(cancellationTokenSource.Token).ConfigureAwait(false);
             var matchingAdvocate = currentAdvocates.SingleOrDefault(x => x.MicrosoftAlias == microsoftAlias);
 
