@@ -8,7 +8,7 @@ using Refit;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    public class OpenPullRequestFunction
+    class OpenPullRequestFunction
     {
         readonly static string _backupEmailAddress = Environment.GetEnvironmentVariable("BackupEmailAddress") ?? string.Empty;
 

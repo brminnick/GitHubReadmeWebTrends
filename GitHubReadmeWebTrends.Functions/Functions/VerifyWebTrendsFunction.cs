@@ -30,7 +30,7 @@ namespace GitHubReadmeWebTrends.Functions
         public VerifyWebTrendsFunction(OptOutDatabase optOutDatabase) => _optOutDatabase = optOutDatabase;
 
         [Function(nameof(VerifyWebTrendsFunction)), QueueOutput(QueueConstants.OpenPullRequestQueue)]
-        public async Task<IReadOnlyList<Repository>> Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] (Repository, AdvocateModel) data, FunctionContext context)
+        public async Task<IReadOnlyList<Repository>> Run([QueueTrigger(QueueConstants.VerifyWebTrendsQueue)] RepositoryAdvocateModel data, FunctionContext context)
         {
             var log = context.GetLogger<VerifyWebTrendsFunction>();
             log.LogInformation($"{nameof(VerifyWebTrendsFunction)} Started");

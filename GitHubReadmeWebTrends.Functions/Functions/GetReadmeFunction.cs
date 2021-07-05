@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    public class GetReadmeFunction
+    class GetReadmeFunction
     {
         const int _minimumApiRequests = 2000;
         const string _runEveryHour = "0 0 * * * *";
@@ -39,13 +39,13 @@ namespace GitHubReadmeWebTrends.Functions
         }
 
         [Function(nameof(GetReadmeQueueTriggerFunction))]
-        public async Task<GetReadmeFunctionQueueOutputModel> GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] (Repository, AdvocateModel) data, FunctionContext context)
+        public async Task<GetReadmeFunctionQueueOutputModel> GetReadmeQueueTriggerFunction([QueueTrigger(QueueConstants.RepositoriesQueue)] RepositoryAdvocateModel data, FunctionContext context)
         {
             var log = context.GetLogger<GetReadmeFunction>();
             log.LogInformation($"{nameof(GetReadmeQueueTriggerFunction)} Stared");
 
-            var remainingRepositoriesData = new List<(Repository, AdvocateModel)>();
-            var completedRepositoriesData = new List<(Repository, AdvocateModel)>();
+            var remainingRepositoriesData = new List<RepositoryAdvocateModel>();
+            var completedRepositoriesData = new List<RepositoryAdvocateModel>();
 
             var (repository, gitHubUser) = data;
 
@@ -92,8 +92,8 @@ namespace GitHubReadmeWebTrends.Functions
 
             var log = context.GetLogger<GetReadmeFunction>();
 
-            var remainingRepositoriesData = new List<(Repository, AdvocateModel)>();
-            var completedRepositoriesData = new List<(Repository, AdvocateModel)>();
+            var remainingRepositoriesData = new List<RepositoryAdvocateModel>();
+            var completedRepositoriesData = new List<RepositoryAdvocateModel>();
 
             var remainingRepositoriesQueue = _cloudQueueClient.GetQueueReference(QueueConstants.RemainingRepositoriesQueue.ToLower());
 
@@ -107,7 +107,7 @@ namespace GitHubReadmeWebTrends.Functions
                 {
                     log.LogInformation($"Queue Message Id: {queueMessage.Id}");
 
-                    var dequeuedData = JsonSerializer.Deserialize<(Repository, AdvocateModel)>(queueMessage.AsString);
+                    var dequeuedData = JsonSerializer.Deserialize<RepositoryAdvocateModel>(queueMessage.AsString) ?? throw new JsonException();
                     var (repository, gitHubUser) = dequeuedData;
 
                     var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits(CancellationToken.None).ConfigureAwait(false);
@@ -147,12 +147,12 @@ namespace GitHubReadmeWebTrends.Functions
             };
         }
 
-        async Task RetrieveReadme(Repository repository, AdvocateModel advocateModel, ILogger log, IList<(Repository, AdvocateModel)> completedRepositoriesData)
+        async Task RetrieveReadme(Repository repository, AdvocateModel advocateModel, ILogger log, IList<RepositoryAdvocateModel> completedRepositoriesData)
         {
             var readmeFile = await _gitHubRestApiService.GetReadme(repository.Owner, repository.Name).ConfigureAwait(false);
             var readmeText = await _httpClient.GetStringAsync(readmeFile.Download_Url).ConfigureAwait(false);
 
-            completedRepositoriesData.Add((new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, readmeText), advocateModel));
+            completedRepositoriesData.Add(new RepositoryAdvocateModel(new Repository(repository.Id, repository.Owner, repository.Name, repository.DefaultBranchOid, repository.DefaultBranchPrefix, repository.DefaultBranchName, repository.IsFork, readmeText), advocateModel));
 
             log.LogInformation($"Found Readme for {repository.Owner} {repository.Name}");
         }
@@ -160,10 +160,10 @@ namespace GitHubReadmeWebTrends.Functions
         public class GetReadmeFunctionQueueOutputModel
         {
             [QueueOutput(QueueConstants.RemainingRepositoriesQueue)]
-            public IReadOnlyList<(Repository, AdvocateModel)> RemainingRepositoriesData { get; init; } = Array.Empty<(Repository, AdvocateModel)>();
+            public IReadOnlyList<RepositoryAdvocateModel> RemainingRepositoriesData { get; init; } = Array.Empty<RepositoryAdvocateModel>();
 
             [QueueOutput(QueueConstants.VerifyWebTrendsQueue)]
-            public IReadOnlyList<(Repository, AdvocateModel)> CompletedRepositoriesData { get; init; } = Array.Empty<(Repository, AdvocateModel)>();
+            public IReadOnlyList<RepositoryAdvocateModel> CompletedRepositoriesData { get; init; } = Array.Empty<RepositoryAdvocateModel>();
         }
     }
 }

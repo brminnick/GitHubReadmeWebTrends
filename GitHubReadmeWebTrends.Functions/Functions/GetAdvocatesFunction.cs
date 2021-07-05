@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
 {
-    public class GetAdvocatesFunction
+    class GetAdvocatesFunction
     {
         const string _runOncePerMonth = "0 0 0 5 * *";
 
