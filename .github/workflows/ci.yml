@@ -126,6 +126,16 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
 
-    - name: Build
+    - name: Inject Token
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
+      
+      run: |
+        GitHubConstantsFile=`find . -name GitHubConstants.cs | head -1`
+        echo GitHubConstantsFile = $GitHubConstantsFile
+
+        sed -i '' "s/GitHubToken = \"\"/GitHubToken = \"$TOKEN\"/g" "$GitHubConstantsFile"
+
+    - name: Run Unit Tests
       run: |
         dotnet test ./GitHubReadmeWebTrends.UnitTests -c Release
