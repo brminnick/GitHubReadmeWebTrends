@@ -46,6 +46,10 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
@@ -66,6 +70,10 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
@@ -86,6 +94,10 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
@@ -106,6 +118,10 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
