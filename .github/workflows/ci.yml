@@ -46,6 +46,10 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
@@ -66,6 +70,10 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
@@ -86,6 +94,10 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
@@ -95,7 +107,7 @@ jobs:
         dotnet build ./GitHubReadmeWebTrends.Website -c Release
 
   Run_GitHubReadmeWebTrends_UnitTests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -106,10 +118,24 @@ jobs:
         dotnet-version: '6.0.x'
         include-prerelease: true
 
+    - name: Setup .NET Core v3.1.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Install dependencies
       run: dotnet restore
 
-    - name: Build
+    - name: Inject Token
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
+      
+      run: |
+        GitHubConstantsFile=`find . -name GitHubConstants.cs | head -1`
+        echo GitHubConstantsFile = $GitHubConstantsFile
+
+        sed -i '' "s/GitHubToken = \"\"/GitHubToken = \"$TOKEN\"/g" "$GitHubConstantsFile"
+
+    - name: Run Unit Tests
       run: |
         dotnet test ./GitHubReadmeWebTrends.UnitTests -c Release

@@ -35,37 +35,21 @@ namespace GitHubReadmeWebTrends.Common
 
         public async IAsyncEnumerable<IReadOnlyList<RepositoryPullRequest>> GetMicrosoftLearnPullRequests()
         {
-            var microsoftLearnRepositoryTCSs = new List<(string Owner, string Repository, TaskCompletionSource<IEnumerable<RepositoryPullRequest>> PullRequestsTCS)>();
-
             foreach (var repo in _microsoftLearnRepositories)
             {
-                microsoftLearnRepositoryTCSs.Add((repo.Owner, repo.Repository, new TaskCompletionSource<IEnumerable<RepositoryPullRequest>>()));
-            }
-
-            Parallel.ForEach(microsoftLearnRepositoryTCSs, async repo =>
-            {
-                var pullRequestList = new List<PullRequest>();
-                await foreach (var pullRequests in GetDefaultBranchPullRequests(repo.Repository, repo.Owner).ConfigureAwait(false))
+                var repositoryPullRequests = new List<RepositoryPullRequest>();
+                    
+                await Parallel.ForEachAsync(GetDefaultBranchPullRequests(repo.Repository, repo.Owner), (result, token) =>
                 {
-                    pullRequestList.AddRange(pullRequests);
-                }
+                    var pullRequestResults = result.Select(x => new RepositoryPullRequest(repo.Repository, repo.Owner, x.Id, x.Url, x.CreatedAt, x.Merged, x.MergedAt, x.BaseRefName, x.Author));
+                    repositoryPullRequests.AddRange(pullRequestResults);
 
-                repo.PullRequestsTCS.SetResult(pullRequestList.Select(x => new RepositoryPullRequest(repo.Repository, repo.Owner, x.Id, x.Url, x.CreatedAt, x.Merged, x.MergedAt, x.BaseRefName, x.Author)));
-            });
+                    return ValueTask.CompletedTask;
+                }).ConfigureAwait(false);
 
-            var remainingTaskList = microsoftLearnRepositoryTCSs.Select(x => x.PullRequestsTCS.Task).ToList();
-
-            while (remainingTaskList.Any())
-            {
-                var completedTask = await Task.WhenAny(remainingTaskList).ConfigureAwait(false);
-                remainingTaskList.Remove(completedTask);
-
-                var pullRequestList = await completedTask.ConfigureAwait(false);
-
-                yield return pullRequestList.ToList();
+                yield return repositoryPullRequests;
             }
         }
-
 
         public async Task<Repository?> GetRepository(string repositoryOwner, string repositoryName)
         {
