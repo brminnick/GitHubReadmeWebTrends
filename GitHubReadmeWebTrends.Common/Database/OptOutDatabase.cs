@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +39,7 @@ namespace GitHubReadmeWebTrends.Common
         {
             optOutModel = optOutModel with { UpdatedAt = DateTimeOffset.UtcNow };
 
-            if (isEntityTacked(optOutModel, out var trackedOptOutModel))
+            if (isEntityTracked(optOutModel, out var trackedOptOutModel))
                 _dbContext.Entry(trackedOptOutModel).State = EntityState.Detached;
 
             var entityEntry = _dbContext.Update(optOutModel);
@@ -46,7 +47,7 @@ namespace GitHubReadmeWebTrends.Common
 
             return entityEntry.Entity;
 
-            bool isEntityTacked(OptOutModel optOutModel, out OptOutModel? trackedOptOutModel)
+            bool isEntityTracked(OptOutModel optOutModel, [NotNullWhen(true)] out OptOutModel? trackedOptOutModel)
             {
                 trackedOptOutModel = _dbContext.OptOutDatabaseModel.Local.FirstOrDefault(entry => entry.Alias.Equals(optOutModel.Alias));
                 return trackedOptOutModel != null;
