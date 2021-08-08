@@ -107,7 +107,7 @@ jobs:
         dotnet build ./GitHubReadmeWebTrends.Website -c Release
 
   Run_GitHubReadmeWebTrends_UnitTests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -133,6 +133,7 @@ jobs:
       run: |
         GitHubConstantsFile=`find . -name GitHubConstants.cs | head -1`
         echo GitHubConstantsFile = $GitHubConstantsFile
+
         sed -i '' "s/GitHubToken = \"\"/GitHubToken = \"$TOKEN\"/g" "$GitHubConstantsFile"
 
     - name: Run Unit Tests
