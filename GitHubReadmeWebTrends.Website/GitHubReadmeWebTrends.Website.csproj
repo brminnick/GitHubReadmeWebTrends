@@ -13,9 +13,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.18.0" />
     <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.18.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.6.21352.12" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-preview.6.21352.12" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-preview.6.21352.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-rc.2.21480.5" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Microsoft.Extensions.DependencyInjection" />
