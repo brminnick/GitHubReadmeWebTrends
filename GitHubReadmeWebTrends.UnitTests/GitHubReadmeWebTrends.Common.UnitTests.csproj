@@ -14,7 +14,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0-preview.6.21352.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0-rc.2.21480.5" />
   </ItemGroup>
 
   <ItemGroup>

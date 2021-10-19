@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<TargetFramework>net6.0</TargetFramework>
-	<AzureFunctionsVersion>v3</AzureFunctionsVersion>
+	<AzureFunctionsVersion>v4</AzureFunctionsVersion>
 	<OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
@@ -11,8 +11,8 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.6.21352.12" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-preview.6.21352.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-rc.2.21480.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GitHubReadmeWebTrends.Common\GitHubReadmeWebTrends.Common.csproj">
