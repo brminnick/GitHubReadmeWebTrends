@@ -2,8 +2,6 @@
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
