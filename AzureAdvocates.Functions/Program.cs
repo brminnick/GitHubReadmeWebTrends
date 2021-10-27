@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
@@ -30,7 +31,7 @@ namespace AzureAdvocates.Functions
                     services.AddHttpClient();
 
                     // Add Custom Services
-                    services.AddSingleton<CloudBlobClient>(CloudStorageAccount.Parse(_storageConnectionString).CreateCloudBlobClient());
+                    services.AddSingleton(new BlobServiceClient(_storageConnectionString));
                     services.AddSingleton<BlobStorageService>();
 
                     StartupService.ConfigureServices(services, _token, options => options.UseSqlServer(_connectionString));

@@ -5,10 +5,11 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Queues;
+using Azure.Storage.Queues.Models;
 using GitHubApiStatus;
 using GitHubReadmeWebTrends.Common;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Storage.Queue;
 using Microsoft.Extensions.Logging;
 
 namespace GitHubReadmeWebTrends.Functions
@@ -19,20 +20,20 @@ namespace GitHubReadmeWebTrends.Functions
         const string _runEveryHour = "0 0 * * * *";
 
         readonly HttpClient _httpClient;
-        readonly CloudQueueClient _cloudQueueClient;
+        readonly QueueServiceClient _queueServiceClient;
         readonly GitHubRestApiService _gitHubRestApiService;
         readonly GitHubGraphQLApiService _gitHubGraphQLApiService;
         readonly IGitHubApiStatusService _gitHubApiStatusService;
 
-        public GetReadmeFunction(CloudQueueClient cloudQueueClient,
-                                    IHttpClientFactory httpClientFactory,
+        public GetReadmeFunction(IHttpClientFactory httpClientFactory,
+                                    QueueServiceClient queueServiceClient,
                                     GitHubRestApiService gitHubApiService,
                                     IGitHubApiStatusService gitHubApiStatusService,
                                     GitHubGraphQLApiService gitHubGraphQLApiService)
         {
             _httpClient = httpClientFactory.CreateClient();
 
-            _cloudQueueClient = cloudQueueClient;
+            _queueServiceClient = queueServiceClient;
             _gitHubRestApiService = gitHubApiService;
             _gitHubApiStatusService = gitHubApiStatusService;
             _gitHubGraphQLApiService = gitHubGraphQLApiService;
@@ -88,54 +89,50 @@ namespace GitHubReadmeWebTrends.Functions
         [Function(nameof(GetReadmeTimerTriggerFunction))]
         public async Task<GetReadmeFunctionQueueOutputModel> GetReadmeTimerTriggerFunction([TimerTrigger(_runEveryHour)] TimerInfo myTimer, FunctionContext context)
         {
-            const int getMessageCount = 32;
-
             var log = context.GetLogger<GetReadmeFunction>();
 
             var remainingRepositoriesData = new List<RepositoryAdvocateModel>();
             var completedRepositoriesData = new List<RepositoryAdvocateModel>();
 
-            var remainingRepositoriesQueue = _cloudQueueClient.GetQueueReference(QueueConstants.RemainingRepositoriesQueue.ToLower());
+            var remainingRepositoriesQueueClient = _queueServiceClient.GetQueueClient(QueueConstants.RemainingRepositoriesQueue.ToLower());
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Stared");
 
-            var queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(getMessageCount).ConfigureAwait(false);
+            var queueMessagesResponse = await remainingRepositoriesQueueClient.ReceiveMessagesAsync().ConfigureAwait(false);
 
-            while (queueResponse.Any())
+            if (queueMessagesResponse is null)
+                return new GetReadmeFunctionQueueOutputModel();
+
+            foreach (var queueMessage in queueMessagesResponse.Value)
             {
-                foreach (var queueMessage in queueResponse)
+                log.LogInformation($"Queue Message Id: {queueMessage.MessageId}");
+
+                var dequeuedData = JsonSerializer.Deserialize<RepositoryAdvocateModel>(queueMessage.Body) ?? throw new JsonException();
+                var (repository, gitHubUser) = dequeuedData;
+
+                var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits(CancellationToken.None).ConfigureAwait(false);
+
+                if (getHubApiRateLimits.RestApi.RemainingRequestCount < _minimumApiRequests
+                    || getHubApiRateLimits.GraphQLApi.RemainingRequestCount < _minimumApiRequests)
                 {
-                    log.LogInformation($"Queue Message Id: {queueMessage.Id}");
+                    log.LogInformation($"Maximum API Requests Reached");
 
-                    var dequeuedData = JsonSerializer.Deserialize<RepositoryAdvocateModel>(queueMessage.AsString) ?? throw new JsonException();
-                    var (repository, gitHubUser) = dequeuedData;
+                    remainingRepositoriesData.Add(dequeuedData);
 
-                    var getHubApiRateLimits = await _gitHubApiStatusService.GetApiRateLimits(CancellationToken.None).ConfigureAwait(false);
-
-                    if (getHubApiRateLimits.RestApi.RemainingRequestCount < _minimumApiRequests
-                        || getHubApiRateLimits.GraphQLApi.RemainingRequestCount < _minimumApiRequests)
+                    log.LogInformation($"Re-added Data to RemainingRepositoriesQueue");
+                }
+                else
+                {
+                    try
                     {
-                        log.LogInformation($"Maximum API Requests Reached");
-
-                        remainingRepositoriesData.Add(dequeuedData);
-
-                        log.LogInformation($"Re-added Data to RemainingRepositoriesQueue");
+                        await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
+                        await remainingRepositoriesQueueClient.DeleteMessageAsync(queueMessage.MessageId, queueMessage.PopReceipt).ConfigureAwait(false);
                     }
-                    else
+                    catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
                     {
-                        try
-                        {
-                            await RetrieveReadme(repository, gitHubUser, log, completedRepositoriesData).ConfigureAwait(false);
-                            await remainingRepositoriesQueue.DeleteMessageAsync(queueMessage).ConfigureAwait(false);
-                        }
-                        catch (Refit.ApiException e) when (e.StatusCode is System.Net.HttpStatusCode.NotFound)
-                        {
-                            await remainingRepositoriesQueue.DeleteMessageAsync(queueMessage).ConfigureAwait(false);
-                        }
+                        await remainingRepositoriesQueueClient.DeleteMessageAsync(queueMessage.MessageId, queueMessage.PopReceipt).ConfigureAwait(false);
                     }
                 }
-
-                queueResponse = await remainingRepositoriesQueue.GetMessagesAsync(getMessageCount).ConfigureAwait(false);
             }
 
             log.LogInformation($"{nameof(GetReadmeFunction)} Completed");

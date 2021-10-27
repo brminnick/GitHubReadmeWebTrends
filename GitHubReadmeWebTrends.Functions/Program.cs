@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure.Storage.Queues;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Queue;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +29,7 @@ namespace GitHubReadmeWebTrends.Functions
                     services.AddHttpClient();
 
                     // Add Custom Services
-                    services.AddSingleton<CloudQueueClient>(CloudStorageAccount.Parse(_storageConnectionString).CreateCloudQueueClient());
+                    services.AddSingleton(new QueueServiceClient(_storageConnectionString, new QueueClientOptions()));
                     StartupService.ConfigureServices(services, _token, options => options.UseSqlServer(_connectionString));
                 })
                 .Build();
