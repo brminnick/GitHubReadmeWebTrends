@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using GitHubReadmeWebTrends.Common;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +29,7 @@ namespace AzureAdvocates.Functions
                     services.AddHttpClient();
 
                     // Add Custom Services
-                    services.AddSingleton<CloudBlobClient>(CloudStorageAccount.Parse(_storageConnectionString).CreateCloudBlobClient());
+                    services.AddSingleton<BlobServiceClient>(new BlobServiceClient(_storageConnectionString));
                     services.AddSingleton<BlobStorageService>();
 
                     StartupService.ConfigureServices(services, _token, options => options.UseSqlServer(_connectionString));

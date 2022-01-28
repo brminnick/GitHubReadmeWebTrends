@@ -1,9 +1,10 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Azure.Storage.Blob;
+using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 
 namespace AzureAdvocates.Functions
@@ -12,58 +13,57 @@ namespace AzureAdvocates.Functions
     {
         const string _microsoftLearnContributionsContainerName = "cloudadvocatemicrosoftlearncontributions";
 
-        readonly CloudBlobClient _blobClient;
+        readonly BlobServiceClient _blobServiceClient;
         readonly ILogger<BlobStorageService> _logger;
 
-        public BlobStorageService(CloudBlobClient cloudBlobClient, ILogger<BlobStorageService> logger) =>
-            (_blobClient, _logger) = (cloudBlobClient, logger);
+        public BlobStorageService(BlobServiceClient blobClient, ILogger<BlobStorageService> logger) =>
+            (_blobServiceClient, _logger) = (blobClient, logger);
 
-        public Task UploadCloudAdvocateMicrosoftLearnContributions(IEnumerable<CloudAdvocateGitHubContributorModel> cloudAdvocateGitHubContributorModel, string blobName)
+        public Task UploadCloudAdvocateMicrosoftLearnContributions(IEnumerable<CloudAdvocateGitHubContributorModel> cloudAdvocateGitHubContributorModel, string blobName) =>
+            UploadValue(cloudAdvocateGitHubContributorModel, blobName, _microsoftLearnContributionsContainerName);
+
+        public Task<IReadOnlyList<CloudAdvocateGitHubContributorModel>> GetCloudAdvocateMicrosoftLearnContributors() =>
+            GetLatestValue<IReadOnlyList<CloudAdvocateGitHubContributorModel>>(_microsoftLearnContributionsContainerName);
+
+        async IAsyncEnumerable<BlobItem> GetBlobs(string containerName)
         {
-            var container = GetBlobContainer(_microsoftLearnContributionsContainerName);
-            var blob = container.GetBlockBlobReference(blobName);
+            var blobContainerClient = GetBlobContainerClient(containerName);
 
-            return blob.UploadTextAsync(JsonSerializer.Serialize(cloudAdvocateGitHubContributorModel));
+            await foreach (var blob in blobContainerClient.GetBlobsAsync().ConfigureAwait(false))
+            {
+                if (blob is not null)
+                    yield return blob;
+            }
         }
 
-        public async Task<IReadOnlyList<CloudAdvocateGitHubContributorModel>> GetCloudAdvocateMicrosoftLearnContributors()
+        async Task UploadValue<T>(T data, string blobName, string containerName)
         {
-            var blobList = new List<CloudBlockBlob>();
-            await foreach (var blob in GetBlobs<CloudBlockBlob>(_microsoftLearnContributionsContainerName).ConfigureAwait(false))
+            var containerClient = GetBlobContainerClient(containerName);
+            await containerClient.CreateIfNotExistsAsync().ConfigureAwait(false);
+
+            var blobClient = containerClient.GetBlobClient(blobName);
+
+            await blobClient.UploadAsync(new BinaryData(data)).ConfigureAwait(false);
+        }
+
+        async Task<T> GetLatestValue<T>(string containerName)
+        {
+            var blobList = new List<BlobItem>();
+            await foreach (var blob in GetBlobs(containerName).ConfigureAwait(false))
             {
                 blobList.Add(blob);
-                _logger.LogInformation($"Found {blob.Name}");
             }
 
-            var gitHubContributorListBlob = blobList.OrderByDescending(x => x.Properties.Created).First();
-            var serializedGitHubContributorList = await gitHubContributorListBlob.DownloadTextAsync().ConfigureAwait(false);
+            var newestBlob = blobList.OrderByDescending(x => x.Properties.CreatedOn).First();
 
-            _logger.LogInformation($"Most Recent Blob: {serializedGitHubContributorList}");
+            var blobClient = GetBlobContainerClient(containerName).GetBlobClient(newestBlob.Name);
+            var blobContentResponse = await blobClient.DownloadContentAsync().ConfigureAwait(false);
 
-            return JsonSerializer.Deserialize<IReadOnlyList<CloudAdvocateGitHubContributorModel>>(serializedGitHubContributorList) ?? throw new NullReferenceException();
+            var serializedBlobContents = blobContentResponse.Value.Content;
+
+            return JsonSerializer.Deserialize<T>(serializedBlobContents) ?? throw new NullReferenceException();
         }
 
-        async IAsyncEnumerable<T> GetBlobs<T>(string containerName, string prefix = "", int? maxresultsPerQuery = null, BlobListingDetails blobListingDetails = BlobListingDetails.None) where T : ICloudBlob
-        {
-            var blobContainer = GetBlobContainer(containerName);
-
-            BlobContinuationToken? continuationToken = null;
-
-            do
-            {
-                var response = await blobContainer.ListBlobsSegmentedAsync(prefix, true, blobListingDetails, maxresultsPerQuery, continuationToken, null, null).ConfigureAwait(false);
-                continuationToken = response?.ContinuationToken;
-
-                var blobListFromResponse = response?.Results?.OfType<T>() ?? Enumerable.Empty<T>();
-
-                foreach (var blob in blobListFromResponse)
-                {
-                    yield return blob;
-                }
-
-            } while (continuationToken != null);
-        }
-
-        CloudBlobContainer GetBlobContainer(string containerName) => _blobClient.GetContainerReference(containerName);
+        BlobContainerClient GetBlobContainerClient(string containerName) => _blobServiceClient.GetBlobContainerClient(containerName);
     }
 }
