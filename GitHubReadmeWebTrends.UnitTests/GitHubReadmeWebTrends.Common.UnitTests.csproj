@@ -20,11 +20,5 @@
   <ItemGroup>
     <ProjectReference Include="..\GitHubReadmeWebTrends.Common\GitHubReadmeWebTrends.Common.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Tests\" />
-    <None Remove="Microsoft.EntityFrameworkCore.InMemory" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tests\" />
-  </ItemGroup>
+
 </Project>
